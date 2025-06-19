@@ -1,5 +1,3 @@
-print("Hello Curator!")
-
 import customtkinter
 from app.database import init_db
 from app.main_window import MainWindow
