@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Curator's Atlas</title>
+    
+    <!-- Link to Google Fonts for our professional typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Link to our new stylesheet (we will create this next) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/atlas.css') }}">
+    
+    <!-- 
+        Link to our new JavaScript file. 
+        The 'defer' attribute is CRITICAL. It tells the browser to wait until the
+        HTML page is fully loaded before running the script.
+    -->
+    <script src="{{ url_for('static', filename='js/atlas.js') }}" defer></script>
+</head>
+<body>
+
+    <header>
+        <h1>The Curator's Atlas</h1>
+        <p>Your personal map of curated knowledge.</p>
+    </header>
+
+    <main>
+        <!-- 
+            This div is our main "mount point".
+            The JavaScript will find this empty container and build the
+            entire interactive post grid inside of it.
+        -->
+        <div id="posts-grid" class="posts-grid-container">
+            <p class="loading-message">Loading your curated posts...</p>
+        </div>
+    </main>
+
+</body>
+</html>

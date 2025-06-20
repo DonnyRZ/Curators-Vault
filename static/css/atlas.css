@@ -1,0 +1,137 @@
+/* --- Global Styles & Design System --- */
+
+:root {
+    --bg-dark: #121212;
+    --surface-color: #1E1E1E;
+    --primary-accent: #7A86F5;
+    --primary-accent-hover: #9AA3F8;
+    --text-primary: #E0E0E0;
+    --text-secondary: #AAAAAA;
+    --border-color: #333333;
+    --font-sans: 'Inter', sans-serif;
+    --font-serif: 'Lora', serif;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    margin: 0;
+    padding: 3rem; /* More generous padding */
+}
+
+/* --- Header & Typography --- */
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+}
+
+header p {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin: 0.5rem 0 0 0;
+}
+
+/* --- Masonry Grid Layout --- */
+
+.posts-grid-container {
+    display: grid;
+    /* This is the magic for the masonry layout */
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.loading-message {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    grid-column: 1 / -1; /* Make it span all columns */
+}
+
+/* --- The "Living" Post Card --- */
+
+.post-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    cursor: pointer;
+    overflow: hidden; /* Important for containing elements */
+    
+    /* The "lift" animation on hover */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.post-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%; /* Perfect circle */
+    object-fit: cover; /* Prevents image distortion */
+    border: 2px solid var(--border-color);
+}
+
+.author-info h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.author-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.post-card-content {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    max-height: 100px; /* Limit the preview height */
+    overflow: hidden;
+    position: relative;
+    color: var(--text-primary);
+}
+
+/* A subtle fade-out effect for overflowing text */
+.post-card-content::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--surface-color));
+}
+
+.post-card-footer {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary-accent);
+}
