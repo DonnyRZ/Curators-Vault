@@ -1,7 +1,7 @@
 import customtkinter
 import pyperclip
 import webbrowser
-from .database import get_all_categories, add_post, update_post, delete_post, get_all_posts
+from .database import get_all_categories, add_post, update_post, delete_post, get_all_posts, get_all_projects
 from tkinter import filedialog
 import shutil
 import os
@@ -48,25 +48,34 @@ class MainWindow(customtkinter.CTkFrame):
         self.post_text_box = customtkinter.CTkTextbox(self.right_frame, height=100, font=self.assets.font_content); self.post_text_box.grid(row=5, column=0, columnspan=2, padx=20, pady=(0, 10), sticky="nsew")
         notes_label = customtkinter.CTkLabel(self.right_frame, text="Your Notes / Ideas", font=self.assets.font_small); notes_label.grid(row=6, column=0, columnspan=2, padx=20, pady=(10, 0), sticky="w")
         self.notes_text_box = customtkinter.CTkTextbox(self.right_frame, height=60, font=self.assets.font_content); self.notes_text_box.grid(row=7, column=0, columnspan=2, padx=20, pady=(0, 10), sticky="nsew")
-        category_label = customtkinter.CTkLabel(self.right_frame, text="Category", font=self.assets.font_small); category_label.grid(row=8, column=0, columnspan=2, padx=20, pady=(10, 0), sticky="w")
+        
+        project_label = customtkinter.CTkLabel(self.right_frame, text="Project", font=self.assets.font_small); project_label.grid(row=8, column=0, padx=20, pady=(10, 0), sticky="w")
+        self.project_menu = customtkinter.CTkOptionMenu(self.right_frame, font=self.assets.font_button, height=40); self.project_menu.grid(row=9, column=0, padx=20, pady=(0, 10), sticky="w")
+        
+        category_label = customtkinter.CTkLabel(self.right_frame, text="Category", font=self.assets.font_small); category_label.grid(row=8, column=1, padx=20, pady=(10, 0), sticky="w")
         categories = get_all_categories(); category_names = [cat['name'] for cat in categories]
-        self.category_menu = customtkinter.CTkOptionMenu(self.right_frame, values=category_names, font=self.assets.font_button, height=40); self.category_menu.grid(row=9, column=0, columnspan=2, padx=20, pady=(0, 20), sticky="w")
+        self.category_menu = customtkinter.CTkOptionMenu(self.right_frame, values=category_names, font=self.assets.font_button, height=40); self.category_menu.grid(row=9, column=1, padx=20, pady=(0, 10), sticky="w")
+        
         self.button_frame = customtkinter.CTkFrame(self.right_frame, fg_color="transparent"); self.button_frame.grid(row=10, column=0, columnspan=2, padx=20, pady=10, sticky="ew")
         self.button_frame.grid_columnconfigure((0, 1, 2), weight=1)
         self.save_button = customtkinter.CTkButton(self.button_frame, text="Save New Post", font=self.assets.font_button, command=self.save_post_action, height=40)
         self.update_button = customtkinter.CTkButton(self.button_frame, text="Update", image=self.assets.update_icon, font=self.assets.font_button, command=self.update_post_action, height=40, compound="left", anchor="center")
         self.delete_button = customtkinter.CTkButton(self.button_frame, text="Delete", image=self.assets.delete_icon, font=self.assets.font_button, fg_color="#D32F2F", hover_color="#B71C1C", command=self.delete_post_action, height=40, compound="left", anchor="center")
         self.new_post_button = customtkinter.CTkButton(self.button_frame, text="New", image=self.assets.new_icon, font=self.assets.font_button, command=self.clear_form_action, height=40, compound="left", anchor="center")
+        
         self.settings_frame = customtkinter.CTkFrame(self.right_frame); self.settings_frame.grid(row=11, column=0, columnspan=2, padx=10, pady=10, sticky="sew")
         self.settings_frame.grid_columnconfigure((0, 1), weight=1)
         settings_label = customtkinter.CTkLabel(self.settings_frame, text="Database Management", font=self.assets.font_small); settings_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(5,0))
         self.backup_button = customtkinter.CTkButton(self.settings_frame, text="Backup", image=self.assets.backup_icon, font=self.assets.font_button, command=self.backup_database_action, height=40, compound="left", anchor="center"); self.backup_button.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
         self.restore_button = customtkinter.CTkButton(self.settings_frame, text="Restore", image=self.assets.restore_icon, font=self.assets.font_button, command=self.restore_database_action, height=40, compound="left", anchor="center"); self.restore_button.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+        
         self.status_bar = customtkinter.CTkLabel(self, text="", anchor="w", font=self.assets.font_small); self.status_bar.grid(row=1, column=0, columnspan=2, padx=10, pady=(5, 10), sticky="ew")
         
+        self.load_projects_into_menu()
         self.clear_form_action()
         self.refresh_post_list()
 
+    # --- THIS IS THE FIX: The missing update_status method is restored ---
     def update_status(self, message, is_error=False):
         self.status_bar.configure(text=message, text_color=("#C70039" if is_error else "#DCE4EE"))
         self.status_bar.after(4000, lambda: self.status_bar.configure(text=""))
@@ -76,50 +85,32 @@ class MainWindow(customtkinter.CTkFrame):
         if url and ("x.com" in url or "twitter.com" in url) and "/status/" in url and self.url_entry.cget("state") == "normal":
             self.after(500, self.start_fetch_thread)
 
-    # --- THIS IS THE FIX: The missing start_fetch_thread method is restored ---
     def start_fetch_thread(self):
-        if self.url_entry.cget("state") == "disabled":
-            return
-        self.url_entry.configure(state="disabled")
-        self.update_status("Fetching post details...")
-        thread = threading.Thread(target=self._scrape_post_thread, args=(self.url_entry.get(),))
-        thread.daemon = True
-        thread.start()
+        if self.url_entry.cget("state") == "disabled": return
+        self.url_entry.configure(state="disabled"); self.update_status("Fetching post details...")
+        thread = threading.Thread(target=self._scrape_post_thread, args=(self.url_entry.get(),)); thread.daemon = True; thread.start()
 
     def _scrape_post_thread(self, url):
         try:
             with sync_playwright() as p:
-                browser = p.chromium.launch()
-                page = browser.new_page()
+                browser = p.chromium.launch(); page = browser.new_page()
                 page.goto(url, wait_until='domcontentloaded', timeout=20000)
-                
-                article_selector = 'article[data-testid="tweet"]'
-                page.wait_for_selector(article_selector, timeout=15000)
-                
+                article_selector = 'article[data-testid="tweet"]'; page.wait_for_selector(article_selector, timeout=15000)
                 post_article = page.query_selector(article_selector)
                 
-                author_name = "Author Not Found"
-                author_handle = "@handle_not_found"
-                
+                author_name = "Author Not Found"; author_handle = "@handle_not_found"
                 user_container = post_article.query_selector('div[data-testid="User-Name"]')
                 if user_container:
                     spans = user_container.query_selector_all('span')
-                    if len(spans) >= 1:
-                        author_name = spans[0].inner_text().strip()
+                    if len(spans) >= 1: author_name = spans[0].inner_text().strip()
                     for span in spans:
-                        if span.inner_text().strip().startswith('@'):
-                            author_handle = span.inner_text().strip()
-                            break
+                        if span.inner_text().strip().startswith('@'): author_handle = span.inner_text().strip(); break
                 
-                post_text_element = post_article.query_selector('div[data-testid="tweetText"]')
-                post_text = post_text_element.inner_text() if post_text_element else "Post content not found."
-
-                avatar_element = post_article.query_selector('div[data-testid="Tweet-User-Avatar"] img')
-                avatar_url = avatar_element.get_attribute('src') if avatar_element else None
+                post_text_element = post_article.query_selector('div[data-testid="tweetText"]'); post_text = post_text_element.inner_text() if post_text_element else "Post content not found."
+                avatar_element = post_article.query_selector('div[data-testid="Tweet-User-Avatar"] img'); avatar_url = avatar_element.get_attribute('src') if avatar_element else None
                 
                 browser.close()
                 self.after(0, self.populate_fetched_data, author_name, author_handle, post_text, avatar_url)
-
         except Exception as e:
             self.after(0, self.update_status, f"Fetch failed. Post may be private or deleted.", True)
             print(f"Playwright Error: {e}") 
@@ -128,18 +119,15 @@ class MainWindow(customtkinter.CTkFrame):
 
     def populate_fetched_data(self, author_name, author_handle, content, avatar_url):
         self.clear_form_action(clear_url=False)
-        self.author_name_label.configure(text=author_name)
-        self.author_handle_label.configure(text=author_handle)
+        self.author_name_label.configure(text=author_name); self.author_handle_label.configure(text=author_handle)
         self.post_text_box.insert("1.0", content)
-        if avatar_url:
-            threading.Thread(target=self._load_and_set_avatar, args=(avatar_url,), daemon=True).start()
-        self.update_status("Post data fetched successfully!")
-        self.notes_text_box.focus()
+        if avatar_url: threading.Thread(target=self._load_and_set_avatar, args=(avatar_url,), daemon=True).start()
+        self.update_status("Post data fetched successfully!"); self.notes_text_box.focus()
 
     def _load_and_set_avatar(self, url):
         avatar_image = self.assets.load_avatar_from_url(url)
         self.after(0, lambda: self.avatar_label.configure(image=avatar_image))
-        
+
     def _update_ui_state(self):
         if self.selected_post_id is not None:
             self.form_label.configure(text="Edit Post Details")
@@ -159,25 +147,6 @@ class MainWindow(customtkinter.CTkFrame):
         self.avatar_label.configure(image=self.assets.default_avatar)
         self._update_ui_state()
         
-    def save_post_action(self):
-        author = f"{self.author_name_label.cget('text')} ({self.author_handle_label.cget('text')})"
-        post_text=self.post_text_box.get("1.0","end-1c"); notes=self.notes_text_box.get("1.0","end-1c"); url=self.url_entry.get(); category=self.category_menu.get()
-        if not post_text or post_text == "Post content not found.":
-            self.update_status("Cannot save post with no content.", is_error=True); return
-        add_post(author,post_text,notes,url,category); self.update_status("Post saved successfully."); self.clear_form_action(); self.refresh_post_list()
-
-    def update_post_action(self):
-        if self.selected_post_id is not None:
-            author = f"{self.author_name_label.cget('text')} ({self.author_handle_label.cget('text')})"
-            post_text=self.post_text_box.get("1.0","end-1c"); notes=self.notes_text_box.get("1.0","end-1c"); url=self.url_entry.get(); category=self.category_menu.get()
-            update_post(self.selected_post_id,author,post_text,notes,url,category); self.update_status(f"Post ID {self.selected_post_id} updated."); self.refresh_post_list()
-        else: self.update_status("Error: No post selected to update.", is_error=True)
-
-    def delete_post_action(self):
-        if self.selected_post_id is not None:
-            post_id_to_delete = self.selected_post_id; delete_post(post_id_to_delete); self.update_status(f"Post ID {post_id_to_delete} deleted."); self.clear_form_action(); self.refresh_post_list()
-        else: self.update_status("Error: No post selected to delete.", is_error=True)
-
     def show_post_details(self, post, post_frame):
         if self.selected_post_frame: self.selected_post_frame.configure(fg_color="transparent")
         post_frame.configure(fg_color=("#E5E5E5", "#2A2D2E")); self.selected_post_frame = post_frame
@@ -198,9 +167,39 @@ class MainWindow(customtkinter.CTkFrame):
         
         self.avatar_label.configure(image=self.assets.default_avatar)
         if post['category_name']: self.category_menu.set(post['category_name'])
+        if post['project_name']: self.project_menu.set(post['project_name'])
+        else: self.project_menu.set("Uncategorized Ideas")
         
         self._update_ui_state()
         self.update_status(f"Viewing Post ID: {post['id']}")
+
+    def load_projects_into_menu(self):
+        self.projects = get_all_projects()
+        self.project_map = {p['name']: p['id'] for p in self.projects}
+        project_names = list(self.project_map.keys())
+        self.project_menu.configure(values=project_names)
+        if project_names: self.project_menu.set(project_names[0])
+
+    def save_post_action(self):
+        author = f"{self.author_name_label.cget('text')} ({self.author_handle_label.cget('text')})"
+        post_text=self.post_text_box.get("1.0","end-1c"); notes=self.notes_text_box.get("1.0","end-1c"); url=self.url_entry.get(); category=self.category_menu.get()
+        project_name = self.project_menu.get(); project_id = self.project_map.get(project_name)
+        if not post_text or post_text == "Post content not found.":
+            self.update_status("Cannot save post with no content.", is_error=True); return
+        add_post(author,post_text,notes,url,category, project_id); self.update_status("Post saved successfully."); self.clear_form_action(); self.refresh_post_list()
+
+    def update_post_action(self):
+        if self.selected_post_id is not None:
+            author = f"{self.author_name_label.cget('text')} ({self.author_handle_label.cget('text')})"
+            post_text=self.post_text_box.get("1.0","end-1c"); notes=self.notes_text_box.get("1.0","end-1c"); url=self.url_entry.get(); category=self.category_menu.get()
+            project_name = self.project_menu.get(); project_id = self.project_map.get(project_name)
+            update_post(self.selected_post_id,author,post_text,notes,url,category, project_id); self.update_status(f"Post ID {self.selected_post_id} updated."); self.refresh_post_list()
+        else: self.update_status("Error: No post selected to update.", is_error=True)
+
+    def delete_post_action(self):
+        if self.selected_post_id is not None:
+            post_id_to_delete = self.selected_post_id; delete_post(post_id_to_delete); self.update_status(f"Post ID {post_id_to_delete} deleted."); self.clear_form_action(); self.refresh_post_list()
+        else: self.update_status("Error: No post selected to delete.", is_error=True)
 
     def refresh_post_list(self, search_term=None):
         for widget in self.scrollable_post_list.winfo_children(): widget.destroy()
