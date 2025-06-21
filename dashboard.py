@@ -1,5 +1,5 @@
-from flask import Flask, render_template, jsonify # NEW: Import jsonify
-from app.database import get_all_posts
+from flask import Flask, render_template, jsonify
+from app.database import get_all_posts, get_all_projects
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
@@ -7,26 +7,26 @@ app = Flask(__name__)
 
 # --- Route Definitions ---
 
-# This route serves the main HTML file, which is the shell of our application.
 @app.route('/')
 def home():
     """Serves the main dashboard page."""
-    # We no longer pass data here. The page itself will fetch it.
     return render_template('index.html')
 
-# --- NEW: This is our data API endpoint ---
-@app.route('/api/posts')
-def get_posts_api():
-    """Fetches all posts and returns them as JSON."""
-    # Fetch all posts from the database using our existing function
-    posts_from_db = get_all_posts()
+@app.route('/api/projects')
+def api_get_projects():
+    """Fetches all projects and returns them as JSON."""
+    projects_from_db = get_all_projects()
+    projects_list = [dict(row) for row in projects_from_db]
+    return jsonify(projects_list)
+
+@app.route('/api/project/<int:project_id>')
+def api_get_posts_for_project(project_id):
+    """Fetches all posts for a given project_id and returns them as JSON."""
+    # --- THIS IS THE FIX ---
+    # We now correctly call the function with the named argument 'project_id'.
+    posts_from_db = get_all_posts(project_id=project_id)
     
-    # We need to convert the database row objects into a standard list of dictionaries
-    # so Flask can convert it to JSON properly.
     posts_list = [dict(row) for row in posts_from_db]
-    
-    # The jsonify function correctly formats our list into the JSON format
-    # that JavaScript can easily understand.
     return jsonify(posts_list)
 
 
