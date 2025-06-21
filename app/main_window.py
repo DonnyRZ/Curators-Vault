@@ -16,10 +16,8 @@ class MainWindow(customtkinter.CTkFrame):
 
         # --- Application State ---
         self.selected_post_id = None
-        self.project_map = {}
-        self.is_fetching = False
-        # --- ADDED: State to hold the avatar URL from a scrape ---
         self.current_avatar_url = None
+        self.is_fetching = False
 
         # --- Main Layout ---
         self.grid_columnconfigure(0, weight=1, minsize=300)
@@ -56,6 +54,8 @@ class MainWindow(customtkinter.CTkFrame):
         )
 
     def _load_initial_data(self):
+        """Loads all necessary data from the database on startup."""
+        # --- RESTORED: Load projects and categories for the comboboxes ---
         self.refresh_projects()
         self.refresh_categories()
         self.refresh_post_list()
@@ -66,7 +66,6 @@ class MainWindow(customtkinter.CTkFrame):
     def on_post_selected(self, post_data, search_term):
         if post_data:
             self.selected_post_id = post_data['id']
-            # --- MODIFIED: Store the avatar URL from the selected post ---
             self.current_avatar_url = post_data.get('avatar_url')
             self.post_detail_frame.populate_form(post_data)
             self.update_status(f"Viewing Post ID: {self.selected_post_id}")
@@ -75,7 +74,6 @@ class MainWindow(customtkinter.CTkFrame):
 
     def on_new_post(self):
         self.selected_post_id = None
-        # --- ADDED: Clear the avatar URL when starting a new post ---
         self.current_avatar_url = None
         self.post_list_frame.clear_selection()
         self.post_detail_frame.clear_form()
@@ -87,14 +85,15 @@ class MainWindow(customtkinter.CTkFrame):
             self.update_status("Cannot save post with no content.", is_error=True)
             return
         
-        project_id = self.project_map.get(data["project_name"])
-        # --- MODIFIED: Pass the stored avatar URL to the database function ---
         database.add_post(
             data["author"], data["post_text"], data["notes"], data["url"], 
-            data["category_name"], project_id, self.current_avatar_url
+            data["category_name"], data["project_name"], self.current_avatar_url
         )
         
         self.update_status("Post saved successfully.")
+        # --- ADDED: Refresh projects/categories in case a new one was added ---
+        self.refresh_projects()
+        self.refresh_categories()
         self.refresh_post_list()
         self.on_new_post()
 
@@ -104,14 +103,15 @@ class MainWindow(customtkinter.CTkFrame):
             return
             
         data = self.post_detail_frame.get_form_data()
-        project_id = self.project_map.get(data["project_name"])
-        # --- MODIFIED: Pass the stored avatar URL to the database function ---
         database.update_post(
             self.selected_post_id, data["author"], data["post_text"], data["notes"], 
-            data["url"], data["category_name"], project_id, self.current_avatar_url
+            data["url"], data["category_name"], data["project_name"], self.current_avatar_url
         )
         
         self.update_status(f"Post ID {self.selected_post_id} updated.")
+        # --- ADDED: Refresh projects/categories in case a new one was added ---
+        self.refresh_projects()
+        self.refresh_categories()
         self.refresh_post_list()
 
     def on_delete_post(self):
@@ -156,13 +156,15 @@ class MainWindow(customtkinter.CTkFrame):
         posts = database.get_all_posts(search_term)
         self.post_list_frame.refresh_post_list(posts)
 
+    # --- RESTORED: Methods to fetch data and update the comboboxes ---
     def refresh_projects(self):
+        """Fetches projects and tells the detail frame to update its menu."""
         projects = database.get_all_projects()
-        self.project_map = {p['name']: p['id'] for p in projects}
-        project_names = list(self.project_map.keys())
+        project_names = [p['name'] for p in projects]
         self.post_detail_frame.update_project_menu(project_names)
 
     def refresh_categories(self):
+        """Fetches categories and tells the detail frame to update its menu."""
         categories = database.get_all_categories()
         category_names = [cat['name'] for cat in categories]
         self.post_detail_frame.update_category_menu(category_names)
@@ -183,11 +185,9 @@ class MainWindow(customtkinter.CTkFrame):
         self.post_detail_frame.set_url_entry_state("normal")
 
         if data:
-            # --- MODIFIED: Store the scraped avatar URL in our state variable ---
             self.current_avatar_url = data.get("avatar_url")
             self.post_detail_frame.populate_scraped_data(data)
             self.update_status("Post data fetched successfully!")
         else:
-            # --- ADDED: Clear the avatar URL on a failed fetch ---
             self.current_avatar_url = None
             self.update_status("Fetch failed. Post may be private or deleted.", is_error=True)

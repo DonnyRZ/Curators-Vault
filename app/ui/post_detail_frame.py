@@ -53,15 +53,16 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.notes_text_box = customtkinter.CTkTextbox(self, height=60, font=self.assets.font_content)
         self.notes_text_box.grid(row=7, column=0, columnspan=2, padx=20, pady=(0, 10), sticky="nsew")
 
+        # --- MODIFIED: Replaced Entry fields with ComboBoxes ---
         project_label = customtkinter.CTkLabel(self, text="Project", font=self.assets.font_small)
         project_label.grid(row=8, column=0, padx=20, pady=(10, 0), sticky="w")
-        self.project_menu = customtkinter.CTkOptionMenu(self, font=self.assets.font_button, height=40)
-        self.project_menu.grid(row=9, column=0, padx=20, pady=(0, 10), sticky="w")
+        self.project_combobox = customtkinter.CTkComboBox(self, font=self.assets.font_body, height=40, values=[])
+        self.project_combobox.grid(row=9, column=0, padx=20, pady=(0, 10), sticky="ew")
         
         category_label = customtkinter.CTkLabel(self, text="Category", font=self.assets.font_small)
         category_label.grid(row=8, column=1, padx=20, pady=(10, 0), sticky="w")
-        self.category_menu = customtkinter.CTkOptionMenu(self, font=self.assets.font_button, height=40)
-        self.category_menu.grid(row=9, column=1, padx=20, pady=(0, 10), sticky="w")
+        self.category_combobox = customtkinter.CTkComboBox(self, font=self.assets.font_body, height=40, values=[])
+        self.category_combobox.grid(row=9, column=1, padx=20, pady=(0, 10), sticky="ew")
 
         self.actions_frame = ActionsFrame(self, self.assets)
         self.actions_frame.grid(row=10, column=0, columnspan=2, padx=20, pady=10, sticky="ew")
@@ -95,11 +96,10 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.author_name_label.configure(text=author_name)
         self.author_handle_label.configure(text=author_handle)
         
-        if post_data.get('category_name'): self.category_menu.set(post_data['category_name'])
-        if post_data.get('project_name'): self.project_menu.set(post_data['project_name'])
-        else: self.project_menu.set("Uncategorized Ideas")
+        # --- MODIFIED: Set the value of the ComboBoxes ---
+        self.project_combobox.set(post_data.get('project_name', "Uncategorized Ideas"))
+        self.category_combobox.set(post_data.get('category_name', ""))
 
-        # --- MODIFIED: Load avatar from URL if it exists in the saved post data ---
         avatar_url = post_data.get('avatar_url')
         if avatar_url:
             thread = threading.Thread(target=self._load_and_set_avatar, args=(avatar_url,))
@@ -130,8 +130,9 @@ class PostDetailFrame(customtkinter.CTkFrame):
             "post_text": self.post_text_box.get("1.0", "end-1c"),
             "notes": self.notes_text_box.get("1.0", "end-1c"),
             "url": self.url_entry.get(),
-            "category_name": self.category_menu.get(),
-            "project_name": self.project_menu.get()
+            # --- MODIFIED: Get text from ComboBoxes ---
+            "category_name": self.category_combobox.get(),
+            "project_name": self.project_combobox.get()
         }
 
     def clear_form(self, clear_url=True):
@@ -142,6 +143,9 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.author_name_label.configure(text="Author Name")
         self.author_handle_label.configure(text="@author_handle")
         self.avatar_label.configure(image=self.assets.default_avatar)
+        # --- MODIFIED: Clear the ComboBoxes by setting an empty string ---
+        self.project_combobox.set("")
+        self.category_combobox.set("")
         self.set_save_mode()
 
     def set_save_mode(self):
@@ -155,15 +159,12 @@ class PostDetailFrame(customtkinter.CTkFrame):
     def set_url_entry_state(self, state: str):
         self.url_entry.configure(state=state)
 
+    # --- RESTORED: Methods to update the dropdown lists in the ComboBoxes ---
     def update_project_menu(self, project_names: list):
-        self.project_menu.configure(values=project_names)
-        if project_names:
-            self.project_menu.set(project_names[0])
+        self.project_combobox.configure(values=project_names)
 
     def update_category_menu(self, category_names: list):
-        self.category_menu.configure(values=category_names)
-        if category_names:
-            self.category_menu.set(category_names[0])
+        self.category_combobox.configure(values=category_names)
 
     def connect_callbacks(self, save, update, delete, new, fetch, backup, restore):
         self.actions_frame.save_callback = save
