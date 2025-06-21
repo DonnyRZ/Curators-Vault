@@ -36,6 +36,7 @@ def init_db():
             notes TEXT,
             url TEXT,
             category_id INTEGER,
+            avatar_url TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (category_id) REFERENCES categories (id)
         )
@@ -45,10 +46,7 @@ def init_db():
     columns = [row['name'] for row in cursor.fetchall()]
     if 'project_id' not in columns:
         cursor.execute("ALTER TABLE posts ADD COLUMN project_id INTEGER REFERENCES projects(id)")
-    
-    # --- ADDED: Migration for the new avatar_url column ---
     if 'avatar_url' not in columns:
-        print("Migrating database: Adding 'avatar_url' to posts table...")
         cursor.execute("ALTER TABLE posts ADD COLUMN avatar_url TEXT")
 
     cursor.execute("INSERT OR IGNORE INTO projects (id, name, description) VALUES (?, ?, ?)", 
@@ -58,15 +56,33 @@ def init_db():
     conn.close()
     print("Database initialized and migrated successfully.")
 
-def add_project(name, description=""):
-    conn = get_db_connection()
-    try:
-        conn.execute("INSERT INTO projects (name, description) VALUES (?, ?)", (name, description))
+# --- NEW HELPER: Get a project's ID, creating the project if it doesn't exist ---
+def get_or_create_project_id(conn, name):
+    if not name or not name.strip():
+        return 1 # Default to "Uncategorized Ideas"
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM projects WHERE name = ?", (name,))
+    project = cursor.fetchone()
+    if project:
+        return project['id']
+    else:
+        cursor.execute("INSERT INTO projects (name) VALUES (?)", (name,))
         conn.commit()
-    except sqlite3.IntegrityError:
-        print(f"Project '{name}' already exists.")
-    finally:
-        conn.close()
+        return cursor.lastrowid
+
+# --- NEW HELPER: Get a category's ID, creating the category if it doesn't exist ---
+def get_or_create_category_id(conn, name):
+    if not name or not name.strip():
+        return None # No category
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM categories WHERE name = ?", (name,))
+    category = cursor.fetchone()
+    if category:
+        return category['id']
+    else:
+        cursor.execute("INSERT INTO categories (name) VALUES (?)", (name,))
+        conn.commit()
+        return cursor.lastrowid
 
 def get_all_projects():
     conn = get_db_connection()
@@ -74,28 +90,26 @@ def get_all_projects():
     conn.close()
     return [dict(row) for row in projects_rows]
 
-# --- MODIFIED: Added avatar_url parameter ---
-def add_post(author, post_text, notes, url, category_name, project_id, avatar_url):
+# --- MODIFIED: Now uses the get_or_create helpers ---
+def add_post(author, post_text, notes, url, category_name, project_name, avatar_url):
     conn = get_db_connection()
-    cursor = conn.cursor()
-    category = cursor.execute("SELECT id FROM categories WHERE name = ?", (category_name,)).fetchone()
-    category_id = category['id'] if category else None
-    cursor.execute(
-        # --- MODIFIED: Added avatar_url to INSERT ---
+    project_id = get_or_create_project_id(conn, project_name)
+    category_id = get_or_create_category_id(conn, category_name)
+    
+    conn.execute(
         "INSERT INTO posts (author, post_text, notes, url, category_id, project_id, avatar_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
         (author, post_text, notes, url, category_id, project_id, avatar_url)
     )
     conn.commit()
     conn.close()
 
-# --- MODIFIED: Added avatar_url parameter ---
-def update_post(post_id, author, post_text, notes, url, category_name, project_id, avatar_url):
+# --- MODIFIED: Now uses the get_or_create helpers ---
+def update_post(post_id, author, post_text, notes, url, category_name, project_name, avatar_url):
     conn = get_db_connection()
-    cursor = conn.cursor()
-    category = cursor.execute("SELECT id FROM categories WHERE name = ?", (category_name,)).fetchone()
-    category_id = category['id'] if category else None
-    cursor.execute('''
-        -- --- MODIFIED: Added avatar_url to UPDATE ---
+    project_id = get_or_create_project_id(conn, project_name)
+    category_id = get_or_create_category_id(conn, category_name)
+
+    conn.execute('''
         UPDATE posts
         SET author = ?, post_text = ?, notes = ?, url = ?, category_id = ?, project_id = ?, avatar_url = ?
         WHERE id = ?
@@ -105,18 +119,14 @@ def update_post(post_id, author, post_text, notes, url, category_name, project_i
 
 def get_all_posts(search_term=None, project_id=None):
     conn = get_db_connection()
-    
     query = '''
-        -- --- MODIFIED: Added p.avatar_url to SELECT ---
         SELECT p.id, p.author, p.post_text, p.notes, p.url, p.avatar_url, c.name as category_name, proj.name as project_name
         FROM posts p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN projects proj ON p.project_id = proj.id
     '''
-    
     conditions = []
     params = []
-    
     if project_id:
         if project_id == 1:
             conditions.append("(p.project_id = ? OR p.project_id IS NULL)")
@@ -124,20 +134,15 @@ def get_all_posts(search_term=None, project_id=None):
         else:
             conditions.append("p.project_id = ?")
             params.append(project_id)
-        
     if search_term and search_term.strip() != "":
         search_condition = "(p.author LIKE ? OR p.post_text LIKE ? OR p.notes LIKE ?)"
         conditions.append(search_condition)
         like_term = f"%{search_term}%"
         params.extend([like_term, like_term, like_term])
-
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
-
     query += " ORDER BY p.created_at DESC"
-    
     posts_rows = conn.execute(query, params).fetchall()
-    
     conn.close()
     return [dict(row) for row in posts_rows]
 
