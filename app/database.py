@@ -15,6 +15,7 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    # --- Existing Tables (No changes here) ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,12 +43,47 @@ def init_db():
         )
     ''')
 
+    # --- Database Migrations ---
     cursor.execute("PRAGMA table_info(posts)")
     columns = [row['name'] for row in cursor.fetchall()]
     if 'project_id' not in columns:
         cursor.execute("ALTER TABLE posts ADD COLUMN project_id INTEGER REFERENCES projects(id)")
     if 'avatar_url' not in columns:
         cursor.execute("ALTER TABLE posts ADD COLUMN avatar_url TEXT")
+    
+    # --- ADDED: Migration for the new 'resources' column ---
+    if 'resources' not in columns:
+        print("Migrating database: Adding 'resources' to posts table...")
+        cursor.execute("ALTER TABLE posts ADD COLUMN resources TEXT")
+
+    # --- ADDED: Create the 'sparks' table for the Spark Board layout ---
+    print("Ensuring 'sparks' table exists...")
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sparks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            post_id INTEGER NOT NULL,
+            x_pos REAL NOT NULL,
+            y_pos REAL NOT NULL,
+            FOREIGN KEY (project_id) REFERENCES projects (id),
+            FOREIGN KEY (post_id) REFERENCES posts (id)
+        )
+    ''')
+
+    # --- ADDED: Create the 'connections' table for Spark Board connectors ---
+    print("Ensuring 'connections' table exists...")
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS connections (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            start_spark_id INTEGER NOT NULL,
+            end_spark_id INTEGER NOT NULL,
+            label TEXT,
+            FOREIGN KEY (project_id) REFERENCES projects (id),
+            FOREIGN KEY (start_spark_id) REFERENCES sparks (id),
+            FOREIGN KEY (end_spark_id) REFERENCES sparks (id)
+        )
+    ''')
 
     cursor.execute("INSERT OR IGNORE INTO projects (id, name, description) VALUES (?, ?, ?)", 
                    (1, "Uncategorized Ideas", "A place for posts that haven't been assigned to a specific project yet."))
@@ -56,10 +92,12 @@ def init_db():
     conn.close()
     print("Database initialized and migrated successfully.")
 
-# --- NEW HELPER: Get a project's ID, creating the project if it doesn't exist ---
+# --- The rest of your database.py file remains the same ---
+# (get_or_create_project_id, add_post, update_post, etc. do not need changes yet)
+
 def get_or_create_project_id(conn, name):
     if not name or not name.strip():
-        return 1 # Default to "Uncategorized Ideas"
+        return 1
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM projects WHERE name = ?", (name,))
     project = cursor.fetchone()
@@ -70,10 +108,9 @@ def get_or_create_project_id(conn, name):
         conn.commit()
         return cursor.lastrowid
 
-# --- NEW HELPER: Get a category's ID, creating the category if it doesn't exist ---
 def get_or_create_category_id(conn, name):
     if not name or not name.strip():
-        return None # No category
+        return None
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM categories WHERE name = ?", (name,))
     category = cursor.fetchone()
@@ -90,37 +127,38 @@ def get_all_projects():
     conn.close()
     return [dict(row) for row in projects_rows]
 
-# --- MODIFIED: Now uses the get_or_create helpers ---
-def add_post(author, post_text, notes, url, category_name, project_name, avatar_url):
+def add_post(author, post_text, notes, url, category_name, project_name, avatar_url, resources=None):
     conn = get_db_connection()
     project_id = get_or_create_project_id(conn, project_name)
     category_id = get_or_create_category_id(conn, category_name)
     
+    # --- MODIFIED: Added 'resources' to the INSERT statement ---
     conn.execute(
-        "INSERT INTO posts (author, post_text, notes, url, category_id, project_id, avatar_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (author, post_text, notes, url, category_id, project_id, avatar_url)
+        "INSERT INTO posts (author, post_text, notes, url, category_id, project_id, avatar_url, resources) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (author, post_text, notes, url, category_id, project_id, avatar_url, resources)
     )
     conn.commit()
     conn.close()
 
-# --- MODIFIED: Now uses the get_or_create helpers ---
-def update_post(post_id, author, post_text, notes, url, category_name, project_name, avatar_url):
+def update_post(post_id, author, post_text, notes, url, category_name, project_name, avatar_url, resources=None):
     conn = get_db_connection()
     project_id = get_or_create_project_id(conn, project_name)
     category_id = get_or_create_category_id(conn, category_name)
 
+    # --- MODIFIED: Added 'resources' to the UPDATE statement ---
     conn.execute('''
         UPDATE posts
-        SET author = ?, post_text = ?, notes = ?, url = ?, category_id = ?, project_id = ?, avatar_url = ?
+        SET author = ?, post_text = ?, notes = ?, url = ?, category_id = ?, project_id = ?, avatar_url = ?, resources = ?
         WHERE id = ?
-    ''', (author, post_text, notes, url, category_id, project_id, avatar_url, post_id))
+    ''', (author, post_text, notes, url, category_id, project_id, avatar_url, resources, post_id))
     conn.commit()
     conn.close()
 
 def get_all_posts(search_term=None, project_id=None):
     conn = get_db_connection()
+    # --- MODIFIED: Added p.resources to the SELECT statement ---
     query = '''
-        SELECT p.id, p.author, p.post_text, p.notes, p.url, p.avatar_url, c.name as category_name, proj.name as project_name
+        SELECT p.id, p.author, p.post_text, p.notes, p.url, p.avatar_url, p.resources, c.name as category_name, proj.name as project_name
         FROM posts p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN projects proj ON p.project_id = proj.id
@@ -155,5 +193,22 @@ def get_all_categories():
 def delete_post(post_id):
     conn = get_db_connection()
     conn.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+    conn.commit()
+    conn.close()
+
+def delete_project(project_id):
+    if project_id == 1:
+        print("Cannot delete the default 'Uncategorized Ideas' project.")
+        return
+    conn = get_db_connection()
+    conn.execute("UPDATE posts SET project_id = 1 WHERE project_id = ?", (project_id,))
+    conn.execute("DELETE FROM projects WHERE id = ?", (project_id,))
+    conn.commit()
+    conn.close()
+
+def delete_category(category_id):
+    conn = get_db_connection()
+    conn.execute("UPDATE posts SET category_id = NULL WHERE category_id = ?", (category_id,))
+    conn.execute("DELETE FROM categories WHERE id = ?", (category_id,))
     conn.commit()
     conn.close()

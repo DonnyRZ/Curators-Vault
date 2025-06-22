@@ -7,6 +7,7 @@ from . import file_handler
 from .scraper import PostScraper
 from .ui.post_list_frame import PostListFrame
 from .ui.post_detail_frame import PostDetailFrame
+from .ui.management_dialog import ManagementDialog
 
 class MainWindow(customtkinter.CTkFrame):
     def __init__(self, master, assets):
@@ -17,21 +18,23 @@ class MainWindow(customtkinter.CTkFrame):
         # --- Application State ---
         self.selected_post_id = None
         self.current_avatar_url = None
+        # --- ADDED: State to hold the resource links from a scrape ---
+        self.current_resources = None
         self.is_fetching = False
+        self.dialog = None
 
         # --- Main Layout ---
         self.grid_columnconfigure(0, weight=1, minsize=300)
         self.grid_columnconfigure(1, weight=3)
         self.grid_rowconfigure(0, weight=1)
 
-        # --- Create and Place UI Components ---
+        # --- UI Components ---
         self.post_list_frame = PostListFrame(self, self.assets)
         self.post_list_frame.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="nsew")
 
         self.post_detail_frame = PostDetailFrame(self, self.assets)
         self.post_detail_frame.grid(row=0, column=1, padx=(5, 10), pady=10, sticky="nsew")
 
-        # --- Status Bar ---
         self.status_bar = customtkinter.CTkLabel(self, text="Ready", anchor="w", font=self.assets.font_small)
         self.status_bar.grid(row=1, column=0, columnspan=2, padx=10, pady=(0, 10), sticky="ew")
 
@@ -50,12 +53,12 @@ class MainWindow(customtkinter.CTkFrame):
             new=self.on_new_post,
             fetch=self.on_fetch_url,
             backup=self.on_backup_database,
-            restore=self.on_restore_database
+            restore=self.on_restore_database,
+            manage_projects=self.on_manage_projects,
+            manage_categories=self.on_manage_categories
         )
 
     def _load_initial_data(self):
-        """Loads all necessary data from the database on startup."""
-        # --- RESTORED: Load projects and categories for the comboboxes ---
         self.refresh_projects()
         self.refresh_categories()
         self.refresh_post_list()
@@ -67,6 +70,8 @@ class MainWindow(customtkinter.CTkFrame):
         if post_data:
             self.selected_post_id = post_data['id']
             self.current_avatar_url = post_data.get('avatar_url')
+            # --- MODIFIED: Store the resources from the selected post ---
+            self.current_resources = post_data.get('resources')
             self.post_detail_frame.populate_form(post_data)
             self.update_status(f"Viewing Post ID: {self.selected_post_id}")
         else:
@@ -75,6 +80,8 @@ class MainWindow(customtkinter.CTkFrame):
     def on_new_post(self):
         self.selected_post_id = None
         self.current_avatar_url = None
+        # --- ADDED: Clear the resources when starting a new post ---
+        self.current_resources = None
         self.post_list_frame.clear_selection()
         self.post_detail_frame.clear_form()
         self.update_status("Ready to create a new post.")
@@ -85,13 +92,14 @@ class MainWindow(customtkinter.CTkFrame):
             self.update_status("Cannot save post with no content.", is_error=True)
             return
         
+        # --- MODIFIED: Pass the stored resources to the database function ---
         database.add_post(
             data["author"], data["post_text"], data["notes"], data["url"], 
-            data["category_name"], data["project_name"], self.current_avatar_url
+            data["category_name"], data["project_name"], self.current_avatar_url,
+            self.current_resources
         )
         
         self.update_status("Post saved successfully.")
-        # --- ADDED: Refresh projects/categories in case a new one was added ---
         self.refresh_projects()
         self.refresh_categories()
         self.refresh_post_list()
@@ -103,13 +111,14 @@ class MainWindow(customtkinter.CTkFrame):
             return
             
         data = self.post_detail_frame.get_form_data()
+        # --- MODIFIED: Pass the stored resources to the database function ---
         database.update_post(
             self.selected_post_id, data["author"], data["post_text"], data["notes"], 
-            data["url"], data["category_name"], data["project_name"], self.current_avatar_url
+            data["url"], data["category_name"], data["project_name"], self.current_avatar_url,
+            self.current_resources
         )
         
         self.update_status(f"Post ID {self.selected_post_id} updated.")
-        # --- ADDED: Refresh projects/categories in case a new one was added ---
         self.refresh_projects()
         self.refresh_categories()
         self.refresh_post_list()
@@ -150,26 +159,47 @@ class MainWindow(customtkinter.CTkFrame):
         success, message = file_handler.create_briefing(posts, search_term)
         self.update_status(message, is_error=not success)
 
-    # --- DATA REFRESHERS ---
+    def on_manage_projects(self):
+        if self.dialog is not None and self.dialog.winfo_exists():
+            self.dialog.focus()
+            return
+        
+        projects = database.get_all_projects()
+        self.dialog = ManagementDialog(self, "Manage Projects", projects, self.delete_project)
+
+    def on_manage_categories(self):
+        if self.dialog is not None and self.dialog.winfo_exists():
+            self.dialog.focus()
+            return
+            
+        categories = database.get_all_categories()
+        self.dialog = ManagementDialog(self, "Manage Categories", categories, self.delete_category)
+
+    def delete_project(self, project_id):
+        database.delete_project(project_id)
+        self.update_status("Project deleted successfully.")
+        self.refresh_projects()
+        self.refresh_post_list()
+
+    def delete_category(self, category_id):
+        database.delete_category(category_id)
+        self.update_status("Category deleted successfully.")
+        self.refresh_categories()
+        self.refresh_post_list()
 
     def refresh_post_list(self, search_term=None):
         posts = database.get_all_posts(search_term)
         self.post_list_frame.refresh_post_list(posts)
 
-    # --- RESTORED: Methods to fetch data and update the comboboxes ---
     def refresh_projects(self):
-        """Fetches projects and tells the detail frame to update its menu."""
         projects = database.get_all_projects()
         project_names = [p['name'] for p in projects]
         self.post_detail_frame.update_project_menu(project_names)
 
     def refresh_categories(self):
-        """Fetches categories and tells the detail frame to update its menu."""
         categories = database.get_all_categories()
         category_names = [cat['name'] for cat in categories]
         self.post_detail_frame.update_category_menu(category_names)
-
-    # --- HELPER & THREADING METHODS ---
 
     def update_status(self, message, is_error=False):
         color = "#D32F2F" if is_error else "#DCE4EE"
@@ -186,8 +216,12 @@ class MainWindow(customtkinter.CTkFrame):
 
         if data:
             self.current_avatar_url = data.get("avatar_url")
+            # --- ADDED: Store the scraped resources in our state variable ---
+            self.current_resources = data.get("resources")
             self.post_detail_frame.populate_scraped_data(data)
             self.update_status("Post data fetched successfully!")
         else:
             self.current_avatar_url = None
+            # --- ADDED: Clear resources on a failed fetch ---
+            self.current_resources = None
             self.update_status("Fetch failed. Post may be private or deleted.", is_error=True)
