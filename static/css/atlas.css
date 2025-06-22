@@ -14,24 +14,25 @@ body {
     color: var(--text-primary);
     font-family: var(--font-sans);
     margin: 0;
-    padding: 3rem;
+    padding: 2rem; /* Reduced padding for more screen space */
+    overflow: hidden; /* Prevent body scrollbars */
 }
 
 /* --- Header --- */
 header {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
 }
 
 header h1 {
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: 700;
     color: #FFFFFF;
     margin: 0;
 }
 
 header p {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: var(--text-secondary);
     margin: 0.5rem 0 0 0;
 }
@@ -39,10 +40,10 @@ header p {
 /* --- Project Grid Layout --- */
 .projects-grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 2rem;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -57,7 +58,7 @@ header p {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 150px;
+    min-height: 180px;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
@@ -69,57 +70,75 @@ header p {
 
 .project-card h2 {
     font-size: 1.5rem;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.75rem 0;
     color: #FFFFFF;
 }
 
 .project-card p {
     font-size: 1rem;
     color: var(--text-secondary);
-    flex-grow: 1; /* Pushes the footer down */
+    flex-grow: 1;
     margin: 0;
 }
 
 .project-card-footer {
     margin-top: 1.5rem;
     font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.project-card-footer .stats {
     color: var(--primary-accent);
     font-weight: 500;
 }
 
-/* --- Workshop View Layout --- */
-
+/* --- Workshop View Layout (Three Panels) --- */
 .workshop-container {
     display: grid;
-    grid-template-columns: 400px 1fr; /* Fixed left panel, flexible right panel */
-    gap: 2rem;
-    height: calc(100vh - 12rem); /* Fill the available height, accounting for header */
+    /* --- MODIFIED: Three-column layout --- */
+    grid-template-columns: 350px 1fr 300px; 
+    gap: 1.5rem;
+    height: calc(100vh - 10rem); /* Fill available height */
 }
 
-.idea-stream-panel {
+.idea-stream-panel, .spark-board-panel, .resource-rack-panel {
     background-color: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1rem;
-    overflow-y: auto; /* Make it scrollable if content overflows */
+    display: flex;
+    flex-direction: column;
+}
+
+.idea-stream-panel {
+    overflow-y: auto;
 }
 
 .spark-board-panel {
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 2rem;
+    padding: 0; /* Padding will be on the canvas */
+    overflow: hidden; /* Hide anything that goes outside */
+}
+
+.resource-rack-panel h3 {
+    margin: 0.5rem 0.5rem 1.5rem 0.5rem;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
 }
 
 .placeholder-text {
     color: var(--text-secondary);
     text-align: center;
-    margin-top: 2rem;
+    margin: 2rem auto;
     font-size: 1.1rem;
+    padding: 0 1rem;
 }
 
-/* --- Idea Card Styling (Your Notes are the Star) --- */
-
+/* --- Idea Card Styling --- */
 .idea-card {
     background-color: #2a2d2e;
     border-radius: 8px;
@@ -127,42 +146,37 @@ header p {
     margin: 0 0.5rem 1rem 0.5rem;
     cursor: grab;
     border-left: 4px solid var(--primary-accent);
+    transition: background-color 0.2s;
 }
-
+.idea-card.selected {
+    background-color: #3f4244;
+    border-left-color: #a5affb;
+}
 .idea-card:active {
     cursor: grabbing;
-    background-color: #3a3d3e;
 }
-
 .idea-card-notes {
-    font-family: var(--font-sans);
     font-size: 1.1rem;
     font-weight: 500;
     color: var(--text-primary);
     margin-bottom: 1.25rem;
     line-height: 1.5;
 }
-
 .no-notes {
     font-style: italic;
-    font-weight: 400;
     color: var(--text-secondary);
-    margin-bottom: 1.25rem;
 }
-
 .idea-card-source {
     background-color: var(--bg-dark);
     padding: 0.8rem 1rem;
     border-radius: 6px;
     font-size: 0.9rem;
 }
-
 .idea-card-author {
     font-weight: 700;
     color: var(--text-secondary);
     margin: 0 0 0.5rem 0;
 }
-
 .idea-card-post-text {
     color: var(--text-secondary);
     white-space: pre-wrap;
@@ -171,20 +185,13 @@ header p {
     line-height: 1.6;
 }
 
-/* --- Workshop Header Link --- */
-#back-to-hub {
-    font-size: 1rem;
-    font-weight: 500;
-}
-
 /* --- Spark Board & Sticky Note Styling --- */
-
 .spark-board-canvas {
     position: relative;
     width: 100%;
     height: 100%;
+    padding: 2rem;
 }
-
 .spark-board-placeholder {
     position: absolute;
     top: 50%;
@@ -192,17 +199,11 @@ header p {
     transform: translate(-50%, -50%);
     color: var(--text-secondary);
     font-size: 1.2rem;
-    pointer-events: none; /* Allows dropping "through" the text */
+    pointer-events: none;
 }
-
-.idea-card.dragging {
-    opacity: 0.5;
-    border: 2px dashed var(--primary-accent);
-}
-
 .sticky-note {
     position: absolute;
-    width: 300px;
+    width: 280px;
     padding: 1rem;
     background-color: #2c2c2e;
     border: 1px solid var(--border-color);
@@ -210,16 +211,217 @@ header p {
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     cursor: move;
+    transition: box-shadow 0.2s, border-color 0.2s;
 }
-
+.sticky-note.selected {
+    border-color: #a5affb;
+    box-shadow: 0 0 25px rgba(122, 134, 245, 0.4);
+}
 .sticky-note h3 {
     font-size: 1.1rem;
     margin: 0 0 0.5rem 0;
-    color: var(--text-primary);
 }
-
 .sticky-note p {
     font-size: 0.9rem;
     margin: 0;
     color: var(--text-secondary);
+}
+
+/* --- ADDED: Connector Handle Styling --- */
+.connector-handle {
+    position: absolute;
+    top: 50%;
+    right: -8px;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-color: var(--primary-accent);
+    border: 2px solid var(--bg-dark);
+    border-radius: 50%;
+    cursor: crosshair;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.sticky-note:hover .connector-handle {
+    opacity: 1;
+}
+
+/* --- ADDED: Resource Rack Styling --- */
+.resource-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0.5rem;
+}
+.resource-item a {
+    display: block;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background-color: #2a2d2e;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    font-weight: 500;
+}
+.resource-item a:hover {
+    background-color: var(--primary-accent);
+    color: #FFFFFF;
+}
+
+/* --- ADDED: Save Layout Button --- */
+.save-layout-button {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary-accent);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: background-color 0.2s, transform 0.2s;
+}
+.save-layout-button:hover {
+    background-color: #6a75e1;
+    transform: translateY(-2px);
+}
+.save-layout-button.saving {
+    background-color: #555;
+    cursor: wait;
+}
+
+/* --- ADDED: Leader-Line SVG Styling --- */
+.leader-line {
+    pointer-events: none;
+}
+
+/* --- ADDED: New Project Card Styling --- */
+.new-project-card {
+    border-style: dashed;
+    border-width: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.new-project-card:hover {
+    color: var(--primary-accent);
+    border-color: var(--primary-accent);
+}
+
+/* --- ADDED: Modal Styling for Project Creation --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--surface-color);
+    padding: 2rem 2.5rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.modal-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.modal-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.modal-form-group input,
+.modal-form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    box-sizing: border-box; /* Important for padding */
+}
+
+.modal-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.modal-actions .btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modal-actions .btn-primary {
+    background-color: var(--primary-accent);
+    color: #FFFFFF;
+}
+.modal-actions .btn-primary:hover {
+    background-color: #6a75e1;
+}
+
+.modal-actions .btn-secondary {
+    background-color: #333;
+    color: var(--text-primary);
+}
+.modal-actions .btn-secondary:hover {
+    background-color: #444;
+}
+
+.modal-error-message {
+    color: #f87171; /* A reddish color for errors */
+    margin-top: 1rem;
+    text-align: center;
+    display: none; /* Hidden by default */
+}
+
+/* --- ADDED: Leader-Line SVG Styling Fix --- */
+.leader-line {
+    pointer-events: none;
+    z-index: 999 !important; /* Force the line to be on top of other content */
+}
+
+/* ADDED: Style for the line while it's being dragged */
+.leader-line-in-progress {
+    opacity: 0.7;
 }

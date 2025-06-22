@@ -1,4 +1,4 @@
-print("Ignition Deck Start")
+print("Main Window Refactor")
 
 import customtkinter
 from app.database import init_db
