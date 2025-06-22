@@ -14,6 +14,8 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.update_callback = None
         self.delete_callback = None
         self.new_callback = None
+        self.manage_projects_callback = None
+        self.manage_categories_callback = None
 
         self._setup_layout()
         self._create_widgets()
@@ -53,14 +55,31 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.notes_text_box = customtkinter.CTkTextbox(self, height=60, font=self.assets.font_content)
         self.notes_text_box.grid(row=7, column=0, columnspan=2, padx=20, pady=(0, 10), sticky="nsew")
 
-        # --- MODIFIED: Replaced Entry fields with ComboBoxes ---
-        project_label = customtkinter.CTkLabel(self, text="Project", font=self.assets.font_small)
-        project_label.grid(row=8, column=0, padx=20, pady=(10, 0), sticky="w")
+        project_label_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        project_label_frame.grid(row=8, column=0, padx=20, pady=(10, 0), sticky="ew")
+        project_label = customtkinter.CTkLabel(project_label_frame, text="Project", font=self.assets.font_small)
+        project_label.pack(side="left")
+        manage_projects_button = customtkinter.CTkButton(
+            project_label_frame, text="Manage...", font=self.assets.font_small,
+            fg_color="transparent", width=60,
+            command=lambda: self.manage_projects_callback() if self.manage_projects_callback else None
+        )
+        manage_projects_button.pack(side="right")
+
         self.project_combobox = customtkinter.CTkComboBox(self, font=self.assets.font_body, height=40, values=[])
         self.project_combobox.grid(row=9, column=0, padx=20, pady=(0, 10), sticky="ew")
         
-        category_label = customtkinter.CTkLabel(self, text="Category", font=self.assets.font_small)
-        category_label.grid(row=8, column=1, padx=20, pady=(10, 0), sticky="w")
+        category_label_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        category_label_frame.grid(row=8, column=1, padx=20, pady=(10, 0), sticky="ew")
+        category_label = customtkinter.CTkLabel(category_label_frame, text="Category", font=self.assets.font_small)
+        category_label.pack(side="left")
+        manage_categories_button = customtkinter.CTkButton(
+            category_label_frame, text="Manage...", font=self.assets.font_small,
+            fg_color="transparent", width=60,
+            command=lambda: self.manage_categories_callback() if self.manage_categories_callback else None
+        )
+        manage_categories_button.pack(side="right")
+
         self.category_combobox = customtkinter.CTkComboBox(self, font=self.assets.font_body, height=40, values=[])
         self.category_combobox.grid(row=9, column=1, padx=20, pady=(0, 10), sticky="ew")
 
@@ -76,8 +95,6 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.backup_button.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
         self.restore_button = customtkinter.CTkButton(settings_frame, text="Restore", image=self.assets.restore_icon, font=self.assets.font_button, height=40, compound="left", anchor="center")
         self.restore_button.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
-
-    # --- PUBLIC METHODS (API for the controller) ---
 
     def populate_form(self, post_data: dict):
         self.clear_form(clear_url=False)
@@ -96,7 +113,6 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.author_name_label.configure(text=author_name)
         self.author_handle_label.configure(text=author_handle)
         
-        # --- MODIFIED: Set the value of the ComboBoxes ---
         self.project_combobox.set(post_data.get('project_name', "Uncategorized Ideas"))
         self.category_combobox.set(post_data.get('category_name', ""))
 
@@ -127,10 +143,10 @@ class PostDetailFrame(customtkinter.CTkFrame):
         author = f"{self.author_name_label.cget('text')} ({self.author_handle_label.cget('text')})"
         return {
             "author": author,
+            # --- THE FIX: Changed "1.o" to "1.0" ---
             "post_text": self.post_text_box.get("1.0", "end-1c"),
             "notes": self.notes_text_box.get("1.0", "end-1c"),
             "url": self.url_entry.get(),
-            # --- MODIFIED: Get text from ComboBoxes ---
             "category_name": self.category_combobox.get(),
             "project_name": self.project_combobox.get()
         }
@@ -143,7 +159,6 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.author_name_label.configure(text="Author Name")
         self.author_handle_label.configure(text="@author_handle")
         self.avatar_label.configure(image=self.assets.default_avatar)
-        # --- MODIFIED: Clear the ComboBoxes by setting an empty string ---
         self.project_combobox.set("")
         self.category_combobox.set("")
         self.set_save_mode()
@@ -159,14 +174,13 @@ class PostDetailFrame(customtkinter.CTkFrame):
     def set_url_entry_state(self, state: str):
         self.url_entry.configure(state=state)
 
-    # --- RESTORED: Methods to update the dropdown lists in the ComboBoxes ---
     def update_project_menu(self, project_names: list):
         self.project_combobox.configure(values=project_names)
 
     def update_category_menu(self, category_names: list):
         self.category_combobox.configure(values=category_names)
 
-    def connect_callbacks(self, save, update, delete, new, fetch, backup, restore):
+    def connect_callbacks(self, save, update, delete, new, fetch, backup, restore, manage_projects, manage_categories):
         self.actions_frame.save_callback = save
         self.actions_frame.update_callback = update
         self.actions_frame.delete_callback = delete
@@ -174,6 +188,8 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.url_fetch_callback = fetch
         self.backup_button.configure(command=backup)
         self.restore_button.configure(command=restore)
+        self.manage_projects_callback = manage_projects
+        self.manage_categories_callback = manage_categories
 
     def _on_url_change(self, event=None):
         url = self.url_entry.get()
