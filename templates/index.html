@@ -13,18 +13,20 @@
     <!-- Link our stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/atlas.css') }}">
     
-    <!-- --- MODIFIED: Load the libraries first, then our script --- -->
+    <!-- --- MODIFIED: Load all libraries first, then our script --- -->
     <!-- 1. Load the Draggable library -->
     <script src="{{ url_for('static', filename='js/plain-draggable.min.js') }}"></script>
     
-    <!-- 2. Load our main application script, deferred -->
+    <!-- 2. ADDED: Load the Leader-Line library for connectors -->
+    <script src="{{ url_for('static', filename='js/leader-line.min.js') }}"></script>
+    
+    <!-- 3. Load our main application script, deferred -->
     <script src="{{ url_for('static', filename='js/atlas.js') }}" defer></script>
 </head>
 <body>
 
     <header>
-        <h1>The Project Ignition Deck</h1>
-        <p>Your command center for turning ideas into products.</p>
+        <!-- JavaScript will populate this -->
     </header>
 
     <main>
