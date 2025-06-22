@@ -1,4 +1,4 @@
-print("Main Window Refactor")
+print("Start Curators Atlas")
 
 import customtkinter
 from app.database import init_db
