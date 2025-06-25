@@ -16,6 +16,7 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.new_callback = None
         self.manage_projects_callback = None
         self.manage_categories_callback = None
+        self.analyze_callback = None
 
         self._setup_layout()
         self._create_widgets()
@@ -23,7 +24,7 @@ class PostDetailFrame(customtkinter.CTkFrame):
     def _setup_layout(self):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(7, weight=1)
+        self.grid_rowconfigure(7, weight=1) # Notes textbox
 
     def _create_widgets(self):
         self.form_label = customtkinter.CTkLabel(self, text="Post Details", font=self.assets.font_heading)
@@ -55,8 +56,30 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.notes_text_box = customtkinter.CTkTextbox(self, height=60, font=self.assets.font_content)
         self.notes_text_box.grid(row=7, column=0, columnspan=2, padx=20, pady=(0, 10), sticky="nsew")
 
+        # --- AI Analysis Section ---
+        ai_analysis_frame = customtkinter.CTkFrame(self)
+        ai_analysis_frame.grid(row=8, column=0, columnspan=2, padx=20, pady=10, sticky="ew")
+        ai_analysis_frame.grid_columnconfigure(0, weight=1)
+        
+        ai_label = customtkinter.CTkLabel(ai_analysis_frame, text="AI Analysis", font=self.assets.font_small)
+        ai_label.grid(row=0, column=0, padx=10, pady=(5,0), sticky="w")
+
+        self.summary_textbox = customtkinter.CTkTextbox(ai_analysis_frame, height=40, font=self.assets.font_body, state="disabled", fg_color="transparent")
+        self.summary_textbox.grid(row=1, column=0, padx=10, pady=(5,5), sticky="ew")
+
+        self.tags_label = customtkinter.CTkLabel(ai_analysis_frame, text="Tags: Not yet analyzed", font=self.assets.font_small, text_color="gray", anchor="w")
+        self.tags_label.grid(row=2, column=0, padx=10, pady=(0,5), sticky="w")
+
+        self.analyze_button = customtkinter.CTkButton(
+            ai_analysis_frame, text="Analyze Post", image=self.assets.briefing_icon,
+            font=self.assets.font_button, command=lambda: self.analyze_callback() if self.analyze_callback else None,
+            height=40, compound="left", anchor="center"
+        )
+        self.analyze_button.grid(row=3, column=0, padx=10, pady=10, sticky="ew")
+
+        # --- Row numbers shifted ---
         project_label_frame = customtkinter.CTkFrame(self, fg_color="transparent")
-        project_label_frame.grid(row=8, column=0, padx=20, pady=(10, 0), sticky="ew")
+        project_label_frame.grid(row=9, column=0, padx=20, pady=(10, 0), sticky="ew")
         project_label = customtkinter.CTkLabel(project_label_frame, text="Project", font=self.assets.font_small)
         project_label.pack(side="left")
         manage_projects_button = customtkinter.CTkButton(
@@ -67,10 +90,10 @@ class PostDetailFrame(customtkinter.CTkFrame):
         manage_projects_button.pack(side="right")
 
         self.project_combobox = customtkinter.CTkComboBox(self, font=self.assets.font_body, height=40, values=[])
-        self.project_combobox.grid(row=9, column=0, padx=20, pady=(0, 10), sticky="ew")
+        self.project_combobox.grid(row=10, column=0, padx=20, pady=(0, 10), sticky="ew")
         
         category_label_frame = customtkinter.CTkFrame(self, fg_color="transparent")
-        category_label_frame.grid(row=8, column=1, padx=20, pady=(10, 0), sticky="ew")
+        category_label_frame.grid(row=9, column=1, padx=20, pady=(10, 0), sticky="ew")
         category_label = customtkinter.CTkLabel(category_label_frame, text="Category", font=self.assets.font_small)
         category_label.pack(side="left")
         manage_categories_button = customtkinter.CTkButton(
@@ -81,13 +104,13 @@ class PostDetailFrame(customtkinter.CTkFrame):
         manage_categories_button.pack(side="right")
 
         self.category_combobox = customtkinter.CTkComboBox(self, font=self.assets.font_body, height=40, values=[])
-        self.category_combobox.grid(row=9, column=1, padx=20, pady=(0, 10), sticky="ew")
+        self.category_combobox.grid(row=10, column=1, padx=20, pady=(0, 10), sticky="ew")
 
         self.actions_frame = ActionsFrame(self, self.assets)
-        self.actions_frame.grid(row=10, column=0, columnspan=2, padx=20, pady=10, sticky="ew")
+        self.actions_frame.grid(row=11, column=0, columnspan=2, padx=20, pady=10, sticky="ew")
 
         settings_frame = customtkinter.CTkFrame(self)
-        settings_frame.grid(row=11, column=0, columnspan=2, padx=10, pady=10, sticky="sew")
+        settings_frame.grid(row=12, column=0, columnspan=2, padx=10, pady=10, sticky="sew")
         settings_frame.grid_columnconfigure((0, 1), weight=1)
         settings_label = customtkinter.CTkLabel(settings_frame, text="Database Management", font=self.assets.font_small)
         settings_label.grid(row=0, column=0, columnspan=2, padx=10, pady=(5,0))
@@ -113,8 +136,27 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.author_name_label.configure(text=author_name)
         self.author_handle_label.configure(text=author_handle)
         
-        self.project_combobox.set(post_data.get('project_name', "Uncategorized Ideas"))
-        self.category_combobox.set(post_data.get('category_name', ""))
+        # --- THIS IS THE FIX ---
+        # We ensure that the value is never None before setting it.
+        project_name = post_data.get('project_name') or "Uncategorized Ideas"
+        category_name = post_data.get('category_name') or ""
+        self.project_combobox.set(project_name)
+        self.category_combobox.set(category_name)
+
+        summary = post_data.get('one_liner_summary')
+        self.summary_textbox.configure(state="normal")
+        self.summary_textbox.delete("1.0", "end")
+        if summary:
+            self.summary_textbox.insert("1.0", summary)
+        else:
+            self.summary_textbox.insert("1.0", "Not yet analyzed.")
+        self.summary_textbox.configure(state="disabled")
+
+        tags = post_data.get('tags')
+        if tags:
+            self.tags_label.configure(text=f"Tags: {tags}")
+        else:
+            self.tags_label.configure(text="Tags: Not yet analyzed")
 
         avatar_url = post_data.get('avatar_url')
         if avatar_url:
@@ -143,7 +185,6 @@ class PostDetailFrame(customtkinter.CTkFrame):
         author = f"{self.author_name_label.cget('text')} ({self.author_handle_label.cget('text')})"
         return {
             "author": author,
-            # --- THE FIX: Changed "1.o" to "1.0" ---
             "post_text": self.post_text_box.get("1.0", "end-1c"),
             "notes": self.notes_text_box.get("1.0", "end-1c"),
             "url": self.url_entry.get(),
@@ -161,18 +202,30 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.avatar_label.configure(image=self.assets.default_avatar)
         self.project_combobox.set("")
         self.category_combobox.set("")
+        
+        self.summary_textbox.configure(state="normal")
+        self.summary_textbox.delete("1.0", "end")
+        self.summary_textbox.insert("1.0", "Save a post to enable analysis.")
+        self.summary_textbox.configure(state="disabled")
+        self.tags_label.configure(text="Tags: N/A")
+        
         self.set_save_mode()
 
     def set_save_mode(self):
         self.form_label.configure(text="Add New Post")
         self.actions_frame.show_save_mode()
+        self.analyze_button.grid_remove()
 
     def set_edit_mode(self):
         self.form_label.configure(text="Edit Post Details")
         self.actions_frame.show_edit_mode()
+        self.analyze_button.grid(row=3, column=0, padx=10, pady=10, sticky="ew")
 
     def set_url_entry_state(self, state: str):
         self.url_entry.configure(state=state)
+
+    def set_analyze_button_state(self, state: str):
+        self.analyze_button.configure(state=state)
 
     def update_project_menu(self, project_names: list):
         self.project_combobox.configure(values=project_names)
@@ -180,7 +233,7 @@ class PostDetailFrame(customtkinter.CTkFrame):
     def update_category_menu(self, category_names: list):
         self.category_combobox.configure(values=category_names)
 
-    def connect_callbacks(self, save, update, delete, new, fetch, backup, restore, manage_projects, manage_categories):
+    def connect_callbacks(self, save, update, delete, new, fetch, backup, restore, manage_projects, manage_categories, analyze):
         self.actions_frame.save_callback = save
         self.actions_frame.update_callback = update
         self.actions_frame.delete_callback = delete
@@ -190,6 +243,7 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.restore_button.configure(command=restore)
         self.manage_projects_callback = manage_projects
         self.manage_categories_callback = manage_categories
+        self.analyze_callback = analyze
 
     def _on_url_change(self, event=None):
         url = self.url_entry.get()

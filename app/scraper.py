@@ -19,10 +19,8 @@ class PostScraper:
         Returns:
             A JSON string of found URLs, or None if none are found.
         """
-        # Regex to find URLs. It's a bit broad to catch various URL formats.
         url_pattern = r'https?://[^\s/$.?#].[^\s]*'
         
-        # List of valuable domains to look for
         resource_domains = [
             'github.com',
             'huggingface.co',
@@ -35,7 +33,6 @@ class PostScraper:
         resource_links = []
         
         for url in found_urls:
-            # Clean up potential trailing characters that aren't part of the URL
             cleaned_url = url.rstrip('.,)!"\'')
             if any(domain in cleaned_url for domain in resource_domains):
                 resource_links.append(cleaned_url)
@@ -43,8 +40,7 @@ class PostScraper:
         if not resource_links:
             return None
             
-        # Return a JSON string for easy storage in the database
-        return json.dumps(list(set(resource_links))) # Use set to get unique links
+        return json.dumps(list(set(resource_links)))
 
     def fetch_post_data(self, url: str) -> dict | None:
         """
@@ -87,16 +83,21 @@ class PostScraper:
                 
                 browser.close()
 
-                # --- ADDED: Call the new resource extraction method ---
                 resources = self._extract_resources(post_text)
+
+                # --- NEW: Explicitly define the 'content' for our RAG engine ---
+                # For now, the post_text is the best content we have.
+                # In the future, this logic could be expanded to fetch content from resource links.
+                content_for_rag = post_text
 
                 return {
                     "author_name": author_name,
                     "author_handle": author_handle,
                     "post_text": post_text,
                     "avatar_url": avatar_url,
-                    # --- ADDED: Include resources in the returned data ---
-                    "resources": resources
+                    "resources": resources,
+                    # --- ADDED: Include the content in the returned data ---
+                    "content": content_for_rag
                 }
         except Error as e:
             print(f"Playwright Error: {e}")
