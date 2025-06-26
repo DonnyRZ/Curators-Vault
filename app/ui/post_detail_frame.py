@@ -27,6 +27,7 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.grid_rowconfigure(7, weight=1) # Notes textbox
 
     def _create_widgets(self):
+        # --- This section is mostly unchanged ---
         self.form_label = customtkinter.CTkLabel(self, text="Post Details", font=self.assets.font_heading)
         self.form_label.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="w")
 
@@ -56,7 +57,7 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.notes_text_box = customtkinter.CTkTextbox(self, height=60, font=self.assets.font_content)
         self.notes_text_box.grid(row=7, column=0, columnspan=2, padx=20, pady=(0, 10), sticky="nsew")
 
-        # --- AI Analysis Section ---
+        # --- NEW: AI Analysis Section is now in its own clean frame ---
         ai_analysis_frame = customtkinter.CTkFrame(self)
         ai_analysis_frame.grid(row=8, column=0, columnspan=2, padx=20, pady=10, sticky="ew")
         ai_analysis_frame.grid_columnconfigure(0, weight=1)
@@ -136,13 +137,12 @@ class PostDetailFrame(customtkinter.CTkFrame):
         self.author_name_label.configure(text=author_name)
         self.author_handle_label.configure(text=author_handle)
         
-        # --- THIS IS THE FIX ---
-        # We ensure that the value is never None before setting it.
         project_name = post_data.get('project_name') or "Uncategorized Ideas"
         category_name = post_data.get('category_name') or ""
         self.project_combobox.set(project_name)
         self.category_combobox.set(category_name)
 
+        # --- MODIFIED: Populate both summary and tags ---
         summary = post_data.get('one_liner_summary')
         self.summary_textbox.configure(state="normal")
         self.summary_textbox.delete("1.0", "end")
@@ -154,9 +154,9 @@ class PostDetailFrame(customtkinter.CTkFrame):
 
         tags = post_data.get('tags')
         if tags:
-            self.tags_label.configure(text=f"Tags: {tags}")
+            self.tags_label.configure(text=f"Tags: {tags}", text_color="gray")
         else:
-            self.tags_label.configure(text="Tags: Not yet analyzed")
+            self.tags_label.configure(text="Tags: Not yet analyzed", text_color="gray")
 
         avatar_url = post_data.get('avatar_url')
         if avatar_url:
@@ -219,6 +219,7 @@ class PostDetailFrame(customtkinter.CTkFrame):
     def set_edit_mode(self):
         self.form_label.configure(text="Edit Post Details")
         self.actions_frame.show_edit_mode()
+        # --- MODIFIED: Ensure button is in the correct grid row ---
         self.analyze_button.grid(row=3, column=0, padx=10, pady=10, sticky="ew")
 
     def set_url_entry_state(self, state: str):

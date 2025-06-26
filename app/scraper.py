@@ -3,64 +3,64 @@
 from playwright.sync_api import sync_playwright, Error
 import re
 import json
+import os # --- UPGRADE: Need this for path handling
 
 class PostScraper:
     """
-    Handles scraping post data from X.com using Playwright.
-    This class is isolated from the UI.
+    Handles scraping post data from X.com using Playwright with a persistent,
+    authenticated browser session to bypass login walls.
     """
+    def __init__(self):
+        # --- UPGRADE: Define a path to store our browser's user data (cookies, etc.) ---
+        # This will create a 'playwright_user_data' folder in your project root.
+        self.user_data_dir = os.path.join(os.path.dirname(__file__), '..', 'playwright_user_data')
+        if not os.path.exists(self.user_data_dir):
+            os.makedirs(self.user_data_dir)
+
     def _extract_resources(self, text: str) -> str | None:
         """
         Uses Regex to find valuable resource links within post text.
-        
-        Args:
-            text: The full text of the post.
-
-        Returns:
-            A JSON string of found URLs, or None if none are found.
         """
         url_pattern = r'https?://[^\s/$.?#].[^\s]*'
-        
         resource_domains = [
-            'github.com',
-            'huggingface.co',
-            'arxiv.org',
-            'colab.research.google.com',
-            'gist.github.com'
+            'github.com', 'huggingface.co', 'arxiv.org',
+            'colab.research.google.com', 'gist.github.com'
         ]
-        
         found_urls = re.findall(url_pattern, text)
-        resource_links = []
-        
-        for url in found_urls:
-            cleaned_url = url.rstrip('.,)!"\'')
-            if any(domain in cleaned_url for domain in resource_domains):
-                resource_links.append(cleaned_url)
-        
-        if not resource_links:
-            return None
-            
-        return json.dumps(list(set(resource_links)))
+        resource_links = [
+            url.rstrip('.,)!"\'') for url in found_urls 
+            if any(domain in url for domain in resource_domains)
+        ]
+        return json.dumps(list(set(resource_links))) if resource_links else None
 
     def fetch_post_data(self, url: str) -> dict | None:
         """
-        Scrapes a given X.com URL for post details.
-
-        Returns:
-            A dictionary with scraped data if successful, otherwise None.
+        Scrapes a given X.com URL using a persistent browser context.
         """
         try:
             with sync_playwright() as p:
-                browser = p.chromium.launch()
-                page = browser.new_page()
-                page.goto(url, wait_until='domcontentloaded', timeout=20000)
+                # --- THE MASTER KEY UPGRADE ---
+                # We now launch a persistent context. It will save all cookies and login
+                # data to the user_data_dir we defined.
+                # headless=False is REQUIRED so you can log in the first time.
+                context = p.chromium.launch_persistent_context(
+                    self.user_data_dir, 
+                    headless=False,
+                    slow_mo=50  # Adds a small delay to make actions more human-like
+                )
+                
+                page = context.new_page()
+                
+                print(f"Navigating to {url} with authenticated session...")
+                page.goto(url, wait_until='domcontentloaded', timeout=30000)
                 
                 article_selector = 'article[data-testid="tweet"]'
-                page.wait_for_selector(article_selector, timeout=15000)
+                page.wait_for_selector(article_selector, timeout=30000)
+                
                 post_article = page.query_selector(article_selector)
 
                 if not post_article:
-                    browser.close()
+                    context.close()
                     return None
 
                 author_name = "Author Not Found"
@@ -81,13 +81,9 @@ class PostScraper:
                 avatar_element = post_article.query_selector('div[data-testid="Tweet-User-Avatar"] img')
                 avatar_url = avatar_element.get_attribute('src') if avatar_element else None
                 
-                browser.close()
+                context.close()
 
                 resources = self._extract_resources(post_text)
-
-                # --- NEW: Explicitly define the 'content' for our RAG engine ---
-                # For now, the post_text is the best content we have.
-                # In the future, this logic could be expanded to fetch content from resource links.
                 content_for_rag = post_text
 
                 return {
@@ -96,7 +92,6 @@ class PostScraper:
                     "post_text": post_text,
                     "avatar_url": avatar_url,
                     "resources": resources,
-                    # --- ADDED: Include the content in the returned data ---
                     "content": content_for_rag
                 }
         except Error as e:
