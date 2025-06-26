@@ -9,14 +9,13 @@ def get_db_connection():
     return conn
 
 DATABASE_FILE = "curators_vault.db"
-# This pathing is correct based on your structure.
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', DATABASE_FILE)
 
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # --- Existing Tables (No changes here) ---
+    # --- Existing Tables ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,37 +40,14 @@ def init_db():
             project_id INTEGER,
             avatar_url TEXT,
             resources TEXT,
+            content TEXT,
+            one_liner_summary TEXT,
+            tags TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (category_id) REFERENCES categories (id),
             FOREIGN KEY (project_id) REFERENCES projects(id)
         )
     ''')
-
-    # --- Database Migrations ---
-    # This section safely adds columns if they don't exist, preventing errors on restart.
-    cursor.execute("PRAGMA table_info(posts)")
-    columns = [row['name'] for row in cursor.fetchall()]
-    
-    # Check and add columns from your previous structure if they are missing
-    if 'project_id' not in columns:
-        cursor.execute("ALTER TABLE posts ADD COLUMN project_id INTEGER REFERENCES projects(id)")
-    if 'avatar_url' not in columns:
-        cursor.execute("ALTER TABLE posts ADD COLUMN avatar_url TEXT")
-    if 'resources' not in columns:
-        cursor.execute("ALTER TABLE posts ADD COLUMN resources TEXT")
-
-    # --- NEW MIGRATIONS FOR THE CURATOR'S ATLAS ---
-    if 'content' not in columns:
-        print("Migrating database: Adding 'content' to posts table...")
-        cursor.execute("ALTER TABLE posts ADD COLUMN content TEXT")
-    if 'one_liner_summary' not in columns:
-        print("Migrating database: Adding 'one_liner_summary' to posts table...")
-        cursor.execute("ALTER TABLE posts ADD COLUMN one_liner_summary TEXT")
-    if 'tags' not in columns:
-        print("Migrating database: Adding 'tags' to posts table...")
-        cursor.execute("ALTER TABLE posts ADD COLUMN tags TEXT")
-
-    # --- Spark Board tables (from your original file) ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sparks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,6 +72,32 @@ def init_db():
         )
     ''')
 
+    # --- NEW: Create the 'blueprint_components' table ---
+    print("Ensuring 'blueprint_components' table exists...")
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS blueprint_components (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            description TEXT,
+            assigned_asset_id INTEGER,
+            FOREIGN KEY (project_id) REFERENCES projects (id),
+            FOREIGN KEY (assigned_asset_id) REFERENCES posts (id)
+        )
+    ''')
+
+    # --- Database Migrations (for safety) ---
+    cursor.execute("PRAGMA table_info(posts)")
+    columns = [row['name'] for row in cursor.fetchall()]
+    if 'project_id' not in columns:
+        cursor.execute("ALTER TABLE posts ADD COLUMN project_id INTEGER REFERENCES projects(id)")
+    if 'content' not in columns:
+        cursor.execute("ALTER TABLE posts ADD COLUMN content TEXT")
+    if 'one_liner_summary' not in columns:
+        cursor.execute("ALTER TABLE posts ADD COLUMN one_liner_summary TEXT")
+    if 'tags' not in columns:
+        cursor.execute("ALTER TABLE posts ADD COLUMN tags TEXT")
+
     cursor.execute("INSERT OR IGNORE INTO projects (id, name, description) VALUES (?, ?, ?)", 
                    (1, "Uncategorized Ideas", "A place for posts that haven't been assigned to a specific project yet."))
                    
@@ -103,6 +105,8 @@ def init_db():
     conn.close()
     print("Database initialized and migrated successfully.")
 
+
+# --- Existing Functions (no changes needed for these) ---
 
 def get_or_create_project_id(conn, name):
     if not name or not name.strip():
@@ -136,12 +140,10 @@ def get_all_projects():
     conn.close()
     return [dict(row) for row in projects_rows]
 
-# --- MODIFIED: Added 'content' to the function signature and INSERT statement ---
 def add_post(author, post_text, notes, url, category_name, project_name, avatar_url, resources=None, content=None):
     conn = get_db_connection()
     project_id = get_or_create_project_id(conn, project_name)
     category_id = get_or_create_category_id(conn, category_name)
-    
     conn.execute(
         "INSERT INTO posts (author, post_text, notes, url, category_id, project_id, avatar_url, resources, content) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (author, post_text, notes, url, category_id, project_id, avatar_url, resources, content)
@@ -149,12 +151,10 @@ def add_post(author, post_text, notes, url, category_name, project_name, avatar_
     conn.commit()
     conn.close()
 
-# --- MODIFIED: Added 'content' to the function signature and UPDATE statement ---
 def update_post(post_id, author, post_text, notes, url, category_name, project_name, avatar_url, resources=None, content=None):
     conn = get_db_connection()
     project_id = get_or_create_project_id(conn, project_name)
     category_id = get_or_create_category_id(conn, category_name)
-
     conn.execute('''
         UPDATE posts
         SET author = ?, post_text = ?, notes = ?, url = ?, category_id = ?, project_id = ?, avatar_url = ?, resources = ?, content = ?
@@ -165,7 +165,6 @@ def update_post(post_id, author, post_text, notes, url, category_name, project_n
 
 def get_all_posts(search_term=None, project_id=None):
     conn = get_db_connection()
-    # --- MODIFIED: Added our new columns to the SELECT statement ---
     query = '''
         SELECT p.id, p.author, p.post_text, p.notes, p.url, p.avatar_url, 
                p.resources, p.content, p.one_liner_summary, p.tags,
@@ -203,7 +202,6 @@ def get_all_categories():
 
 def delete_post(post_id):
     conn = get_db_connection()
-    # --- MODIFIED: Also delete any associated sparks when a post is deleted ---
     conn.execute("DELETE FROM sparks WHERE post_id = ?", (post_id,))
     conn.execute("DELETE FROM posts WHERE id = ?", (post_id,))
     conn.commit()
@@ -215,7 +213,6 @@ def delete_project(project_id):
         return
     conn = get_db_connection()
     conn.execute("UPDATE posts SET project_id = 1 WHERE project_id = ?", (project_id,))
-    # --- MODIFIED: Also delete sparks and connections for the deleted project ---
     conn.execute("DELETE FROM connections WHERE project_id = ?", (project_id,))
     conn.execute("DELETE FROM sparks WHERE project_id = ?", (project_id,))
     conn.execute("DELETE FROM projects WHERE id = ?", (project_id,))
@@ -229,18 +226,43 @@ def delete_category(category_id):
     conn.commit()
     conn.close()
 
-# --- NEW FUNCTIONS TO UPDATE OUR AI-GENERATED DATA ---
-
 def update_post_summary(post_id: int, summary: str):
-    """Updates only the one_liner_summary for a specific post."""
     conn = get_db_connection()
     conn.execute("UPDATE posts SET one_liner_summary = ? WHERE id = ?", (summary, post_id))
     conn.commit()
     conn.close()
 
 def update_post_tags(post_id: int, tags: str):
-    """Updates only the tags for a specific post."""
     conn = get_db_connection()
     conn.execute("UPDATE posts SET tags = ? WHERE id = ?", (tags, post_id))
+    conn.commit()
+    conn.close()
+
+# --- NEW FUNCTIONS FOR MANAGING BLUEPRINT COMPONENTS ---
+
+def get_blueprint_components(project_id: int):
+    """Fetches all blueprint components for a given project."""
+    conn = get_db_connection()
+    components_rows = conn.execute(
+        "SELECT * FROM blueprint_components WHERE project_id = ?", 
+        (project_id,)
+    ).fetchall()
+    conn.close()
+    return [dict(row) for row in components_rows]
+
+def add_blueprint_component(project_id: int, name: str, description: str = ""):
+    """Adds a new component to a project's blueprint."""
+    conn = get_db_connection()
+    conn.execute(
+        "INSERT INTO blueprint_components (project_id, name, description) VALUES (?, ?, ?)",
+        (project_id, name, description)
+    )
+    conn.commit()
+    conn.close()
+
+def delete_blueprint_component(component_id: int):
+    """Deletes a blueprint component by its ID."""
+    conn = get_db_connection()
+    conn.execute("DELETE FROM blueprint_components WHERE id = ?", (component_id,))
     conn.commit()
     conn.close()

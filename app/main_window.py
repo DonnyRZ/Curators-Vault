@@ -8,7 +8,6 @@ from .scraper import PostScraper
 from .ui.post_list_frame import PostListFrame
 from .ui.post_detail_frame import PostDetailFrame
 from .ui.management_dialog import ManagementDialog
-# --- NEW: Import our RAG Engine ---
 from .rag.core import RagEngine
 
 class MainWindow(customtkinter.CTkFrame):
@@ -16,25 +15,19 @@ class MainWindow(customtkinter.CTkFrame):
         super().__init__(master)
         self.assets = assets
         self.scraper = PostScraper()
-        # --- NEW: Instantiate the RAG Engine on app startup ---
-        # This will cause a short, one-time delay as models are loaded.
         self.rag_engine = RagEngine()
 
-        # --- Application State ---
         self.selected_post_id = None
         self.current_avatar_url = None
         self.current_resources = None
-        # --- NEW: State to hold the full content for RAG analysis ---
         self.current_content = None
         self.is_fetching = False
         self.dialog = None
 
-        # --- Main Layout ---
         self.grid_columnconfigure(0, weight=1, minsize=300)
         self.grid_columnconfigure(1, weight=3)
         self.grid_rowconfigure(0, weight=1)
 
-        # --- UI Components ---
         self.post_list_frame = PostListFrame(self, self.assets)
         self.post_list_frame.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="nsew")
 
@@ -62,7 +55,6 @@ class MainWindow(customtkinter.CTkFrame):
             restore=self.on_restore_database,
             manage_projects=self.on_manage_projects,
             manage_categories=self.on_manage_categories,
-            # --- NEW: Connect the analyze callback for the button we will add ---
             analyze=self.on_analyze_post
         )
 
@@ -72,26 +64,21 @@ class MainWindow(customtkinter.CTkFrame):
         self.refresh_post_list()
         self.on_new_post()
 
-    # --- CONTROLLER LOGIC (HANDLERS FOR UI EVENTS) ---
-
     def on_post_selected(self, post_data, search_term):
         if post_data:
             self.selected_post_id = post_data['id']
             self.current_avatar_url = post_data.get('avatar_url')
             self.current_resources = post_data.get('resources')
-            # --- MODIFIED: Store the content from the selected post ---
             self.current_content = post_data.get('content')
             self.post_detail_frame.populate_form(post_data)
             self.update_status(f"Viewing Post ID: {self.selected_post_id}")
         else:
-            # This handles the case where the search term changes, triggering a refresh
             self.refresh_post_list(search_term)
 
     def on_new_post(self):
         self.selected_post_id = None
         self.current_avatar_url = None
         self.current_resources = None
-        # --- MODIFIED: Clear the content when starting a new post ---
         self.current_content = None
         self.post_list_frame.clear_selection()
         self.post_detail_frame.clear_form()
@@ -103,7 +90,6 @@ class MainWindow(customtkinter.CTkFrame):
             self.update_status("Cannot save post with no content.", is_error=True)
             return
         
-        # --- MODIFIED: Pass the stored content to the database function ---
         database.add_post(
             data["author"], data["post_text"], data["notes"], data["url"], 
             data["category_name"], data["project_name"], self.current_avatar_url,
@@ -122,7 +108,6 @@ class MainWindow(customtkinter.CTkFrame):
             return
             
         data = self.post_detail_frame.get_form_data()
-        # --- MODIFIED: Pass the stored content to the database function ---
         database.update_post(
             self.selected_post_id, data["author"], data["post_text"], data["notes"], 
             data["url"], data["category_name"], data["project_name"], self.current_avatar_url,
@@ -144,7 +129,6 @@ class MainWindow(customtkinter.CTkFrame):
         self.refresh_post_list()
         self.on_new_post()
 
-    # --- NEW: Handler for the "Analyze" button click ---
     def on_analyze_post(self):
         if self.selected_post_id is None:
             self.update_status("Please select a post to analyze.", is_error=True)
@@ -154,16 +138,14 @@ class MainWindow(customtkinter.CTkFrame):
             self.update_status("This post has no content to analyze.", is_error=True)
             return
 
-        # Disable the button in the UI to prevent multiple clicks
         self.post_detail_frame.set_analyze_button_state("disabled")
         self.update_status(f"Analyzing Post ID: {self.selected_post_id}...")
 
-        # Run the analysis in a background thread to keep the UI responsive
         thread = threading.Thread(target=self._analyze_post_thread)
         thread.daemon = True
         thread.start()
 
-    # --- NEW: Worker thread for RAG analysis ---
+    # --- MODIFIED: This thread now performs a two-step analysis ---
     def _analyze_post_thread(self):
         post_id = self.selected_post_id
         content = self.current_content
@@ -173,33 +155,31 @@ class MainWindow(customtkinter.CTkFrame):
         summary = self.rag_engine.get_one_liner_summary()
 
         if summary:
-            # Step 2: Save summary to the database
-            database.update_post_summary(post_id, summary)
-            # We'll add tagging logic here in a future step
+            # Step 2: Use the summary to get capability tags
+            tags = self.rag_engine.get_capability_tags(summary)
             
-            # Step 3: Schedule UI update on the main thread
+            # Step 3: Save both to the database
+            database.update_post_summary(post_id, summary)
+            if tags:
+                database.update_post_tags(post_id, tags)
+            
+            # Step 4: Schedule UI update on the main thread
             self.after(0, self._on_analysis_complete, post_id)
         else:
-            # Handle failure
             self.after(0, self._on_analysis_failed)
             
-    # --- NEW: UI update function for successful analysis ---
     def _on_analysis_complete(self, post_id):
         self.update_status(f"Analysis complete for Post ID: {post_id}.")
         self.post_detail_frame.set_analyze_button_state("normal")
         
-        # Refresh the entire post list to get the new data from the DB
         self.refresh_post_list()
         
-        # Find the newly updated post data in the refreshed list
         all_posts = self.post_list_frame.posts_data
         updated_post_data = next((p for p in all_posts if p['id'] == post_id), None)
         
-        # Re-select the post to update the detail view with the new summary
         if updated_post_data:
             self.on_post_selected(updated_post_data, self.post_list_frame.search_entry.get())
 
-    # --- NEW: UI update function for failed analysis ---
     def _on_analysis_failed(self):
         self.update_status("Analysis failed. Check terminal logs for details.", is_error=True)
         self.post_detail_frame.set_analyze_button_state("normal")
@@ -288,13 +268,11 @@ class MainWindow(customtkinter.CTkFrame):
         if data:
             self.current_avatar_url = data.get("avatar_url")
             self.current_resources = data.get("resources")
-            # --- MODIFIED: Store the scraped content in our state variable ---
             self.current_content = data.get("content")
             self.post_detail_frame.populate_scraped_data(data)
             self.update_status("Post data fetched successfully!")
         else:
             self.current_avatar_url = None
             self.current_resources = None
-            # --- MODIFIED: Clear content on a failed fetch ---
             self.current_content = None
             self.update_status("Fetch failed. Post may be private or deleted.", is_error=True)

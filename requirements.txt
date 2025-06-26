@@ -28,6 +28,9 @@ torchaudio==2.3.1+cu121
 transformers==4.43.3
 sentence-transformers==2.7.0
 
+# --- Web Server for the Anvil ---
+Flask==3.0.3
+
 # --- Utilities ---
 python-dotenv==1.0.1
 tqdm==4.67.1
