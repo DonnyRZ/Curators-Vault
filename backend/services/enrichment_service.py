@@ -3,7 +3,6 @@ import json
 import requests
 from bs4 import BeautifulSoup
 from llama_index.llms.ollama import Ollama
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Document, Settings
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.output_parsers import PydanticOutputParser
@@ -13,6 +12,7 @@ from typing import List
 
 # Import configuration
 from config import LLM_MODEL, EMBED_MODEL, ARMORY_PATH
+from services.codebase_service import query_codebase_vector_store
 
 # --- Pydantic Models for Structured Output ---
 class BriefingCard(BaseModel):
@@ -117,3 +117,109 @@ def run_impact_analysis_for_repo(goal: str, project_structure: dict, repo_url: s
     analysis_data = analysis.dict()
     analysis_data['url'] = repo_url # Ensure URL is in the final output
     return analysis_data
+
+def get_relevant_armory_repos(goal: str, top_n: int = 2) -> List[dict]:
+    """
+    Retrieves and re-fetches relevant Armory repositories based on the goal.
+    """
+    relevant_repos = []
+    goal_keywords = goal.lower().split()
+
+    for filename in os.listdir(ARMORY_PATH):
+        if filename.endswith(".json"):
+            filepath = os.path.join(ARMORY_PATH, filename)
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    card_data = json.load(f)
+                
+                # Simple keyword matching for relevance
+                relevance_score = 0
+                text_to_search = (card_data.get('one_liner', '') + " " +
+                                  card_data.get('eli5', '')).lower()
+                
+                for keyword in goal_keywords:
+                    if keyword in text_to_search:
+                        relevance_score += 1
+                
+                for tag in card_data.get('capability_tags', []):
+                    for keyword in goal_keywords:
+                        if keyword in tag.lower():
+                            relevance_score += 1
+
+                if relevance_score > 0:
+                    card_data['relevance_score'] = relevance_score
+                    relevant_repos.append(card_data)
+                print(f"[DEBUG] Processed {filename}: One-liner='{card_data.get('one_liner', '')}', Tags={card_data.get('capability_tags', [])}, Score={relevance_score}")
+            except Exception as e:
+                print(f"[DEBUG] Error reading or parsing armory file {filepath}: {e}")
+    
+    # Sort by relevance score and get top_n
+    relevant_repos = sorted(relevant_repos, key=lambda x: x.get('relevance_score', 0), reverse=True)[:top_n]
+    print(f"[DEBUG] Top {top_n} relevant repos after sorting: {[r.get('url') for r in relevant_repos]}")
+
+    # Re-fetch README content for the top relevant repos
+    for repo in relevant_repos:
+        repo_url = repo.get('url')
+        if repo_url:
+            print(f"Re-fetching README for {repo_url}...")
+            repo['full_readme'] = fetch_readme_content(repo_url)
+        else:
+            repo['full_readme'] = "README content not available (URL missing)."
+    
+    return relevant_repos
+
+def find_solutions(goal: str, project_path: str):
+    """
+    Finds solutions by leveraging codebase context and armory data.
+    """
+    print(f"Finding solutions for goal: {goal} in project: {project_path}")
+    
+    # Step 1: Retrieve relevant codebase snippets
+    relevant_code_snippets = query_codebase_vector_store(project_path, goal)
+    
+    # Step 2: Retrieve and re-fetch relevant Armory data
+    relevant_armory_repos = get_relevant_armory_repos(goal)
+    
+    # Step 3: Construct prompt for qwen3
+    prompt_parts = [
+        f"User's Goal: {goal}\n",
+        "--- Your Project's Relevant Code ---\n"
+    ]
+    
+    if relevant_code_snippets:
+        for snippet in relevant_code_snippets:
+            prompt_parts.append(f"File: {snippet['file_path']}\n```\n{snippet['text']}\n```\n")
+    else:
+        prompt_parts.append("No highly relevant code snippets found in your project for this goal.\n")
+
+    prompt_parts.append("\n--- External Tools from Armory ---\n")
+
+    if relevant_armory_repos:
+        for repo in relevant_armory_repos:
+            prompt_parts.append(f"Repository Name: {repo.get('repo_name', 'N/A')}\n")
+            prompt_parts.append(f"URL: {repo.get('url', 'N/A')}\n")
+            prompt_parts.append(f"One-liner: {repo.get('one_liner', 'N/A')}\n")
+            prompt_parts.append(f"ELI5: {repo.get('eli5', 'N/A')}\n")
+            prompt_parts.append(f"Capability Tags: {', '.join(repo.get('capability_tags', []))}\n")
+            prompt_parts.append(f"Integration Cost: {repo.get('integration_cost', 'N/A')}\n")
+            prompt_parts.append(f"Capability Boost: {repo.get('capability_boost', 'N/A')}\n")
+            prompt_parts.append(f"Full README:\n```\n{repo.get('full_readme', 'No README content available.')}\n```\n")
+            prompt_parts.append("---\n")
+    else:
+        prompt_parts.append("No relevant external tools found in your Armory for this goal.\n")
+
+    prompt_parts.append("\n--- Instructions for qwen3 ---\n")
+    prompt_parts.append("Analyze the user's project context (provided code snippets) and their stated goal.\n")
+    prompt_parts.append("Evaluate the provided external tools (based on their READMEs and summaries) in the context of the user's project.\n")
+    prompt_parts.append("Recommend the 1-2 most suitable external tools for the user's specific project and goal.\n")
+    prompt_parts.append("Provide a detailed justification for each recommendation, explaining *why* it's a good fit for the user's project, referencing both the local code and the external tool's capabilities.\n")
+    prompt_parts.append("If applicable, briefly explain why other provided tools are *less* suitable.\n")
+    prompt_parts.append("Format your response clearly with headings for recommendations and justifications.")
+
+    full_prompt = "".join(prompt_parts)
+
+    # Step 4: Invoke qwen3 and return recommendation
+    llm = Ollama(model=LLM_MODEL, temperature=0.1, request_timeout=300.0)
+    recommendation = llm.complete(full_prompt)
+    
+    return {"recommendation": str(recommendation), "relevant_code_snippets": relevant_code_snippets, "relevant_armory_repos": relevant_armory_repos}
