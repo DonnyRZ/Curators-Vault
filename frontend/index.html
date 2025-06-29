@@ -10,6 +10,10 @@
 <body>
     <div class="app-container">
         <div class="app-header">
+            <div class="navigation-controls">
+                <button id="back-btn" class="nav-btn" title="Go Back" disabled>←</button>
+                <button id="forward-btn" class="nav-btn" title="Go Forward" disabled>→</button>
+            </div>
             <div class="logo">
                 <div class="logo-icon">⚡</div>
                 <h1>The Curator's Atlas</h1>
@@ -20,59 +24,56 @@
             </div>
         </div>
 
-        <div class="app-layout">
-            <div class="sidebar">
-                <div class="section" id="project-hub">
-                    <div class="section-header">
-                        <h2>Projects</h2>
-                        <button id="add-project-btn" class="icon-btn" title="Add New Project">
-                            <span>+</span>
-                        </button>
-                    </div>
-                    <div id="project-list" class="scroll-container">
-                        <!-- Projects will be loaded here -->
-                    </div>
-                </div>
-
-                <div class="section">
-                    <div class="section-header">
-                        <h2>The Armory</h2>
-                        <div class="input-group">
-                            <input type="text" id="github-url-input" placeholder="GitHub Repo URL">
-                            <button id="save-repo-btn" class="icon-btn" title="Save & Enrich">
-                                <span>✓</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="armory-list" class="scroll-container">
-                        <!-- Enriched repos will be displayed here -->
-                    </div>
-                </div>
+        <div id="project-hub-view" class="app-view">
+            <div class="hub-header">
+                <h2>Projects</h2>
+                <p>Select a project to open the Anvil, or add a new one.</p>
             </div>
+            <div id="project-card-list" class="project-card-container">
+                <!-- Project cards will be dynamically inserted here -->
+            </div>
+            <div class="hub-actions">
+                <div class="input-group">
+                    <input type="text" id="github-url-input" placeholder="Paste a GitHub Repo URL to enrich your Armory">
+                    <button id="save-repo-btn" class="icon-btn" title="Save & Enrich">✓</button>
+                </div>
+                 <button id="add-project-btn" class="action-btn">
+                    <span class="icon">+</span> Add New Project
+                </button>
+            </div>
+        </div>
 
-            <div class="main-content">
-                <div id="welcome-screen">
-                    <div class="welcome-icon">🗺️</div>
-                    <h2>Welcome to The Curator's Atlas</h2>
-                    <p>Select a project from the hub to begin your work.</p>
+        <div id="project-anvil-view" class="app-view" style="display: none;">
+            <div class="app-layout">
+                <div class="sidebar">
+                    <div class="section" id="project-map-container">
+                         <div class="map-header">
+                            <h2 id="project-title"></h2>
+                            <div class="controls">
+                                <button id="collapse-all-btn" class="icon-btn" title="Collapse All">⊖</button>
+                                <button id="expand-all-btn" class="icon-btn" title="Expand All">⊕</button>
+                            </div>
+                        </div>
+                        <div id="file-tree" class="scroll-container"></div>
+                    </div>
                 </div>
 
-                <div id="project-map-container" style="display: none;">
-                    <div class="map-header">
-                        <h2>Project Map</h2>
-                        <div class="controls">
-                            <button id="collapse-all-btn" class="icon-btn" title="Collapse All">⊖</button>
-                            <button id="expand-all-btn" class="icon-btn" title="Expand All">⊕</button>
-                        </div>
-                    </div>
-                    <div id="file-tree" class="scroll-container"></div>
-
+                <div class="main-content">
                     <div id="goal-definition-container">
                         <div class="section-header">
                             <h3>Current Goal</h3>
                             <button id="clear-goal-btn" class="icon-btn" title="Clear">×</button>
                         </div>
                         <textarea id="goal-input" placeholder="What do you want to achieve? (e.g., Replace keyword search with semantic AI-powered search)"></textarea>
+                    </div>
+                    
+                    <div class="section" id="armory-section">
+                        <div class="section-header">
+                            <h2>The Armory</h2>
+                        </div>
+                        <div id="armory-list" class="scroll-container">
+                            <!-- Enriched repos will be displayed here -->
+                        </div>
                     </div>
                 </div>
             </div>

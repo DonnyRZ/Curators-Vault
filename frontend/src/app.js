@@ -1,45 +1,101 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Main UI Elements
-    const welcomeScreen = document.getElementById('welcome-screen');
-    const projectMapContainer = document.getElementById('project-map-container');
-    const mainContent = document.querySelector('.main-content'); // Parent for switching views
+    // --- Navigation Elements ---
+    const backBtn = document.getElementById('back-btn');
+    const forwardBtn = document.getElementById('forward-btn');
 
-    // Sidebar Elements
-    const projectList = document.getElementById('project-list');
+    // --- App Views ---
+    const projectHubView = document.getElementById('project-hub-view');
+    const projectAnvilView = document.getElementById('project-anvil-view');
+
+    // --- Project Hub Elements ---
+    const projectCardList = document.getElementById('project-card-list');
     const addProjectBtn = document.getElementById('add-project-btn');
     const githubUrlInput = document.getElementById('github-url-input');
     const saveRepoBtn = document.getElementById('save-repo-btn');
-    const armoryList = document.getElementById('armory-list');
 
-    // Project Map Elements
+    // --- Project Anvil Elements ---
+    const projectTitle = document.getElementById('project-title');
     const fileTreeContainer = document.getElementById('file-tree');
     const collapseAllBtn = document.getElementById('collapse-all-btn');
     const expandAllBtn = document.getElementById('expand-all-btn');
-    
-    // Goal Definition Elements
-    const goalDefinitionContainer = document.getElementById('goal-definition-container');
     const goalInput = document.getElementById('goal-input');
     const clearGoalBtn = document.getElementById('clear-goal-btn');
+    const armoryList = document.getElementById('armory-list');
 
-    // Footer & Status Elements
+    // --- Footer & Status Elements ---
     const statusIndicator = document.getElementById('status-indicator');
     const statusMessage = document.getElementById('status-message');
     
-    // App State
+    // --- App State ---
     let projects = [];
     let enrichedRepos = [];
+    let activeProject = null;
+    let history = [];
+    let historyIndex = -1;
 
-    // --- Utility Functions ---
-
-    // Update status message
     const updateStatus = (message, isError = false) => {
         statusMessage.textContent = message;
         statusMessage.style.color = isError ? 'var(--error)' : 'var(--text-secondary)';
     };
 
+    // --- Navigation & View Management ---
+
+    const updateNavButtons = () => {
+        backBtn.disabled = historyIndex <= 0;
+        forwardBtn.disabled = historyIndex >= history.length - 1;
+    };
+
+    const navigateTo = (state, fromHistory = false) => {
+        if (!fromHistory) {
+            // If not navigating from history, it's a new action.
+            // Truncate future history if we are branching off.
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            history.push(state);
+            historyIndex = history.length - 1;
+        }
+
+        activeProject = state.project;
+
+        if (state.view === 'hub') {
+            projectAnvilView.style.display = 'none';
+            projectHubView.style.display = 'flex';
+            renderProjects();
+        } else if (state.view === 'anvil') {
+            projectTitle.textContent = state.project.name;
+            projectHubView.style.display = 'none';
+            projectAnvilView.style.display = 'flex';
+            scanProject(state.project);
+        }
+
+        updateNavButtons();
+    };
+
+    backBtn.addEventListener('click', () => {
+        if (historyIndex > 0) {
+            historyIndex--;
+            navigateTo(history[historyIndex], true);
+        }
+    });
+
+    forwardBtn.addEventListener('click', () => {
+        if (historyIndex < history.length - 1) {
+            historyIndex++;
+            navigateTo(history[historyIndex], true);
+        }
+    });
+
+    const switchToAnvilView = (project) => {
+        navigateTo({ view: 'anvil', project: project });
+    };
+
+    const switchToHubView = () => {
+        navigateTo({ view: 'hub', project: null });
+    };
+
     // --- Rendering Functions ---
 
-    // Function to render enriched repos in the Armory
     const renderEnrichedRepos = () => {
         armoryList.innerHTML = '';
         if (enrichedRepos.length === 0) {
@@ -59,7 +115,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    // Function to render the interactive file tree
     const renderFileTree = (node, parentElement) => {
         if (!node) return;
 
@@ -73,15 +128,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (node.type === 'directory') {
             itemDiv.classList.add('directory');
-            // Add click listener to the name to toggle collapse/expand
             nameSpan.addEventListener('click', (e) => {
-                e.stopPropagation(); // prevent other clicks
+                e.stopPropagation();
                 itemDiv.classList.toggle('collapsed');
             });
 
             const childrenContainer = document.createElement('div');
             childrenContainer.className = 'children';
-            // Start with directories collapsed by default for a cleaner view
             itemDiv.classList.add('collapsed');
             
             if (node.children && node.children.length > 0) {
@@ -95,34 +148,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         parentElement.appendChild(itemDiv);
     };
 
-    // Function to render projects in the Project Hub
     const renderProjects = () => {
-        projectList.innerHTML = '';
+        projectCardList.innerHTML = '';
         if (projects.length === 0) {
-            projectList.innerHTML = `
+            projectCardList.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">📁</div>
-                    <p>No projects added yet</p>
-                    <button id="add-first-project" class="action-btn">Add Your First Project</button>
+                    <p>No projects yet. Add one to begin.</p>
                 </div>
             `;
-            
-            document.getElementById('add-first-project').addEventListener('click', handleAddProject);
             return;
         }
         
         projects.forEach(project => {
-            const projectDiv = document.createElement('div');
-            projectDiv.className = 'project-item';
-            projectDiv.innerHTML = `
+            const projectCard = document.createElement('div');
+            projectCard.className = 'project-card';
+            projectCard.innerHTML = `
                 <h3>${project.name}</h3>
                 <p>${project.path}</p>
                 <button class="remove-project-btn" data-path="${project.path}">✕</button>
             `;
-            projectList.appendChild(projectDiv);
+            projectCardList.appendChild(projectCard);
 
-            // Event listener for removing a project
-            projectDiv.querySelector('.remove-project-btn').addEventListener('click', async (event) => {
+            projectCard.querySelector('.remove-project-btn').addEventListener('click', async (event) => {
                 event.stopPropagation();
                 const projectPathToRemove = event.target.dataset.path;
                 if (confirm(`Remove project: ${project.name}?`)) {
@@ -133,61 +181,57 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            // Event listener for selecting a project
-            projectDiv.addEventListener('click', async () => {
-                updateStatus(`Scanning project: ${project.name}...`);
-                try {
-                    const response = await fetch('http://127.0.0.1:5001/api/scan_project', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ path: project.path }),
-                    });
-
-                    const data = await response.json();
-                    if (response.ok) {
-                        updateStatus(`Project "${project.name}" loaded successfully`);
-                        // Switch the main view from welcome screen to the project map
-                        welcomeScreen.style.display = 'none';
-                        projectMapContainer.style.display = 'flex';
-                        
-                        fileTreeContainer.innerHTML = ''; // Clear previous tree
-                        data.children.forEach(child => renderFileTree(child, fileTreeContainer));
-                    } else {
-                        updateStatus(`Scan failed: ${data.error}`, true);
-                    }
-                } catch (error) {
-                    updateStatus(`Error connecting to backend: ${error.message}`, true);
-                }
+            projectCard.addEventListener('click', () => {
+                switchToAnvilView(project);
             });
         });
     };
 
-    // --- Event Handlers & Initializers ---
+    // --- API & Backend Functions ---
 
-    // Add project helper function
-    const addProject = async (selectedPath) => {
-        const projectName = selectedPath.split(/[\\/]/).pop();
-        const newProject = { name: projectName, path: selectedPath };
+    const scanProject = async (project) => {
+        updateStatus(`Scanning project: ${project.name}...`);
+        try {
+            const response = await fetch('http://127.0.0.1:5001/api/scan_project', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ path: project.path }),
+            });
 
-        if (!projects.some(p => p.path === newProject.path)) {
-            projects.push(newProject);
-            await window.electronAPI.writeProjectsFile(projects);
-            renderProjects();
-            updateStatus(`Project "${projectName}" added`);
-        } else {
-            updateStatus('Project already exists', true);
+            const data = await response.json();
+            if (response.ok) {
+                updateStatus(`Project "${project.name}" loaded successfully`);
+                fileTreeContainer.innerHTML = '';
+                data.children.forEach(child => renderFileTree(child, fileTreeContainer));
+            } else {
+                updateStatus(`Scan failed: ${data.error}`, true);
+                switchToHubView(); // Go back if scan fails
+            }
+        } catch (error) {
+            updateStatus(`Error connecting to backend: ${error.message}`, true);
+            switchToHubView(); // Go back if scan fails
         }
     };
-    
-    // Handler for clicking the 'Add Project' or 'Add First Project' button
+
+    // --- Event Handlers & Initializers ---
+
     const handleAddProject = async () => {
         const selectedPath = await window.electronAPI.openDirectoryDialog();
         if (selectedPath) {
-            addProject(selectedPath);
+            const projectName = selectedPath.split(/[\\/]/).pop();
+            const newProject = { name: projectName, path: selectedPath };
+
+            if (!projects.some(p => p.path === newProject.path)) {
+                projects.push(newProject);
+                await window.electronAPI.writeProjectsFile(projects);
+                renderProjects();
+                updateStatus(`Project "${projectName}" added`);
+            } else {
+                updateStatus('Project already exists', true);
+            }
         }
     };
 
-    // Load projects from file on startup
     const loadProjects = async () => {
         try {
             updateStatus('Loading projects...');
@@ -202,10 +246,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
     
-    // Handle adding a new project
     addProjectBtn.addEventListener('click', handleAddProject);
     
-    // Handle saving and enriching a GitHub repo
     saveRepoBtn.addEventListener('click', async () => {
         const githubUrl = githubUrlInput.value.trim();
         if (!githubUrl) {
@@ -236,7 +278,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Handle map controls
     collapseAllBtn.addEventListener('click', () => {
         fileTreeContainer.querySelectorAll('.file-tree-item.directory').forEach(dir => {
             dir.classList.add('collapsed');
@@ -249,29 +290,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Handle goal input changes
-    goalInput.addEventListener('input', (event) => {
-        if (event.target.value) {
-            goalInput.style.background = 'rgba(187, 134, 252, 0.05)';
-        } else {
-            goalInput.style.background = 'transparent';
-        }
-    });
-
     clearGoalBtn.addEventListener('click', () => {
         goalInput.value = '';
-        goalInput.dispatchEvent(new Event('input')); // Trigger style change
     });
     
-    // Simulate backend status heartbeat
-    setInterval(() => {
-        // This is a visual effect and does not check actual connectivity
-        statusIndicator.style.background = `rgba(76, 175, 80, ${0.1 + 0.05 * Math.random()})`;
-        statusIndicator.querySelector('.status-dot').style.boxShadow = 
-            `0 0 8px rgba(76, 175, 80, ${0.5 + 0.3 * Math.random()})`;
-    }, 2000);
-
-    // Initial application load sequence
+    // --- Initial Load ---
     const initialLoad = async () => {
         await loadProjects();
         
@@ -280,6 +303,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderEnrichedRepos();
         
         updateStatus('Ready');
+        switchToHubView(); // Ensure we start at the hub
     };
     
     initialLoad();
