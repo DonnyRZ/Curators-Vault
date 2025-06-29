@@ -1,4 +1,5 @@
 # Python Virtual Environment
+.venv/
 venv/
 
 # Python cache files
@@ -6,3 +7,9 @@ __pycache__/
 
 # VSCode specific settings
 .vscode/
+
+# Node.js dependencies
+frontend/node_modules/
+
+# Environment variables
+backend/.env
