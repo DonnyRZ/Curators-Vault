@@ -35,7 +35,7 @@ class ImpactAnalysis(BaseModel):
 
 def get_llm_program(pydantic_model):
     """Creates a LlamaIndex program to generate structured output."""
-    llm = Ollama(model=LLM_MODEL, temperature=0.1, request_timeout=120.0) # Set timeout to 120 seconds
+    llm = Ollama(model=LLM_MODEL, temperature=0.1, request_timeout=300.0) # Set timeout to 120 seconds
     output_parser = PydanticOutputParser(pydantic_model)
     prompt_template_str = """Analyze the following README content and generate a Vibe-Coder's Briefing Card.
 
