@@ -8,35 +8,82 @@
     <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
-    <div id="app">
-        <div id="project-hub">
-            <h1>Your Projects</h1>
-            <div id="project-list">
-                <!-- Projects will be loaded here by app.js -->
+    <div class="app-container">
+        <div class="app-header">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <h1>The Curator's Atlas</h1>
             </div>
-            <button id="add-project-btn">+ Add New Project</button>
-        </div>
-
-        <div id="armory-container">
-            <h3>The Armory</h3>
-            <input type="text" id="github-url-input" placeholder="Paste GitHub Repo URL here">
-            <button id="save-repo-btn">Save & Enrich Repo</button>
-            <div id="armory-list">
-                <!-- Enriched repos will be displayed here -->
+            <div class="status-indicator" id="status-indicator">
+                <div class="status-dot"></div>
+                <span>Backend Connected</span>
             </div>
         </div>
 
-        <div id="project-map-container" style="display: none;">
-            <h2>Project Map</h2>
-            <div id="file-tree"></div>
+        <div class="app-layout">
+            <div class="sidebar">
+                <div class="section" id="project-hub">
+                    <div class="section-header">
+                        <h2>Projects</h2>
+                        <button id="add-project-btn" class="icon-btn" title="Add New Project">
+                            <span>+</span>
+                        </button>
+                    </div>
+                    <div id="project-list" class="scroll-container">
+                        <!-- Projects will be loaded here -->
+                    </div>
+                </div>
 
-            <div id="goal-definition-container" style="display: none;">
-                <h3>Current Goal:</h3>
-                <input type="text" id="goal-input" placeholder="e.g., I want to replace my keyword search with a semantic, AI-powered search.">
+                <div class="section">
+                    <div class="section-header">
+                        <h2>The Armory</h2>
+                        <div class="input-group">
+                            <input type="text" id="github-url-input" placeholder="GitHub Repo URL">
+                            <button id="save-repo-btn" class="icon-btn" title="Save & Enrich">
+                                <span>✓</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="armory-list" class="scroll-container">
+                        <!-- Enriched repos will be displayed here -->
+                    </div>
+                </div>
             </div>
 
+            <div class="main-content">
+                <div id="welcome-screen">
+                    <div class="welcome-icon">🗺️</div>
+                    <h2>Welcome to The Curator's Atlas</h2>
+                    <p>Select a project from the hub to begin your work.</p>
+                </div>
+
+                <div id="project-map-container" style="display: none;">
+                    <div class="map-header">
+                        <h2>Project Map</h2>
+                        <div class="controls">
+                            <button id="collapse-all-btn" class="icon-btn" title="Collapse All">⊖</button>
+                            <button id="expand-all-btn" class="icon-btn" title="Expand All">⊕</button>
+                        </div>
+                    </div>
+                    <div id="file-tree" class="scroll-container"></div>
+
+                    <div id="goal-definition-container">
+                        <div class="section-header">
+                            <h3>Current Goal</h3>
+                            <button id="clear-goal-btn" class="icon-btn" title="Clear">×</button>
+                        </div>
+                        <textarea id="goal-input" placeholder="What do you want to achieve? (e.g., Replace keyword search with semantic AI-powered search)"></textarea>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <div class="app-footer">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div class="status-message" id="status-message">Ready</div>
+        </div>
     </div>
     <script src="src/app.js"></script>
 </body>
