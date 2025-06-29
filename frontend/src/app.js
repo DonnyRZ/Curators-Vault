@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             projectHubView.style.display = 'none';
             projectAnvilView.style.display = 'none';
             comparisonView.style.display = 'flex';
-            // We will call a new render function here later
+            renderComparisonCards(state.analysis);
         }
 
         updateNavButtons();
@@ -196,6 +196,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
+    const renderComparisonCards = (analysisData) => {
+        const comparisonCardList = document.getElementById('comparison-card-list');
+        comparisonCardList.innerHTML = '';
+
+        if (!analysisData || analysisData.length === 0) {
+            comparisonCardList.innerHTML = '<div class="empty-state">No analysis data to display.</div>';
+            return;
+        }
+
+        analysisData.forEach(cardData => {
+            const card = document.createElement('div');
+            card.className = 'comparison-card';
+            card.innerHTML = `
+                <h3>${cardData.repo_name}</h3>
+                <div class="info-item">
+                    <strong>Integration Cost (Ease)</strong>
+                    <span>${cardData.integration_cost} - ${cardData.integration_justification}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Capability Boost (Power)</strong>
+                    <span>${cardData.capability_boost} - ${cardData.capability_justification}</span>
+                </div>
+                <button class="action-btn choose-btn" data-url="${cardData.url}">Choose ${cardData.repo_name}</button>
+            `;
+            comparisonCardList.appendChild(card);
+
+            card.querySelector('.choose-btn').addEventListener('click', (e) => {
+                const chosenUrl = e.target.dataset.url;
+                console.log(`Chosen solution: ${chosenUrl}`);
+                // Placeholder for Phase 3 logic
+                updateStatus(`You have chosen ${cardData.repo_name}. Next, we will generate the playbook.`);
+            });
+        });
+    };
+
     // --- API & Backend Functions ---
 
     const scanProject = async (project) => {
@@ -209,6 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const data = await response.json();
             if (response.ok) {
+                activeProject.structure = data; // Store the project structure
                 updateStatus(`Project "${project.name}" loaded successfully`);
                 fileTreeContainer.innerHTML = '';
                 data.children.forEach(child => renderFileTree(child, fileTreeContainer));
@@ -308,18 +344,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         findSolutionsBtn.disabled = true;
     });
 
-    findSolutionsBtn.addEventListener('click', () => {
+    findSolutionsBtn.addEventListener('click', async () => {
         const goalText = goalInput.value.trim();
-        if (!goalText || !activeProject) {
-            updateStatus('Please define a goal and select a project first.', true);
+        if (!goalText || !activeProject || !activeProject.structure) {
+            updateStatus('Please define a goal and ensure the project is fully scanned.', true);
             return;
         }
-        updateStatus(`Finding solutions for goal: "${goalText}"...`);
-        // Placeholder for future API call
-        console.log('Finding solutions for:', {
-            goal: goalText,
-            project: activeProject
-        });
+
+        updateStatus(`Finding solutions for: "${goalText}"...`);
+        try {
+            // Step 1: Find potential solutions
+            const solutionsResponse = await fetch('http://127.0.0.1:5001/api/find_solutions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ goal_text: goalText }),
+            });
+
+            const solutionsData = await solutionsResponse.json();
+            if (!solutionsResponse.ok || solutionsData.solutions.length === 0) {
+                updateStatus('No potential solutions found in your Armory for that goal.', true);
+                return;
+            }
+
+            updateStatus('Found potential solutions! Running impact analysis...');
+
+            // Step 2: Run impact analysis
+            const analysisResponse = await fetch('http://127.0.0.1:5001/api/run_impact_analysis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    project_structure: activeProject.structure,
+                    goal_text: goalText,
+                    solution_urls: solutionsData.solutions,
+                }),
+            });
+
+            const analysisData = await analysisResponse.json();
+            if (!analysisResponse.ok) {
+                throw new Error(analysisData.error || 'Analysis failed');
+            }
+
+            // Step 3: Switch to comparison view and render results
+            navigateTo({ view: 'comparison', project: activeProject, analysis: analysisData });
+
+        } catch (error) {
+            updateStatus(`Error: ${error.message}`, true);
+        }
     });
     
     // --- Initial Load ---
