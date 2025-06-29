@@ -10,12 +10,12 @@ let pythonProcess = null;
 const startPythonBackend = () => {
     // Determine the path to the Python backend server script
     const backendPath = path.join(__dirname, '..', 'backend', 'server.py');
-    const pythonEnvPath = path.join(__dirname, '..', '.venv', 'bin', 'python'); // Path to our clean .venv python executable
+    const pythonEnvPath = path.join(__dirname, '..', '.venv', 'bin', 'python'); // Path to our clean venv python executable
 
     console.log(`Starting Python backend: ${pythonEnvPath} ${backendPath}`);
 
     // Spawn the Python process
-    pythonProcess = spawn(pythonEnvPath, [backendPath]);
+    pythonProcess = spawn(pythonEnvPath, [backendPath], { shell: true });
 
     pythonProcess.stdout.on('data', (data) => {
         console.log(`Python stdout: ${data}`);

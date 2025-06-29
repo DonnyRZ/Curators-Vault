@@ -1,0 +1,75 @@
+### **Blueprint Part 2: Phase 1 - Project & Solution Analysis**
+
+**The Goal:** To build the foundational understanding of both your project and the tools you find. This phase is about data intake and initial, separate analysis.
+
+---
+
+#### **Feature 2.1: The Project Hub**
+
+*   **What It Is:** The application's startup screen. It's a clean, simple dashboard that lists all the projects you are tracking with the Atlas.
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **100% Frontend (Tauri App).** This feature requires no backend communication.
+    *   **Storage:** On first launch, the Tauri app will create a simple configuration file in your home directory (e.g., `~/.curators-atlas/projects.json`). This file will store an array of project objects, each with a `name` and a local `path`.
+    *   **Logic:** The app's main JavaScript file reads this `projects.json` file on startup and dynamically renders the list of projects.
+*   **User Interaction:**
+    1.  The user sees a list of their projects (e.g., "Curator's Vault").
+    2.  A large `[ + ] Add New Project` button is clearly visible. Clicking it opens the operating system's native folder selection dialog.
+    3.  When the user selects a folder, its name and path are added to the `projects.json` file, and the UI instantly updates to show the new project in the list.
+    4.  Clicking on an existing project name transitions the view to the main "Project Anvil" workspace for that project.
+
+---
+
+#### **Feature 2.2: The Local Codebase Scanner**
+
+*   **What It Is:** The engine that reads your local project folder to understand its structure. This is the foundation for all project-specific analysis.
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **Backend (Python Server).**
+    *   **Trigger:** When the user opens a project in the frontend, the Tauri app sends a `POST` request to a new API endpoint, e.g., `http://127.0.0.1:5001/scan_project`, with the project's local path in the JSON body: `{"path": "/home/spiderman/dev/curators-vault"}`.
+    *   **Logic:** The Flask backend receives the path. It uses the built-in `os` module (specifically `os.walk`) to recursively traverse every file and folder. For each file, it can perform basic analysis, like reading the first few lines to identify file type or looking for `import` statements to map dependencies.
+    *   **Output:** The backend constructs a detailed JSON object representing the entire file tree and sends it back to the frontend.
+
+---
+
+#### **Feature 2.3: The Live Project Map**
+
+*   **What It Is:** The visual, interactive file tree of your project, displayed in the left-hand panel of the "Anvil" view.
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **Frontend (Tauri App).**
+    *   **Logic:** This is a UI component written in JavaScript. It takes the large JSON object returned from the `/scan_project` endpoint and renders it as a collapsible tree view, similar to the file explorer in VSCode.
+*   **User Interaction:**
+    *   The user can see their entire project structure at a glance.
+    *   They can click on folders to expand or collapse them.
+    *   **Crucially:** The user doesn't need to do anything else. The map's primary purpose is to be an internal data source for the app, not a complex tool for the user to manage.
+
+---
+
+#### **Feature 2.4: Goal Definition**
+
+*   **What It Is:** A simple, clear way for you to tell the app what you're currently trying to achieve.
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **Frontend (Tauri App).** This is simple UI state management.
+    *   **Logic:** A text input field is rendered at the top of the "Anvil" view. When you type in it, the value is stored in a global JavaScript state variable (e.g., `activeGoal`).
+*   **User Interaction:**
+    *   The user types their objective into a box labeled "Current Goal:". For example: "I want to replace my keyword search with a semantic, AI-powered search."
+    *   This text is now the "active goal" and will be used in subsequent analysis requests.
+
+---
+
+#### **Feature 2.5: The Armory & The Enrichment Engine**
+
+*   **What It Is:** The library of your saved GitHub repos (the Armory) and the AI engine that analyzes them (the Enrichment Engine).
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **Hybrid (Frontend for input, Backend for processing).**
+    *   **Trigger:** In the Armory panel (right side of the Anvil), the user pastes a GitHub URL into an input field and clicks "Save."
+    *   **Frontend Action:** The Tauri app sends a `POST` request to `http://127.0.0.1:5001/enrich_repo` with the URL: `{"url": "https://github.com/AgentDock/AgentDock"}`.
+    *   **Backend Action (The Heavy Lifting):**
+        1.  The Flask server receives the request.
+        2.  It uses the `playwright` or `requests` library to fetch the content of the GitHub README page.
+        3.  It uses `BeautifulSoup4` to parse the HTML and extract the clean markdown text.
+        4.  It feeds this text into a **LlamaIndex** pipeline.
+        5.  This pipeline uses your Ollama `qwen3:8b` model to generate the "Vibe-Coder's Briefing Card" fields (One-Liner, ELI5, Starter Prompt, Capability Tags).
+        6.  The generated JSON object is saved locally (e.g., in a `~/.curators-atlas/armory/` directory, with one JSON file per repo).
+        7.  The final JSON is sent back to the frontend.
+*   **User Interaction:**
+    *   After pasting the URL and clicking "Save," a new card appears in the Armory UI with a "Processing..." status.
+    *   Once the backend returns the data, the card populates with the "One-Liner" summary and the Capability Tags, ready for the next phase.

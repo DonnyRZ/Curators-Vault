@@ -1,0 +1,67 @@
+### **Blueprint Part 3: Phase 2 - Comparative Analysis & Decision Support**
+
+**The Goal:** To transform the raw data from Phase 1 into a clear, actionable choice for you. The app will act as your research assistant, running the complex analysis and presenting a simple, project-specific comparison so you can make the final call.
+
+---
+
+#### **Feature 3.1: Contextual Search & Filtering**
+
+*   **What It Is:** The mechanism that finds relevant tools from your Armory based on your active goal.
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **Hybrid (Frontend trigger, Backend execution).**
+    *   **Trigger:** When a "Goal Card" is active in the Project Anvil, a button labeled `[ Find Solutions ]` becomes enabled.
+    *   **Frontend Action:** The user clicks the `[ Find Solutions ]` button. The app's JavaScript takes the text from the `activeGoal` state variable and sends a `POST` request to a new API endpoint: `http://127.0.0.1:5001/find_solutions`.
+        *   **Request Body:** `{"goal_text": "I want to improve my search feature"}`
+    *   **Backend Action:** The Flask server receives the request. It performs a simple but effective search:
+        1.  It iterates through every saved repo's JSON file in the `~/.curators-atlas/armory/` directory.
+        2.  For each repo, it checks if any of its `Capability Tags` (e.g., `#search`, `#AI`, `#database`) are present as keywords in the `goal_text`.
+        3.  It compiles a list of all the matching repo URLs.
+    *   **Output:** The backend returns a simple JSON array of URLs that are potential solutions.
+        *   **Response Body:** `{"solutions": ["https://github.com/repo1", "https://github.com/repo2", "https://github.com/repo3"]}`
+
+---
+
+#### **Feature 3.2: Project-Specific Impact Analysis (The Killer Feature)**
+
+*   **What It Is:** The core AI engine that analyzes how each potential solution would impact *your specific project*. This is the most complex and valuable part of the backend.
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **Backend (Python Server).**
+    *   **Trigger:** This is triggered automatically by the frontend immediately after it receives the list of solution URLs from the `/find_solutions` endpoint.
+    *   **Frontend Action:** The JavaScript sends a new, more detailed `POST` request to the API endpoint: `http://127.0.0.1:5001/run_impact_analysis`.
+        *   **Request Body:** This request contains everything the backend needs to perform the deep analysis:
+            ```json
+            {
+              "project_structure": { ... }, // The full JSON map of the user's project from the Codebase Scanner
+              "goal_text": "I want to improve my search feature",
+              "solution_urls": ["https://github.com/repo1", "https://github.com/repo2", "https://github.com/repo3"]
+            }
+            ```
+    *   **Backend Action (The AI Pipeline):**
+        1.  The Flask server receives the request.
+        2.  It iterates through each URL in `solution_urls`.
+        3.  For each repo, it runs a **LlamaIndex** pipeline to generate the two critical scores:
+            *   **Integration Cost (Ease) Score:** The AI analyzes the repo's documentation (installation steps, dependencies) and compares it to the `project_structure`. It identifies potential conflicts and estimates the number of files that would need modification. The output is a rating (`Low`, `Medium`, `High`) and a plain-English justification sentence.
+            *   **Capability Boost (Power) Score:** The AI analyzes the repo's features list and documentation to identify advanced capabilities. The output is a rating (`Basic`, `Moderate`, `Exceptional`) and a plain-English justification.
+    *   **Output:** The backend returns a detailed JSON array, where each object represents a fully analyzed "Comparison Card."
+
+---
+
+#### **Feature 3.3: The Side-by-Side Comparison View**
+
+*   **What It Is:** The main UI view that clearly presents the results of the Impact Analysis, allowing you to make an informed decision.
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **100% Frontend (Tauri App).**
+    *   **Logic:** The JavaScript receives the array of "Comparison Card" objects from the `/run_impact_analysis` endpoint. It then dynamically renders a multi-column layout. Each column is a "card" representing one of the potential solutions.
+*   **User Interaction:**
+    *   The user sees a clean, side-by-side comparison.
+    *   **Card A** might show:
+        *   **Repo:** `SimpleSearch`
+        *   **Integration Cost:** `Low` - "Requires changes to an estimated 2 files."
+        *   **Capability Boost:** `Moderate` - "Adds basic semantic search."
+        *   A button: `[ Choose SimpleSearch ]`
+    *   **Card B** might show:
+        *   **Repo:** `ProSearch`
+        *   **Integration Cost:** `High` - "Requires changes to 9 files and a database migration."
+        *   **Capability Boost:** `Exceptional` - "Adds pro-level search and unlocks new features."
+        *   A button: `[ Choose ProSearch ]`
+    *   The user can now clearly see the trade-off. Clicking one of the "Choose" buttons signifies their final decision and triggers the next and final phase.
