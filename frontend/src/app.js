@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- App Views ---
     const projectHubView = document.getElementById('project-hub-view');
     const projectAnvilView = document.getElementById('project-anvil-view');
+    const comparisonView = document.getElementById('comparison-view');
 
     // --- Project Hub Elements ---
     const projectCardList = document.getElementById('project-card-list');
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const expandAllBtn = document.getElementById('expand-all-btn');
     const goalInput = document.getElementById('goal-input');
     const clearGoalBtn = document.getElementById('clear-goal-btn');
+    const findSolutionsBtn = document.getElementById('find-solutions-btn');
     const armoryList = document.getElementById('armory-list');
 
     // --- Footer & Status Elements ---
@@ -60,13 +62,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (state.view === 'hub') {
             projectAnvilView.style.display = 'none';
+            comparisonView.style.display = 'none';
             projectHubView.style.display = 'flex';
             renderProjects();
         } else if (state.view === 'anvil') {
-            projectTitle.textContent = state.project.name;
             projectHubView.style.display = 'none';
+            comparisonView.style.display = 'none';
+            projectTitle.textContent = state.project.name;
             projectAnvilView.style.display = 'flex';
             scanProject(state.project);
+        } else if (state.view === 'comparison') {
+            projectHubView.style.display = 'none';
+            projectAnvilView.style.display = 'none';
+            comparisonView.style.display = 'flex';
+            // We will call a new render function here later
         }
 
         updateNavButtons();
@@ -290,8 +299,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    goalInput.addEventListener('input', () => {
+        findSolutionsBtn.disabled = goalInput.value.trim() === '';
+    });
+
     clearGoalBtn.addEventListener('click', () => {
         goalInput.value = '';
+        findSolutionsBtn.disabled = true;
+    });
+
+    findSolutionsBtn.addEventListener('click', () => {
+        const goalText = goalInput.value.trim();
+        if (!goalText || !activeProject) {
+            updateStatus('Please define a goal and select a project first.', true);
+            return;
+        }
+        updateStatus(`Finding solutions for goal: "${goalText}"...`);
+        // Placeholder for future API call
+        console.log('Finding solutions for:', {
+            goal: goalText,
+            project: activeProject
+        });
     });
     
     // --- Initial Load ---

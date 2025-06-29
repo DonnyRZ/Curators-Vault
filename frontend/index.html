@@ -65,6 +65,7 @@
                             <button id="clear-goal-btn" class="icon-btn" title="Clear">×</button>
                         </div>
                         <textarea id="goal-input" placeholder="What do you want to achieve? (e.g., Replace keyword search with semantic AI-powered search)"></textarea>
+                        <button id="find-solutions-btn" class="action-btn" disabled>Find Solutions</button>
                     </div>
                     
                     <div class="section" id="armory-section">
@@ -76,6 +77,16 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div id="comparison-view" class="app-view" style="display: none;">
+            <div class="hub-header">
+                <h2>Comparison Analysis</h2>
+                <p>Review the potential solutions and their impact on your project.</p>
+            </div>
+            <div id="comparison-card-list" class="comparison-card-container">
+                <!-- Comparison cards will be dynamically inserted here -->
             </div>
         </div>
 
