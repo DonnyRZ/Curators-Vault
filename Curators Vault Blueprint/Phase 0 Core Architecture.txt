@@ -1,0 +1,78 @@
+### **Blueprint Part 1: Core Architecture**
+
+**The Guiding Principle:** The app must be a robust, two-part system that lives on your desktop. It will consist of a lightweight **Tauri Frontend** (for the UI) that communicates with a powerful **local Python Backend** (for the AI and file operations). This architecture maximizes performance on your hardware while keeping the development process as straightforward as possible.
+
+**Visual Overview:**
+
+```
++--------------------------------+
+|      Your Desktop (Ubuntu)     |
+|                                |
+|  +--------------------------+  |
+|  |   Frontend (Tauri App)   |  |
+|  | (JS, HTML, CSS)          |  |
+|  | - You see and click this |  |
+|  +--------------------------+  |
+|              ^               |
+|              |               |
+|   Local HTTP Requests (JSON)   |
+|              |               |
+|              v               |
+|  +--------------------------+  |
+|  |  Backend (Python Server) |  |
+|  | (Flask, LlamaIndex)      |  |
+|  | - Runs silently          |  |
+|  | - Does all the hard work |  |
+|  +--------------------------+  |
+|                                |
++--------------------------------+
+```
+
+---
+
+#### **Component 1: The Frontend (Tauri App)**
+
+This is the part of the app you will see and interact with. It's the "body" of the Atlas.
+
+*   **Technology Stack:**
+    *   **Desktop Framework:** **Tauri.** Chosen for its extremely low memory/VRAM footprint, ensuring it won't interfere with your local LLM's performance.
+    *   **UI:** **JavaScript, HTML, CSS.** (We can use a simple framework like Svelte or just vanilla JS to keep it fast and easy to manage).
+
+*   **Key Responsibilities:**
+    1.  **Render the User Interface:** Display all the windows, buttons, project maps, and reports.
+    2.  **Handle User Interaction:** Respond to all your clicks, text inputs, and drag-and-drop actions.
+    3.  **Manage Application State:** Keep track of which project is open, what goal you're working on, etc.
+    4.  **Communicate with the Backend:** When you click a button like "Analyze Repo," the frontend's JavaScript will use the `fetch` API to send a request to the local Python server (e.g., `POST http://127.0.0.1:5001/analyze_repo`).
+    5.  **Manage the Backend Process:** The core Tauri Rust file (`src-tauri/src/main.rs`) will be given one critical job: to automatically start the Python backend server when the app launches and to terminate it cleanly when the app closes. This ensures you never have to manage the server manually.
+
+---
+
+#### **Component 2: The Backend (Local Python Server)**
+
+This is the "brain" of the Atlas. It runs completely silently in the background, managed by Tauri. You will never see it, but it does all the heavy lifting.
+
+*   **Technology Stack:**
+    *   **Web Server:** **Flask.** You already have this in `requirements.txt`. It's perfect for creating a simple, lightweight API for the frontend to talk to.
+    *   **AI Engine:** **LlamaIndex.** This will orchestrate the entire RAG (Retrieval-Augmented Generation) process.
+    *   **LLM:** **Ollama.** The backend will connect to your running Ollama service to use the `qwen3:8b` model specified in your `env.txt`.
+    *   **Embedding Model:** **HuggingFace.** It will use `BAAI/bge-base-en-v1.5` via the `sentence-transformers` library to turn text into vectors.
+    *   **Vector Store:** **FAISS CPU.** Your choice of `faiss-cpu` is perfect, as it's fast and doesn't consume any of your precious VRAM.
+
+*   **Key Responsibilities:**
+    1.  **Provide an API:** Run a Flask server that listens for requests from the Tauri frontend on a specific local port (e.g., `5001`).
+    2.  **Perform Local File Scanning:** When requested, it will scan the project directories on your machine to generate the "Live Project Map."
+    3.  **Execute All AI Tasks:** It will handle fetching GitHub repos, analyzing them, generating the "Briefing Cards," calculating the "Impact Scores," and creating the final "Integration Playbooks."
+    4.  **Return Structured Data:** All results will be sent back to the frontend as clean, easy-to-parse JSON.
+
+---
+
+#### **The Communication Protocol: A Local API**
+
+The two components will talk to each other using a simple, local REST API.
+
+*   **Format:** All data will be exchanged in **JSON** format.
+*   **Address:** The frontend will always send requests to `http://127.0.0.1:5001`.
+*   **Example API Endpoints:**
+    *   `POST /scan_project`: The frontend sends a local file path (`{"path": "/home/spiderman/dev/curators-vault"}`). The backend returns a JSON object representing the file tree.
+    *   `POST /analyze_repo`: The frontend sends a GitHub URL. The backend returns the full JSON for the "Vibe-Coder's Briefing Card."
+    *   `POST /generate_playbook`: The frontend sends the chosen repo URL, the project structure, and the user's goal. The backend returns the final, step-by-step Integration Playbook in JSON format.

@@ -1,0 +1,51 @@
+### **Blueprint Part 4: Phase 3 - Guided Implementation**
+
+**The Goal:** To provide a concrete, step-by-step, LLM-ready guide that allows you, the vibe coder, to successfully integrate the chosen solution into your specific project. This is the "golden output" of the entire Atlas workflow.
+
+---
+
+#### **Feature 4.1: The Integration Playbook Generator**
+
+*   **What It Is:** The most advanced AI engine in the backend. It takes your final decision and synthesizes all available information into a custom-made implementation plan.
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **Backend (Python Server).**
+    *   **Trigger:** This is triggered when the user clicks a `[ Choose Solution ]` button in the frontend's Comparison View from Phase 2.
+    *   **Frontend Action:** The Tauri app sends a final, comprehensive `POST` request to the API endpoint: `http://127.0.0.1:5001/generate_playbook`.
+        *   **Request Body:** This request contains the complete context of the user's decision:
+            ```json
+            {
+              "project_structure": { ... }, // The JSON map of the user's project
+              "goal_text": "I want to improve my search feature",
+              "chosen_solution_url": "https://github.com/repoB" // The URL of the winning repo
+            }
+            ```
+    *   **Backend Action (The AI Synthesis Pipeline):**
+        1.  The Flask server receives the request.
+        2.  It initiates the most sophisticated **LlamaIndex** pipeline in the app. This pipeline is designed to think like a senior developer planning a task.
+        3.  The AI is prompted with a complex meta-prompt, something like: *"You are a senior software architect. Your task is to create a step-by-step implementation plan for a junior developer. Based on the user's goal ('{goal_text}'), their project structure ('{project_structure}'), and the documentation of the chosen tool ('{chosen_solution_url}'), break down the integration process into a series of logical, sequential steps. For each step, provide a clear instruction and a precise, copy-pasteable prompt that the junior developer can give to their own AI coding assistant."*
+        4.  The AI will break the task down into logical chunks, such as:
+            *   **Step 1: Installation & Setup.** (e.g., `pip install`, adding to `requirements.txt`).
+            *   **Step 2: Configuration.** (e.g., setting API keys in a config file).
+            *   **Step 3: Core Logic Integration.** (e.g., identifying the main file to modify, replacing old code with new).
+            *   **Step 4: Connecting to UI (if applicable).**
+            *   **Step 5: Testing.**
+    *   **Output:** The backend returns a detailed, ordered JSON array. Each object in the array represents one step in the playbook.
+
+---
+
+#### **Feature 4.2: The Interactive Playbook UI**
+
+*   **What It Is:** The final screen of the Atlas workflow. It displays the generated playbook as a clean, interactive checklist that you can follow to complete the implementation.
+*   **How It Works (Tech Details):**
+    *   **Responsibility:** **100% Frontend (Tauri App).**
+    *   **Logic:** The JavaScript receives the playbook JSON array from the `/generate_playbook` endpoint. It then dynamically renders a new view that replaces the "Comparison" screen.
+*   **User Interaction:**
+    *   The user is presented with a clear, step-by-step guide.
+    *   Each step in the UI is rendered as a distinct "task card" with the following elements:
+        1.  **Step Number & Title:** A large, clear heading, e.g., `Step 1: Install the Library`.
+        2.  **Plain English Instruction:** A short sentence explaining the goal of the step, e.g., "First, we need to add the new tool to your project's list of dependencies and install it."
+        3.  **Target File(s):** A small info tag indicating which file(s) this step will affect, e.g., `TARGET: requirements.txt`.
+        4.  **The LLM Prompt Box:** A dedicated text area containing the exact, ready-to-use prompt for you to give to your LLM assistant.
+        5.  **One-Click Copy Button:** A `[ Copy Prompt ]` button next to the text area. Clicking this uses the `pyperclip` functionality (via a backend call or a JS library) to copy the prompt directly to your clipboard.
+        6.  **Completion Checkbox:** A checkbox `[ Mark as Done ]`. When you check it, the task card can be visually greyed out or minimized, giving you a clear sense of progress.
+    *   The user works their way down the list, copying each prompt, feeding it to their LLM, and checking off the steps until the implementation is complete.
