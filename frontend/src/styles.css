@@ -289,6 +289,68 @@ input[type="text"]:focus {
     gap: 20px;
 }
 
+/* --- Comparison View --- */
+#comparison-view {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.comparison-card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: center;
+    max-width: 1400px;
+    margin-bottom: 40px;
+}
+
+.comparison-card {
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    width: 320px;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.comparison-card h3 {
+    font-size: 1.4rem;
+    color: var(--secondary);
+    margin-bottom: 8px;
+}
+
+.comparison-card .info-item {
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.comparison-card .info-item strong {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--primary-light);
+}
+
+.comparison-card .info-item span {
+    color: var(--text-secondary);
+}
+
+.comparison-card .choose-btn {
+    margin-top: auto; /* Pushes the button to the bottom */
+    background-color: var(--secondary);
+    color: var(--bg-dark);
+}
+
+.comparison-card .choose-btn:hover {
+    background-color: var(--accent);
+}
+
+
 .sidebar {
     width: 350px;
     display: flex;
@@ -438,6 +500,9 @@ input[type="text"]:focus {
 #goal-definition-container {
     border-radius: var(--border-radius);
     background-color: var(--bg-card);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
 }
 
 #goal-input {
@@ -450,6 +515,11 @@ input[type="text"]:focus {
     resize: none;
     min-height: 100px;
     outline: none;
+}
+
+#find-solutions-btn {
+    align-self: flex-end;
+    margin-top: 10px;
 }
 
 #goal-input:focus {
