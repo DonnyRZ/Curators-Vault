@@ -35,6 +35,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     let history = [];
     let historyIndex = -1;
 
+    // Utility to generate a simple UUID
+    const generateUUID = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    };
+
     const updateStatus = (message, isError = false) => {
         statusMessage.textContent = message;
         statusMessage.style.color = isError ? 'var(--error)' : 'var(--text-secondary)';
@@ -96,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     const switchToAnvilView = (project) => {
+        console.log('Project object passed to switchToAnvilView:', project);
         navigateTo({ view: 'anvil', project: project });
     };
 
@@ -191,7 +200,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             projectCard.addEventListener('click', () => {
-                switchToAnvilView(project);
+                const clickedProjectPath = project.path;
+                const updatedProject = projects.find(p => p.path === clickedProjectPath);
+                if (updatedProject) {
+                    switchToAnvilView(updatedProject);
+                } else {
+                    console.error('Clicked project not found in updated projects array.', clickedProjectPath);
+                }
             });
         });
     };
@@ -263,8 +278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const handleAddProject = async () => {
         const selectedPath = await window.electronAPI.openDirectoryDialog();
         if (selectedPath) {
-            const projectName = selectedPath.split(/[\\/]/).pop();
-            const newProject = { name: projectName, path: selectedPath };
+            const projectName = selectedPath.split(/[\\/]/).pop();            const newProject = { id: generateUUID(), name: projectName, path: selectedPath };
 
             if (!projects.some(p => p.path === newProject.path)) {
                 projects.push(newProject);
@@ -280,8 +294,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loadProjects = async () => {
         try {
             updateStatus('Loading projects...');
-            const loadedProjects = await window.electronAPI.readProjectsFile();
+            let loadedProjects = await window.electronAPI.readProjectsFile();
+            
+            // Assign IDs to projects if they don't have one (for backward compatibility)
+            let projectsUpdated = false;
+            if (loadedProjects) {
+                loadedProjects = loadedProjects.map(p => {
+                    if (!p.id) {
+                        projectsUpdated = true;
+                        return { ...p, id: generateUUID() };
+                    }
+                    return p;
+                });
+            }
+
             projects = loadedProjects || [];
+            if (projectsUpdated) {
+                await window.electronAPI.writeProjectsFile(projects);
+            }
             renderProjects();
         } catch (error) {
             console.error('Failed to load projects:', error);
@@ -353,18 +383,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         updateStatus(`Finding solutions for: "${goalText}"...`);
         try {
+            console.log('Sending project_id:', activeProject.id);
+            console.log('Sending goal:', goalText);
             // Step 1: Find potential solutions
             const solutionsResponse = await fetch('http://127.0.0.1:5001/api/find_solutions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ goal_text: goalText }),
+                body: JSON.stringify({
+                    project_id: activeProject.id,
+                    goal: goalText
+                }),
             });
 
             const solutionsData = await solutionsResponse.json();
-            if (!solutionsResponse.ok || solutionsData.solutions.length === 0) {
+            if (!solutionsResponse.ok || !solutionsData.recommendation) {
                 updateStatus('No potential solutions found in your Armory for that goal.', true);
                 return;
             }
+
+            const solutionUrls = solutionsData.relevant_armory_repos.map(repo => repo.url);
 
             updateStatus('Found potential solutions! Running impact analysis...');
 
@@ -375,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({
                     project_structure: activeProject.structure,
                     goal_text: goalText,
-                    solution_urls: solutionsData.solutions,
+                    solution_urls: solutionUrls,
                 }),
             });
 
