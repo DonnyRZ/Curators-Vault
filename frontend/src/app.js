@@ -1,134 +1,203 @@
-// frontend/src/app.js (Our app's UI logic)
+document.addEventListener('DOMContentLoaded', async () => {
+    const projectList = document.getElementById('project-list');
+    const addProjectBtn = document.getElementById('add-project-btn');
+    const projectHub = document.getElementById('project-hub');
+    const projectMapContainer = document.getElementById('project-map-container');
+    const fileTreeContainer = document.getElementById('file-tree');
+    const goalDefinitionContainer = document.getElementById('goal-definition-container');
+    const goalInput = document.getElementById('goal-input');
+    const armoryContainer = document.getElementById('armory-container');
+    const githubUrlInput = document.getElementById('github-url-input');
+    const saveRepoBtn = document.getElementById('save-repo-btn');
+    const armoryList = document.getElementById('armory-list');
 
-// electronAPI is exposed from preload.js, giving us secure access to Electron's main process
-const { openDirectoryDialog, readTextFile, writeTextFile, createDirectory, path, exists } = window.electronAPI;
+    let projects = [];
+    let enrichedRepos = [];
 
-// --- DOM Element References ---
-const addNewProjectBtn = document.getElementById('add-new-project-btn');
-const projectListEl = document.getElementById('project-list');
-const noProjectsMessageEl = document.getElementById('no-projects-message');
-const statusMessageEl = document.getElementById('status-message');
+    // Function to render enriched repos in the UI
+    const renderEnrichedRepos = () => {
+        armoryList.innerHTML = ''; // Clear existing list
+        if (enrichedRepos.length === 0) {
+            armoryList.innerHTML = '<p>No repositories enriched yet.</p>';
+            return;
+        }
+        enrichedRepos.forEach(repo => {
+            const repoItem = document.createElement('div');
+            repoItem.className = 'armory-item';
+            repoItem.innerHTML = `
+                <h4>${repo.url}</h4>
+                <p>One-Liner: ${repo.one_liner}</p>
+                <p>Tags: ${repo.capability_tags.join(', ')}</p>
+            `;
+            armoryList.appendChild(repoItem);
+        });
+    };
 
-// --- Configuration Paths ---
-let configDirPath;
-let projectsFilePath;
+    // Function to render the file tree
+    const renderFileTree = (node, parentElement) => {
+        if (!node) return;
 
-/**
- * A utility function to update the status message in the footer.
- * @param {string} message The message to display.
- * @param {boolean} isError If true, the message will be styled as an error.
- */
-function updateStatus(message, isError = false) {
-  console.log(`Status: ${message}`);
-  statusMessageEl.textContent = message;
-  statusMessageEl.style.color = isError ? '#D32F2F' : '#8A9199'; // Adjust colors if needed
-}
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'file-tree-item';
 
-/**
- * Reads the projects.json file and returns the array of projects.
- * Returns an empty array if the file doesn't exist.
- * @returns {Promise<Array<object>>}
- */
-async function getProjects() {
-  if (await exists(projectsFilePath)) {
-    const content = await readTextFile(projectsFilePath);
-    return JSON.parse(content);
-  }
-  return []; // Return an empty array if the file doesn't exist yet
-}
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = node.name;
+        itemDiv.appendChild(nameSpan);
 
-/**
- * Renders the list of projects in the UI.
- */
-async function renderProjectList() {
-  updateStatus('Loading projects...');
-  const projects = await getProjects();
-  
-  // Clear the current list
-  projectListEl.innerHTML = ''; 
-  // Always add the "no projects" message first, then hide if projects are found.
-  projectListEl.appendChild(noProjectsMessageEl);
+        if (node.type === 'directory') {
+            itemDiv.classList.add('directory');
+            nameSpan.classList.add('collapsible');
+            nameSpan.addEventListener('click', () => {
+                itemDiv.classList.toggle('collapsed');
+            });
 
-  if (projects.length > 0) {
-    noProjectsMessageEl.style.display = 'none'; // Hide the message
+            const childrenContainer = document.createElement('div');
+            childrenContainer.className = 'children';
+            node.children.forEach(child => renderFileTree(child, childrenContainer));
+            itemDiv.appendChild(childrenContainer);
+        } else {
+            itemDiv.classList.add('file');
+        }
 
-    projects.forEach(project => {
-      const projectItem = document.createElement('div');
-      projectItem.className = 'project-item';
-      projectItem.dataset.path = project.path; // Store the path for later use
+        parentElement.appendChild(itemDiv);
+    };
 
-      const projectName = document.createElement('h3');
-      projectName.textContent = project.name;
+    // Function to render projects in the UI
+    const renderProjects = () => {
+        projectList.innerHTML = ''; // Clear existing list
+        if (projects.length === 0) {
+            projectList.innerHTML = '<p>No projects added yet. Click "+ Add New Project" to get started!</p>';
+            return;
+        }
+        projects.forEach(project => {
+            const projectDiv = document.createElement('div');
+            projectDiv.className = 'project-item';
+            projectDiv.innerHTML = `
+                <h3>${project.name}</h3>
+                <p>${project.path}</p>
+                <button class="remove-project-btn" data-path="${project.path}">Remove</button>
+            `;
+            projectList.appendChild(projectDiv);
 
-      const projectPath = document.createElement('p');
-      projectPath.textContent = project.path;
+            // Add event listener for remove button
+            projectDiv.querySelector('.remove-project-btn').addEventListener('click', async (event) => {
+                event.stopPropagation(); // Prevent projectDiv click if we add one later
+                const projectPathToRemove = event.target.dataset.path;
+                if (confirm(`Are you sure you want to remove project: ${project.name}?`)) {
+                    projects = projects.filter(p => p.path !== projectPathToRemove);
+                    await window.electronAPI.writeProjectsFile(projects);
+                    renderProjects();
+                }
+            });
 
-      projectItem.appendChild(projectName);
-      projectItem.appendChild(projectPath);
-      projectListEl.appendChild(projectItem);
+            // Add click handler to open project
+            projectDiv.addEventListener('click', async () => {
+                console.log(`Opening project: ${project.name} at ${project.path}`);
+                try {
+                    const response = await fetch('http://127.0.0.1:5001/api/scan_project', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ path: project.path }),
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        console.log('Project scan successful:', data);
+                        projectHub.style.display = 'none';
+                        projectMapContainer.style.display = 'block';
+                        goalDefinitionContainer.style.display = 'block'; // Show goal input
+                        fileTreeContainer.innerHTML = ''; // Clear previous tree
+                        data.children.forEach(child => renderFileTree(child, fileTreeContainer));
+                    } else {
+                        console.error('Project scan failed:', data.error);
+                        alert(`Failed to scan project: ${data.error}`);
+                    }
+                } catch (error) {
+                    console.error('Error during project scan fetch:', error);
+                    alert(`An error occurred while scanning the project: ${error.message}`);
+                }
+            });
+        });
+    };
+
+    // Load projects from file
+    const loadProjects = async () => {
+        try {
+            const loadedProjects = await window.electronAPI.readProjectsFile();
+            projects = loadedProjects || [];
+            renderProjects();
+        } catch (error) {
+            console.error('Failed to load projects:', error);
+            projects = [];
+            renderProjects();
+        }
+    };
+
+    // Handle adding a new project
+    addProjectBtn.addEventListener('click', async () => {
+        const selectedPath = await window.electronAPI.openDirectoryDialog();
+        if (selectedPath) {
+            const projectName = selectedPath.split(window.electronAPI.path.join('/')).pop(); // Get folder name
+            const newProject = { name: projectName, path: selectedPath };
+
+            // Check if project already exists
+            if (!projects.some(p => p.path === newProject.path)) {
+                projects.push(newProject);
+                await window.electronAPI.writeProjectsFile(projects);
+                renderProjects();
+            } else {
+                alert('This project is already added!');
+            }
+        }
     });
-    updateStatus('Projects loaded.');
-  } else {
-    noProjectsMessageEl.style.display = 'block'; // Show the message
-    updateStatus('No projects found. Add one to get started!');
-  }
-}
 
-/**
- * Handles the logic for adding a new project.
- */
-async function handleAddNewProject() {
-  try {
-    // 1. Open the native OS folder selection dialog via Electron's main process
-    const selectedPath = await openDirectoryDialog();
+    // Initial load
+    const initialLoad = async () => {
+        await loadProjects();
+        enrichedRepos = await window.electronAPI.readAllEnrichedRepos();
+        renderEnrichedRepos();
+    };
+    initialLoad();
 
-    if (selectedPath) {
-      updateStatus('Adding new project...');
-      const projects = await getProjects();
-      const projectName = selectedPath.split(/[\\/]/).pop(); // Get the last part of the path
+    // Handle goal input
+    goalInput.addEventListener('input', (event) => {
+        console.log('Current Goal:', event.target.value);
+        // In a real app, you'd store this in a state variable
+    });
 
-      // 2. Check if this project path already exists
-      if (projects.some(p => p.path === selectedPath)) {
-        updateStatus('This project is already being tracked.', true);
-        return;
-      }
+    // Handle saving and enriching a GitHub repo
+    saveRepoBtn.addEventListener('click', async () => {
+        const githubUrl = githubUrlInput.value.trim();
+        if (!githubUrl) {
+            alert('Please enter a GitHub repository URL.');
+            return;
+        }
 
-      // 3. Add the new project and save to the JSON file
-      projects.push({ name: projectName, path: selectedPath });
-      await writeTextFile(projectsFilePath, JSON.stringify(projects, null, 2));
+        console.log(`Attempting to enrich repo: ${githubUrl}`);
+        try {
+            const response = await fetch('http://127.0.0.1:5001/api/enrich_repo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: githubUrl }),
+            });
 
-      // 4. Re-render the UI to show the new project
-      await renderProjectList();
-      updateStatus(`Project "${projectName}" added successfully.`);
-    } else {
-      updateStatus('Project selection cancelled.');
-    }
-  } catch (error) {
-    updateStatus(`Error adding project: ${error.message || error}`, true);
-    console.error("Detailed error adding project:", error);
-  }
-}
-
-/**
- * The main initialization function for our application.
- */
-async function initializeApp() {
-  // Set up the configuration paths
-  const home = await path.homeDir(); // Get home directory via Electron's main process
-  configDirPath = await window.electronAPI.path.join(home, '.curators-atlas');
-  projectsFilePath = await window.electronAPI.path.join(configDirPath, 'projects.json');
-
-  // Ensure the configuration directory exists
-  if (!(await exists(configDirPath))) {
-    await createDirectory(configDirPath); // Create directory via Electron's main process
-  }
-
-  // Add the event listener to our button
-  addNewProjectBtn.addEventListener('click', handleAddNewProject);
-  
-  // Perform the initial render of the project list
-  await renderProjectList();
-}
-
-// Start the application when the DOM is fully loaded
-window.addEventListener("DOMContentLoaded", initializeApp);
+            const data = await response.json();
+            if (response.ok) {
+                console.log('Repo enrichment successful:', data);
+                enrichedRepos.push(data); // Add new repo to the list
+                renderEnrichedRepos(); // Re-render the list
+                githubUrlInput.value = ''; // Clear input
+            } else {
+                console.error('Repo enrichment failed:', data.error);
+                alert(`Failed to enrich repo: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Error during repo enrichment fetch:', error);
+            alert(`An error occurred during repo enrichment: ${error.message}`);
+        }
+    });
+});
