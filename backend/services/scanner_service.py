@@ -1,22 +1,33 @@
-
 import os
 
-def scan_directory(path):
+def scan_directory(path: str):
     """
-    Scans a directory and returns a dictionary representing its structure.
-    Each key is a file or directory name, and values are either None (for files)
-    or another dictionary (for subdirectories).
+    Scans a directory and returns its file and folder structure as a dictionary.
     """
-    structure = {}
-    if not os.path.exists(path):
-        return {"error": "Path does not exist"}
     if not os.path.isdir(path):
-        return {"error": "Path is not a directory"}
+        return {"error": f"Directory not found: {path}"}
 
-    for item in os.listdir(path):
-        item_path = os.path.join(path, item)
-        if os.path.isdir(item_path):
-            structure[item] = scan_directory(item_path)  # Recursively scan subdirectories
-        else:
-            structure[item] = None  # Mark as a file
-    return structure
+    tree = {
+        "name": os.path.basename(path),
+        "path": path,
+        "type": "directory",
+        "children": []
+    }
+
+    try:
+        for entry_name in os.listdir(path):
+            entry_path = os.path.join(path, entry_name)
+            if os.path.isdir(entry_path):
+                # Recursively scan subdirectories
+                tree["children"].append(scan_directory(entry_path))
+            else:
+                # Add files
+                tree["children"].append({
+                    "name": entry_name,
+                    "path": entry_path,
+                    "type": "file"
+                })
+    except Exception as e:
+        return {"error": f"Error scanning directory {path}: {e}"}
+
+    return tree

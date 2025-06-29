@@ -10,6 +10,9 @@
                 homeDir: () => ipcRenderer.invoke('get-home-dir'),
                 join: (...args) => ipcRenderer.invoke('path-join', ...args)
             },
-            exists: (filePath) => ipcRenderer.invoke('check-exists', filePath)
+            exists: (filePath) => ipcRenderer.invoke('check-exists', filePath),
+            readProjectsFile: () => ipcRenderer.invoke('read-projects-file'),
+            writeProjectsFile: (projects) => ipcRenderer.invoke('write-projects-file', projects),
+            readAllEnrichedRepos: () => ipcRenderer.invoke('read-all-enriched-repos')
         });
     

@@ -5,6 +5,7 @@ from flask_cors import CORS
 
 # Import our blueprint from the api folder
 from api.project_routes import project_bp
+from api.armory_routes import armory_bp
 
 # --- Application Factory ---
 def create_app():
@@ -23,6 +24,7 @@ def create_app():
     # and it prefixes them with '/api'.
     # So, '/scan_project' becomes '/api/scan_project'.
     app.register_blueprint(project_bp, url_prefix='/api')
+    app.register_blueprint(armory_bp, url_prefix='/api')
 
     # --- A simple health-check route ---
     # This is useful for testing if the server is up and running.
