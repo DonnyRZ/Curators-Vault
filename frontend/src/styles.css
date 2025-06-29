@@ -1,0 +1,132 @@
+/* frontend/styles.css */
+
+/* Import the Inter font for a clean, modern UI */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+/* --- Root Variables --- */
+/* Based on your original theme.json for a consistent vibe */
+:root {
+  --font-sans: 'Inter', sans-serif;
+  --color-background: #1A1A1A; /* A slightly darker main background */
+  --color-surface: #2B2B2B; /* For cards and interactive surfaces */
+  --color-primary: #4A56C4; /* The main brand/button color */
+  --color-primary-hover: #3845B1; /* For button hover states */
+  --color-text-main: #DCE4EE; /* Main text color */
+  --color-text-secondary: #8A9199; /* For subtitles and paths */
+  --color-border: #343638;
+}
+
+/* --- Global Resets & Base Styles --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-text-main);
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Prevent ugly scrollbars on the main window */
+}
+
+/* --- Main Application Layout --- */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Full viewport height */
+  padding: 24px;
+}
+
+.app-header {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.app-header p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.main-content {
+  flex-grow: 1; /* This makes the main content area fill all available space */
+  overflow-y: auto; /* Allow scrolling ONLY in this area if content overflows */
+  padding-top: 24px;
+}
+
+.app-footer {
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* --- Project Hub Specific Styles --- */
+#project-hub-view {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.project-hub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.project-hub-header h2 {
+  font-size: 20px;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: 1000px; /* Pill-shaped button */
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.project-list {
+  display: grid;
+  gap: 16px; /* Space between project items */
+}
+
+.project-item {
+  background-color: var(--color-surface);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.project-item:hover {
+  border-color: var(--color-primary);
+}
+
+.project-item h3 {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.project-item p {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  word-break: break-all; /* Prevent long paths from overflowing */
+}

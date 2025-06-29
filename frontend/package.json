@@ -1,0 +1,16 @@
+{
+  "name": "curators-atlas-frontend",
+  "version": "1.0.0",
+  "description": "The Electron frontend for Curator's Atlas",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Your Name <your.email@example.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}
