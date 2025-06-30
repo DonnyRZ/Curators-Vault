@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const clearGoalBtn = document.getElementById('clear-goal-btn');
     const findSolutionsBtn = document.getElementById('find-solutions-btn');
     const armoryList = document.getElementById('armory-list');
+    const deleteRepoBtn = document.getElementById('delete-repo-btn');
 
     // --- Footer & Status Elements ---
     const statusIndicator = document.getElementById('status-indicator');
@@ -116,6 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const renderEnrichedRepos = () => {
         armoryList.innerHTML = '';
+        deleteRepoBtn.disabled = true; // Disable button initially
         if (enrichedRepos.length === 0) {
             armoryList.innerHTML = '<div class="empty-state">No repositories enriched yet</div>';
             return;
@@ -124,14 +126,78 @@ document.addEventListener('DOMContentLoaded', async () => {
         enrichedRepos.forEach(repo => {
             const repoItem = document.createElement('div');
             repoItem.className = 'armory-item';
+            repoItem.dataset.repoUrl = repo.url; // Use dataset for the URL
+
+            // Safely access properties with default values
+            const repoName = repo.repo_name || 'Unnamed Repo';
+            const repoUrl = repo.url || '#';
+            const oneLiner = repo.one_liner || 'No summary available.';
+            const language = repo.primary_language || 'N/A';
+            const dependencies = repo.key_dependencies || [];
+            const installMethod = repo.installation_method || 'N/A';
+            const useCase = repo.primary_use_case || 'N/A';
+            const integration = repo.integration_points || 'N/A';
+            const tags = repo.capability_tags || [];
+
             repoItem.innerHTML = `
-                <h4>${repo.url.split('/').pop()}</h4>
-                <p><strong>Summary:</strong> ${repo.one_liner}</p>
-                <p><strong>Tags:</strong> ${repo.capability_tags.join(', ')}</p>
+                <div class="armory-item-header">
+                    <h4>${repoName}</h4>
+                    <a href="${repoUrl}" target="_blank" class="repo-link">${repoUrl}</a>
+                </div>
+                <p class="repo-summary">${oneLiner}</p>
+                <div class="repo-details">
+                    <div class="detail-item">
+                        <strong>Language:</strong>
+                        <span class="language-tag">${language}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Primary Use Case:</strong>
+                        <span>${useCase}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Installation:</strong>
+                        <code class="install-command">${installMethod}</code>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Key Dependencies:</strong>
+                        <div class="dependency-tags">
+                            ${dependencies.map(dep => `<span class="dep-tag">${dep}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Integration Points:</strong>
+                        <span>${integration}</span>
+                    </div>
+                </div>
+                <div class="capability-tags">
+                    ${tags.map(tag => `<span class="cap-tag">${tag}</span>`).join('')}
+                </div>
             `;
             armoryList.appendChild(repoItem);
+
+            // Event listener for selection
+            repoItem.addEventListener('click', () => {
+                // Clear previous selection
+                const currentSelected = document.querySelector('.armory-item.selected');
+                if (currentSelected) {
+                    currentSelected.classList.remove('selected');
+                }
+                // Add selection to the clicked item
+                repoItem.classList.add('selected');
+                deleteRepoBtn.disabled = false; // Enable the delete button
+            });
         });
     };
+
+    deleteRepoBtn.addEventListener('click', async () => {
+        const selectedRepo = document.querySelector('.armory-item.selected');
+        if (selectedRepo) {
+            const repoUrlToDelete = selectedRepo.dataset.repoUrl;
+            if (confirm(`Are you sure you want to delete ${repoUrlToDelete}?`)) {
+                await deleteRepository(repoUrlToDelete);
+            }
+        }
+    });
 
     const renderFileTree = (node, parentElement) => {
         if (!node) return;
@@ -211,29 +277,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    const renderComparisonCards = (analysisData) => {
+    const renderComparisonCards = (candidates) => {
         const comparisonCardList = document.getElementById('comparison-card-list');
         comparisonCardList.innerHTML = '';
 
-        if (!analysisData || analysisData.length === 0) {
-            comparisonCardList.innerHTML = '<div class="empty-state">No analysis data to display.</div>';
+        if (!candidates || candidates.length === 0) {
+            comparisonCardList.innerHTML = '<div class="empty-state">No candidates to display.</div>';
             return;
         }
 
-        analysisData.forEach(cardData => {
+        candidates.forEach(candidate => {
             const card = document.createElement('div');
             card.className = 'comparison-card';
+            card.dataset.url = candidate.url; // Store URL for dynamic updates
             card.innerHTML = `
-                <h3>${cardData.repo_name}</h3>
-                <div class="info-item">
+                <h3>${candidate.repo_name}</h3>
+                <div class="info-item cost">
                     <strong>Integration Cost (Ease)</strong>
-                    <span>${cardData.integration_cost} - ${cardData.integration_justification}</span>
+                    <span>Analyzing...</span>
                 </div>
-                <div class="info-item">
+                <div class="info-item boost">
                     <strong>Capability Boost (Power)</strong>
-                    <span>${cardData.capability_boost} - ${cardData.capability_justification}</span>
+                    <span>Analyzing...</span>
                 </div>
-                <button class="action-btn choose-btn" data-url="${cardData.url}">Choose ${cardData.repo_name}</button>
+                <button class="action-btn choose-btn" data-url="${candidate.url}" disabled>Choose ${candidate.repo_name}</button>
             `;
             comparisonCardList.appendChild(card);
 
@@ -241,7 +308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const chosenUrl = e.target.dataset.url;
                 console.log(`Chosen solution: ${chosenUrl}`);
                 // Placeholder for Phase 3 logic
-                updateStatus(`You have chosen ${cardData.repo_name}. Next, we will generate the playbook.`);
+                updateStatus(`You have chosen ${candidate.repo_name}. Next, we will generate the playbook.`);
             });
         });
     };
@@ -341,8 +408,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const data = await response.json();
             if (response.ok) {
-                enrichedRepos.push(data);
-                renderEnrichedRepos();
+                // No longer pushing to enrichedRepos directly, as it will be reloaded
+                // from the armory directory, which now contains the full BriefingCard.
+                // This also ensures the armory index is rebuilt.
+                await loadEnrichedRepos(); 
                 githubUrlInput.value = '';
                 updateStatus(`Repository enriched successfully`);
             } else {
@@ -381,48 +450,51 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        updateStatus(`Finding solutions for: "${goalText}"...`);
+        updateStatus(`Finding solution candidates for: "${goalText}"...`);
         try {
-            console.log('Sending project_id:', activeProject.id);
-            console.log('Sending goal:', goalText);
-            // Step 1: Find potential solutions
-            const solutionsResponse = await fetch('http://127.0.0.1:5001/api/find_solutions', {
+            // Step 1: Find potential solution candidates (fast)
+            const candidatesResponse = await fetch('http://127.0.0.1:5001/api/find_solution_candidates', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    project_id: activeProject.id,
-                    goal: goalText
-                }),
+                body: JSON.stringify({ goal: goalText }),
             });
 
-            const solutionsData = await solutionsResponse.json();
-            if (!solutionsResponse.ok || !solutionsData.recommendation) {
+            const candidates = await candidatesResponse.json();
+            if (!candidatesResponse.ok || candidates.length === 0) {
                 updateStatus('No potential solutions found in your Armory for that goal.', true);
                 return;
             }
 
-            const solutionUrls = solutionsData.relevant_armory_repos.map(repo => repo.url);
+            // Step 2: Switch to comparison view and render initial cards
+            navigateTo({ view: 'comparison', project: activeProject, analysis: candidates });
+            updateStatus('Found candidates! Running deep analysis in the background...');
 
-            updateStatus('Found potential solutions! Running impact analysis...');
+            // Step 3: Run impact analysis for each candidate in the background
+            const analysisPromises = candidates.map(candidate => 
+                fetch('http://127.0.0.1:5001/api/run_impact_analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        project_structure: activeProject.structure,
+                        goal: goalText, // Corrected key from goal_text to goal
+                        repo_url: candidate.url,
+                    }),
+                }).then(res => res.json())
+            );
 
-            // Step 2: Run impact analysis
-            const analysisResponse = await fetch('http://127.0.0.1:5001/api/run_impact_analysis', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    project_structure: activeProject.structure,
-                    goal_text: goalText,
-                    solution_urls: solutionUrls,
-                }),
+            // Step 4: Update cards as analysis completes
+            analysisPromises.forEach(promise => {
+                promise.then(analysisData => {
+                    if (analysisData && !analysisData.error) {
+                        const card = document.querySelector(`.comparison-card[data-url="${analysisData.url}"]`);
+                        if (card) {
+                            card.querySelector('.info-item.cost').innerHTML = `<strong>Integration Cost (Ease)</strong><span>${analysisData.integration_cost} - ${analysisData.integration_justification}</span>`;
+                            card.querySelector('.info-item.boost').innerHTML = `<strong>Capability Boost (Power)</strong><span>${analysisData.capability_boost} - ${analysisData.capability_justification}</span>`;
+                            card.querySelector('.choose-btn').disabled = false;
+                        }
+                    }
+                });
             });
-
-            const analysisData = await analysisResponse.json();
-            if (!analysisResponse.ok) {
-                throw new Error(analysisData.error || 'Analysis failed');
-            }
-
-            // Step 3: Switch to comparison view and render results
-            navigateTo({ view: 'comparison', project: activeProject, analysis: analysisData });
 
         } catch (error) {
             updateStatus(`Error: ${error.message}`, true);
@@ -433,13 +505,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     const initialLoad = async () => {
         await loadProjects();
         
-        updateStatus('Loading repositories...');
-        enrichedRepos = await window.electronAPI.readAllEnrichedRepos();
-        renderEnrichedRepos();
+        updateStatus('Connecting to backend...');
+        
+        // Retry mechanism to wait for the backend to be ready
+        let backendReady = false;
+        for (let i = 0; i < 10; i++) { // Try up to 10 times
+            try {
+                await fetch('http://127.0.0.1:5001/api/build_armory_index', { method: 'POST' });
+                console.log('Backend connection successful. Armory index built.');
+                backendReady = true;
+                break; // Exit loop on success
+            } catch (error) {
+                console.log('Backend not ready, retrying in 2 seconds...');
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
+            }
+        }
+
+        if (!backendReady) {
+            updateStatus('Failed to connect to backend after multiple retries.', true);
+            console.error('Failed to build armory index on startup.');
+            // Still try to load repos, maybe the index exists from a previous run
+        }
+
+        await loadEnrichedRepos();
         
         updateStatus('Ready');
         switchToHubView(); // Ensure we start at the hub
     };
     
     initialLoad();
+
+    async function loadEnrichedRepos() {
+        enrichedRepos = await window.electronAPI.readAllEnrichedRepos();
+        renderEnrichedRepos();
+    }
+
+    async function deleteRepository(repoUrl) {
+        updateStatus(`Deleting repository: ${repoUrl}...`);
+        try {
+            const response = await fetch('http://127.0.0.1:5001/api/delete_repo', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ repo_url: repoUrl }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                updateStatus(`Repository ${repoUrl} deleted successfully.`);
+                deleteRepoBtn.disabled = true; // Disable button after deletion
+                await loadEnrichedRepos(); // Reload repos after deletion
+            } else {
+                updateStatus(`Deletion failed: ${data.error}`, true);
+            }
+        } catch (error) {
+            updateStatus(`Error connecting to backend: ${error.message}`, true);
+        }
+    }
 });

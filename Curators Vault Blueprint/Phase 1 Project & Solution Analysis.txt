@@ -67,7 +67,7 @@
         2.  It uses the `playwright` or `requests` library to fetch the content of the GitHub README page.
         3.  It uses `BeautifulSoup4` to parse the HTML and extract the clean markdown text.
         4.  It feeds this text into a **LlamaIndex** pipeline.
-        5.  This pipeline uses your Ollama `qwen3:8b` model to generate the "Vibe-Coder's Briefing Card" fields (One-Liner, ELI5, Starter Prompt, Capability Tags).
+        5.  This pipeline uses your Ollama `gemma3n:e4b` model to generate the "Vibe-Coder's Briefing Card" fields (One-Liner, ELI5, Starter Prompt, Capability Tags).
         6.  The generated JSON object is saved locally (e.g., in a `~/.curators-atlas/armory/` directory, with one JSON file per repo).
         7.  The final JSON is sent back to the frontend.
 *   **User Interaction:**

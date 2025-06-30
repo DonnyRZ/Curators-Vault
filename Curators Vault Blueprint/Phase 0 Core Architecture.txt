@@ -54,7 +54,7 @@ This is the "brain" of the Atlas. It runs completely silently in the background,
 *   **Technology Stack:**
     *   **Web Server:** **Flask.** You already have this in `requirements.txt`. It's perfect for creating a simple, lightweight API for the frontend to talk to.
     *   **AI Engine:** **LlamaIndex.** This will orchestrate the entire RAG (Retrieval-Augmented Generation) process.
-    *   **LLM:** **Ollama.** The backend will connect to your running Ollama service to use the `qwen3:8b` model specified in your `env.txt`.
+    *   **LLM:** **Ollama.** The backend will connect to your running Ollama service to use the `gemma3n:e4b` model specified in your `env.txt`.
     *   **Embedding Model:** **HuggingFace.** It will use `BAAI/bge-base-en-v1.5` via the `sentence-transformers` library to turn text into vectors.
     *   **Vector Store:** **FAISS CPU.** Your choice of `faiss-cpu` is perfect, as it's fast and doesn't consume any of your precious VRAM.
 
