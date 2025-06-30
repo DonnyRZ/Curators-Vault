@@ -436,6 +436,27 @@ input[type="text"]:focus {
     transform: translateX(3px);
 }
 
+.armory-item.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(255, 117, 151, 0.3);
+    transform: translateX(5px) scale(1.02);
+}
+
+.armory-controls {
+    padding: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.action-btn:disabled {
+    background-color: var(--bg-hover);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
 .armory-item h4 {
     font-size: 1rem;
     margin-bottom: 8px;
@@ -446,6 +467,90 @@ input[type="text"]:focus {
     font-size: 0.85rem;
     color: var(--text-secondary);
     margin-bottom: 5px;
+}
+
+.armory-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+}
+
+.repo-link {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.repo-link:hover {
+    color: var(--primary-light);
+}
+
+.repo-summary {
+    font-style: italic;
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+}
+
+.repo-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.detail-item strong {
+    color: var(--primary-light);
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.detail-item span,
+.detail-item code {
+    font-size: 0.85rem;
+}
+
+.install-command {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.language-tag {
+    background-color: var(--accent);
+    color: var(--bg-dark);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.dependency-tags,
+.capability-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 5px;
+}
+
+.dep-tag,
+.cap-tag {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.dep-tag {
+    background-color: rgba(3, 218, 198, 0.2);
+    color: var(--secondary);
+}
+
+.cap-tag {
+    background-color: rgba(187, 134, 252, 0.2);
+    color: var(--primary-light);
+    font-weight: 500;
 }
 
 .file-tree-item {
