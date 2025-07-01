@@ -1,6 +1,5 @@
 # Python Virtual Environment
-.venv/
-venv/
+backend/curators_venv/
 
 # Python cache files
 __pycache__/

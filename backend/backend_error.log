@@ -1,0 +1,5 @@
+127.0.0.1 - - [01/Jul/2025 11:37:26] "POST /api/enrich_repo HTTP/1.1" 200 -
+127.0.0.1 - - [01/Jul/2025 11:41:02] "POST /api/scan_project HTTP/1.1" 200 -
+127.0.0.1 - - [01/Jul/2025 11:55:00] "POST /api/enrich_repo HTTP/1.1" 200 -
+127.0.0.1 - - [01/Jul/2025 11:56:03] "POST /api/scan_project HTTP/1.1" 200 -
+127.0.0.1 - - [01/Jul/2025 11:56:29] "POST /api/find_solution_candidates HTTP/1.1" 200 -

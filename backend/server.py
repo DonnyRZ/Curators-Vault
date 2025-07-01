@@ -1,5 +1,7 @@
 # backend/server.py
 
+import os
+import sys
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -37,10 +39,14 @@ def create_app():
 
 # --- Main Entry Point ---
 if __name__ == '__main__':
+    # Redirect stderr to a log file
+    log_file_path = os.path.join(os.path.dirname(__file__), 'backend_error.log')
+    sys.stderr = open(log_file_path, 'a')
+
     # This block runs only when you execute 'python server.py' directly.
     # It's used for development and testing.
     app = create_app()
     
     # Running in debug mode gives us helpful error messages and auto-reloads
     # when we save a file. Port 5001 is what we planned in the blueprint.
-    app.run(debug=True, port=5001)
+    app.run(debug=False, port=5001)

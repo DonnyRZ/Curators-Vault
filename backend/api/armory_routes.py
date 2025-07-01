@@ -1,3 +1,6 @@
+import sys
+import io
+import traceback
 from flask import Blueprint, request, jsonify
 from services.enrichment_service import enrich_repo, run_impact_analysis_for_repo
 from services.armory_service import build_armory_index
@@ -21,7 +24,14 @@ def enrich_repo_route():
         build_armory_index()
         return jsonify(enriched_data), 200
     except Exception as e:
-        return jsonify({"error": f"An error occurred: {e}"}), 500
+        # Capture the full traceback
+        sio = io.StringIO()
+        traceback.print_exc(file=sio)
+        full_traceback = sio.getvalue()
+        
+        print(f"Error during enrich_repo: {full_traceback}", file=sys.stderr) # Also print to stderr for terminal visibility
+
+        return jsonify({"error": f"An error occurred: {e}", "traceback": full_traceback}), 500
 
 @armory_bp.route('/build_armory_index', methods=['POST'])
 def build_armory_index_route():

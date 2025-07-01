@@ -195,29 +195,43 @@ def get_impact_analysis_llm_program():
     )
 
 def fetch_readme_content(repo_url: str) -> str:
-    """Fetches and parses the README content from a GitHub repository URL."""
+    """
+    Fetches and parses the README content from a GitHub repository URL.
+    Returns an empty string if the README cannot be fetched.
+    """
     try:
-        # Attempt to construct a raw GitHub URL for README.md
-        # This is a common pattern, but might not work for all repos.
-        # For example: https://github.com/owner/repo/raw/main/README.md
+        # Extract owner and repo name from the URL
         parts = repo_url.split('/')
-        if len(parts) >= 5 and parts[2] == 'github.com':
-            raw_url = f"https://raw.githubusercontent.com/{parts[3]}/{parts[4]}/main/README.md"
-            response = requests.get(raw_url)
-            response.raise_for_status() # Raise an exception for HTTP errors
-            return response.text
-        else:
-            # Fallback for non-standard GitHub URLs or other hosts
-            response = requests.get(repo_url)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, 'lxml')
-            readme_article = soup.find('article', class_="markdown-body entry-content container-lg")
-            if not readme_article:
-                return "Could not find README content."
-            return readme_article.get_text(separator='\n', strip=True)
-    except requests.RequestException as e:
-        print(f"Error fetching URL {repo_url}: {e}")
-        return None
+        if len(parts) < 5 or parts[2] != 'github.com':
+            print(f"Warning: Not a standard GitHub URL: {repo_url}")
+            return ""
+
+        owner = parts[3]
+        repo_name = parts[4]
+
+        # Common default branch names to try
+        branch_names = ["main", "master", "develop"]
+
+        for branch in branch_names:
+            raw_url = f"https://raw.githubusercontent.com/{owner}/{repo_name}/{branch}/README.md"
+            try:
+                response = requests.get(raw_url)
+                if response.status_code == 200:
+                    print(f"Successfully fetched README from {raw_url}")
+                    return response.text
+                elif response.status_code == 404:
+                    print(f"README not found at {raw_url}. Trying next branch...")
+                else:
+                    print(f"Failed to fetch README from {raw_url}. Status: {response.status_code}")
+            except requests.RequestException as e:
+                print(f"Request failed for {raw_url}: {e}")
+                continue # Try the next branch name
+
+        print(f"Could not find README.md for {repo_url} after trying common branches.")
+        return ""
+    except Exception as e:
+        print(f"An unexpected error occurred while fetching README for {repo_url}: {e}")
+        return ""
 
 def run_impact_analysis_for_repo(goal: str, project_structure: dict, repo_url: str):
     """Runs impact analysis for a single repository."""
