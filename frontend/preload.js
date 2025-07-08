@@ -13,6 +13,8 @@
             exists: (filePath) => ipcRenderer.invoke('check-exists', filePath),
             readProjectsFile: () => ipcRenderer.invoke('read-projects-file'),
             writeProjectsFile: (projects) => ipcRenderer.invoke('write-projects-file', projects),
-            readAllEnrichedRepos: () => ipcRenderer.invoke('read-all-enriched-repos')
+            readAllEnrichedRepos: () => ipcRenderer.invoke('read-all-enriched-repos'),
+            getOllamaModels: () => ipcRenderer.invoke('get-ollama-models'),
+            setLLMModel: (modelName) => ipcRenderer.invoke('set-llm-model', modelName)
         });
     

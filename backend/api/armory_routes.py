@@ -4,8 +4,34 @@ import traceback
 from flask import Blueprint, request, jsonify
 from services.enrichment_service import enrich_repo, run_impact_analysis_for_repo
 from services.armory_service import build_armory_index
+from services.llm_service import llm_service # Import the llm_service instance
 
 armory_bp = Blueprint('armory', __name__)
+
+@armory_bp.route('/get_ollama_models', methods=['GET'])
+def get_ollama_models_route():
+    try:
+        models = llm_service.get_available_models()
+        return jsonify(models), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {e}"}), 500
+
+@armory_bp.route('/set_llm_model', methods=['POST'])
+def set_llm_model_route():
+    if not request.is_json:
+        return jsonify({"error": "Missing JSON in request"}), 400
+
+    data = request.get_json()
+    model_name = data.get('model_name')
+
+    if not model_name:
+        return jsonify({"error": "Missing 'model_name' in request body"}), 400
+
+    try:
+        result = llm_service.set_model(model_name)
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {e}"}), 500
 
 @armory_bp.route('/enrich_repo', methods=['POST'])
 def enrich_repo_route():

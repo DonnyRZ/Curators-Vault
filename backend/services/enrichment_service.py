@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 import shutil
 from bs4 import BeautifulSoup
-from llama_index.llms.ollama import Ollama
+from services.llm_service import llm_service
 from llama_index.core import Document, Settings
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.output_parsers import PydanticOutputParser
@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 
 # Import configuration
-from config import LLM_MODEL, EMBED_MODEL, ARMORY_PATH
+from config import EMBED_MODEL, ARMORY_PATH
 from services.codebase_service import query_codebase_vector_store
 
 # --- Pydantic Models for Structured Output ---
@@ -43,7 +43,7 @@ class ImpactAnalysis(BaseModel):
 
 def get_llm_program(pydantic_model):
     """Creates a LlamaIndex program to generate structured output for the BriefingCard."""
-    llm = Ollama(model=LLM_MODEL, temperature=0.1, request_timeout=300.0)
+    llm = llm_service.get_llm()
     output_parser = PydanticOutputParser(pydantic_model)
     prompt_template_str = """Analyze the following technical context from a GitHub repository to generate a detailed Briefing Card.
 
@@ -158,7 +158,7 @@ def enrich_repo(repo_url: str):
 
 def get_impact_analysis_llm_program():
     """Creates a LlamaIndex program to generate structured ImpactAnalysis output."""
-    llm = Ollama(model=LLM_MODEL, temperature=0.1, request_timeout=600.0)
+    llm = llm_service.get_llm()
     output_parser = PydanticOutputParser(ImpactAnalysis)
     prompt_template_str = """Analyze the following project goal, project structure, and repository README content to generate an Impact Analysis.
 
@@ -240,11 +240,24 @@ def run_impact_analysis_for_repo(goal: str, project_structure: dict, repo_url: s
     if not readme_content:
         raise ValueError("Failed to fetch README for impact analysis.")
 
+    MAX_LLM_INPUT_LENGTH = 5000 # Define a maximum length for LLM inputs
+
+    # Truncate project_structure and readme_content if they are too long
+    truncated_project_structure = json.dumps(project_structure, indent=2)
+    if len(truncated_project_structure) > MAX_LLM_INPUT_LENGTH:
+        truncated_project_structure = truncated_project_structure[:MAX_LLM_INPUT_LENGTH] + "... (truncated)"
+        print(f"Truncated project_structure to {MAX_LLM_INPUT_LENGTH} characters.")
+
+    truncated_readme_content = readme_content
+    if len(truncated_readme_content) > MAX_LLM_INPUT_LENGTH:
+        truncated_readme_content = truncated_readme_content[:MAX_LLM_INPUT_LENGTH] + "... (truncated)"
+        print(f"Truncated readme_content to {MAX_LLM_INPUT_LENGTH} characters.")
+
     program = get_impact_analysis_llm_program()
     analysis = program(
         goal_text=goal,
-        project_structure=json.dumps(project_structure, indent=2),
-        readme_content=readme_content,
+        project_structure=truncated_project_structure,
+        readme_content=truncated_readme_content,
         repo_url=repo_url # Pass the URL to the prompt context
     )
     
@@ -332,7 +345,7 @@ def find_solutions(goal: str, project_path: str):
     full_prompt = "".join(prompt_parts)
 
     # Step 4: Invoke LLM and return recommendation
-    llm = Ollama(model=LLM_MODEL, temperature=0.1, request_timeout=300.0)
+    llm = llm_service.get_llm()
     recommendation = llm.complete(full_prompt)
     
     return {"recommendation": str(recommendation), "relevant_code_snippets": relevant_code_snippets, "relevant_armory_repos": relevant_armory_repos}

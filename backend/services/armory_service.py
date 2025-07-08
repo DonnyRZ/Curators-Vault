@@ -3,14 +3,14 @@ import json
 from llama_index.core import Document, VectorStoreIndex, StorageContext, load_index_from_storage
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.ollama import Ollama
+from services.llm_service import llm_service
 from llama_index.core import Settings
 
-from config import ARMORY_PATH, ARMORY_INDEX_PATH, EMBED_MODEL, LLM_MODEL
+from config import ARMORY_PATH, ARMORY_INDEX_PATH, EMBED_MODEL
 
 # Configure LlamaIndex global settings
 Settings.embed_model = HuggingFaceEmbedding(model_name=EMBED_MODEL)
-Settings.llm = Ollama(model=LLM_MODEL, request_timeout=300.0)
+Settings.llm = llm_service.get_llm()
 Settings.node_parser = SentenceSplitter(chunk_size=1024, chunk_overlap=20)
 
 def build_armory_index():

@@ -3,6 +3,7 @@ backend/curators_venv/
 
 # Python cache files
 __pycache__/
+*.pyc
 
 # VSCode specific settings
 .vscode/
@@ -12,3 +13,25 @@ frontend/node_modules/
 
 # Environment variables
 backend/.env
+
+# Log files
+*.log
+backend/backend_error.log
+
+# Debugging files
+Debugging/
+
+# Vector store
+frontend/vector_store/
+
+# Temporary files
+temp_enrich_test.py
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

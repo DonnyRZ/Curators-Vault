@@ -1,16 +1,16 @@
 import os
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.ollama import Ollama
+from services.llm_service import llm_service
 from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.vector_stores.simple import SimpleVectorStore
 from llama_index.core import StorageContext, load_index_from_storage
 
-from config import EMBED_MODEL, VECTOR_STORE_PATH, LLM_MODEL
+from config import EMBED_MODEL, VECTOR_STORE_PATH
 
 # Configure LlamaIndex global settings for embedding and LLM
 Settings.embed_model = HuggingFaceEmbedding(model_name=EMBED_MODEL)
-Settings.llm = Ollama(model=LLM_MODEL, request_timeout=300.0)
+Settings.llm = llm_service.get_llm()
 Settings.node_parser = SentenceSplitter(chunk_size=1024, chunk_overlap=20)
 
 def initialize_codebase_vector_store(project_path: str):

@@ -1,34 +1,45 @@
 // frontend/main.js (Electron's main process)
 
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
-const fs = require('fs').promises; // Use promises version for async operations
+const fs = require('fs').promises; // Use the promise-based version of fs
 const path = require('path');
 const { spawn } = require('child_process');
 
 let pythonProcess = null;
 
 // --- Step 1: Start the Python Backend ---
-const startPythonBackend = () => {
-    // Determine the path to the Python backend server script
+const startPythonBackend = async () => {
     const backendPath = path.join(__dirname, '..', 'backend', 'server.py');
-    const pythonEnvPath = path.join(__dirname, '..', 'backend', 'curators_venv', 'bin', 'python'); // Path to our clean venv python executable
+    const pythonEnvPath = path.join(__dirname, '..', 'backend', 'curators_venv', 'bin', 'python');
+
+    const pythonLogDir = path.join(app.getPath('userData'), 'python_logs');
+    await fs.mkdir(pythonLogDir, { recursive: true });
+
+    const stdoutLogPath = path.join(pythonLogDir, 'python_stdout.log');
+    const stderrLogPath = path.join(pythonLogDir, 'python_stderr.log');
+
+    const pythonStdout = await fs.open(stdoutLogPath, 'a');
+    const pythonStderr = await fs.open(stderrLogPath, 'a');
 
     console.log(`Starting Python backend: ${pythonEnvPath} ${backendPath}`);
 
-    // Spawn the Python process
-    pythonProcess = spawn(pythonEnvPath, [backendPath], { shell: true });
-
-    pythonProcess.stdout.on('data', (data) => {
-        console.log(`Python stdout: ${data}`);
+    pythonProcess = spawn(pythonEnvPath, [backendPath], {
+        detached: true,
+        stdio: ['ignore', pythonStdout.fd, pythonStderr.fd],
+        shell: true
     });
 
-    pythonProcess.stderr.on('data', (data) => {
-        console.error(`Python stderr: ${data}`);
-    });
+    pythonProcess.unref();
 
-    pythonProcess.on('close', (code) => {
+    pythonProcess.on('close', async (code) => {
         console.log(`Python process exited with code ${code}`);
-        pythonProcess = null; // Clear reference
+        pythonProcess = null;
+        await pythonStdout.close();
+        await pythonStderr.close();
+    });
+
+    pythonProcess.on('error', (err) => {
+        console.error('Failed to start Python process.', err);
     });
 };
 
@@ -68,7 +79,9 @@ const createPreloadScript = () => {
             exists: (filePath) => ipcRenderer.invoke('check-exists', filePath),
             readProjectsFile: () => ipcRenderer.invoke('read-projects-file'),
             writeProjectsFile: (projects) => ipcRenderer.invoke('write-projects-file', projects),
-            readAllEnrichedRepos: () => ipcRenderer.invoke('read-all-enriched-repos')
+            readAllEnrichedRepos: () => ipcRenderer.invoke('read-all-enriched-repos'),
+            getOllamaModels: () => ipcRenderer.invoke('get-ollama-models'),
+            setLLMModel: (modelName) => ipcRenderer.invoke('set-llm-model', modelName)
         });
     `;
     require('fs').writeFileSync(preloadPath, preloadContent);
@@ -241,4 +254,40 @@ ipcMain.handle('read-all-enriched-repos', async () => {
         console.log(`Armory directory not found: ${armoryDir}. Returning empty list.`);
     }
     return enrichedRepos;
+});
+
+// IPC handler to get Ollama models
+ipcMain.handle('get-ollama-models', async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:5001/api/get_ollama_models');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch Ollama models');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error getting Ollama models:', error);
+        throw error;
+    }
+});
+
+// IPC handler to set the LLM model
+ipcMain.handle('set-llm-model', async (event, modelName) => {
+    try {
+        const response = await fetch('http://127.0.0.1:5001/api/set_llm_model', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ model_name: modelName }),
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to set LLM model');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error setting LLM model:', error);
+        throw error;
+    }
 });

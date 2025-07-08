@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Footer & Status Elements ---
     const statusIndicator = document.getElementById('status-indicator');
     const statusMessage = document.getElementById('status-message');
+    const llmModelSelect = document.getElementById('llm-model-select');
     
     // --- App State ---
     let projects = [];
@@ -504,6 +505,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Initial Load ---
     const initialLoad = async () => {
         await loadProjects();
+        await loadOllamaModels();
         
         updateStatus('Connecting to backend...');
         
@@ -561,4 +563,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateStatus(`Error connecting to backend: ${error.message}`, true);
         }
     }
-});
+
+    llmModelSelect.addEventListener('change', async () => {
+        const selectedModel = llmModelSelect.value;
+        if (selectedModel) {
+            updateStatus(`Setting LLM model to: ${selectedModel}...`);
+            try {
+                await window.electronAPI.setLLMModel(selectedModel);
+                updateStatus(`LLM model set to: ${selectedModel}`);
+            } catch (error) {
+                updateStatus(`Error setting LLM model: ${error.message}`, true);
+            }
+        }
+    });
+
+    async function loadOllamaModels() {
+        try {
+            const models = await window.electronAPI.getOllamaModels();
+            llmModelSelect.innerHTML = '';
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                llmModelSelect.appendChild(option);
+            });
+        } catch (error) {
+            updateStatus(`Error loading Ollama models: ${error.message}`, true);
+        }
+    }});
