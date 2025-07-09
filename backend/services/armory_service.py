@@ -80,7 +80,7 @@ def delete_repo(repo_url: str) -> str:
     print(f"Repository {repo_url} deleted and Armory index rebuilt.")
     return repo_url
 
-def query_armory_index(query_text: str, top_k: int = 5) -> list[dict]:
+def query_armory_index(query_text: str, top_k: int = 3) -> list[dict]:
     """
     Queries the Armory index to find the most relevant tools.
     """

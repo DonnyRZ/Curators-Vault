@@ -4,6 +4,7 @@ import requests
 import subprocess
 import tempfile
 import shutil
+import time
 from bs4 import BeautifulSoup
 from services.llm_service import llm_service
 from llama_index.core import Document, Settings
@@ -199,39 +200,57 @@ def fetch_readme_content(repo_url: str) -> str:
     Fetches and parses the README content from a GitHub repository URL.
     Returns an empty string if the README cannot be fetched.
     """
-    try:
-        # Extract owner and repo name from the URL
-        parts = repo_url.split('/')
-        if len(parts) < 5 or parts[2] != 'github.com':
-            print(f"Warning: Not a standard GitHub URL: {repo_url}")
-            return ""
+    retries = 3
+    delay = 2
+    for i in range(retries):
+        try:
+            # Extract owner and repo name from the URL
+            parts = repo_url.split('/')
+            if len(parts) < 5 or parts[2] != 'github.com':
+                print(f"Warning: Not a standard GitHub URL: {repo_url}")
+                return ""
 
-        owner = parts[3]
-        repo_name = parts[4]
+            owner = parts[3]
+            repo_name = parts[4]
 
-        # Common default branch names to try
-        branch_names = ["main", "master", "develop"]
+            # Common default branch names to try
+            branch_names = ["main", "master", "develop"]
 
-        for branch in branch_names:
-            raw_url = f"https://raw.githubusercontent.com/{owner}/{repo_name}/{branch}/README.md"
-            try:
-                response = requests.get(raw_url)
-                if response.status_code == 200:
-                    print(f"Successfully fetched README from {raw_url}")
-                    return response.text
-                elif response.status_code == 404:
-                    print(f"README not found at {raw_url}. Trying next branch...")
-                else:
-                    print(f"Failed to fetch README from {raw_url}. Status: {response.status_code}")
-            except requests.RequestException as e:
-                print(f"Request failed for {raw_url}: {e}")
-                continue # Try the next branch name
-
-        print(f"Could not find README.md for {repo_url} after trying common branches.")
-        return ""
-    except Exception as e:
-        print(f"An unexpected error occurred while fetching README for {repo_url}: {e}")
-        return ""
+            for branch in branch_names:
+                raw_url = f"https://raw.githubusercontent.com/{owner}/{repo_name}/{branch}/README.md"
+                try:
+                    response = requests.get(raw_url, timeout=10)
+                    if response.status_code == 200:
+                        print(f"Successfully fetched README from {raw_url}")
+                        return response.text
+                    elif response.status_code == 404:
+                        print(f"README not found at {raw_url}. Trying next branch...")
+                    else:
+                        print(f"Failed to fetch README from {raw_url}. Status: {response.status_code}")
+                except requests.RequestException as e:
+                    print(f"Request failed for {raw_url}: {e}")
+                    continue # Try the next branch name
+            
+            print(f"Could not find README.md for {repo_url} after trying common branches.")
+            # If we've exhausted all branches and still haven't found the README,
+            # we'll retry the whole process after a delay.
+            if i < retries - 1:
+                print(f"Retrying fetch_readme_content in {delay} seconds...")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                print("Max retries reached for fetch_readme_content.")
+                return ""
+        except Exception as e:
+            print(f"An unexpected error occurred while fetching README for {repo_url}: {e}")
+            if i < retries - 1:
+                print(f"Retrying fetch_readme_content in {delay} seconds...")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                print("Max retries reached for fetch_readme_content due to unexpected error.")
+                return ""
+    return ""
 
 def run_impact_analysis_for_repo(goal: str, project_structure: dict, repo_url: str):
     """Runs impact analysis for a single repository."""
@@ -240,7 +259,7 @@ def run_impact_analysis_for_repo(goal: str, project_structure: dict, repo_url: s
     if not readme_content:
         raise ValueError("Failed to fetch README for impact analysis.")
 
-    MAX_LLM_INPUT_LENGTH = 5000 # Define a maximum length for LLM inputs
+    MAX_LLM_INPUT_LENGTH = 8000 # Define a maximum length for LLM inputs
 
     # Truncate project_structure and readme_content if they are too long
     truncated_project_structure = json.dumps(project_structure, indent=2)
@@ -253,17 +272,30 @@ def run_impact_analysis_for_repo(goal: str, project_structure: dict, repo_url: s
         truncated_readme_content = truncated_readme_content[:MAX_LLM_INPUT_LENGTH] + "... (truncated)"
         print(f"Truncated readme_content to {MAX_LLM_INPUT_LENGTH} characters.")
 
-    program = get_impact_analysis_llm_program()
-    analysis = program(
-        goal_text=goal,
-        project_structure=truncated_project_structure,
-        readme_content=truncated_readme_content,
-        repo_url=repo_url # Pass the URL to the prompt context
-    )
-    
-    analysis_data = analysis.dict()
-    analysis_data['url'] = repo_url # Ensure URL is in the final output
-    return analysis_data
+    retries = 3
+    delay = 5
+    for i in range(retries):
+        try:
+            program = get_impact_analysis_llm_program()
+            analysis = program(
+                goal_text=goal,
+                project_structure=truncated_project_structure,
+                readme_content=truncated_readme_content,
+                repo_url=repo_url # Pass the URL to the prompt context
+            )
+            
+            analysis_data = analysis.dict()
+            analysis_data['url'] = repo_url # Ensure URL is in the final output
+            return analysis_data
+        except Exception as e:
+            print(f"Error during impact analysis LLM call: {e}")
+            if i < retries - 1:
+                print(f"Retrying LLM call in {delay} seconds...")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                print("Max retries reached for impact analysis LLM call.")
+                raise ValueError("Failed to get impact analysis from LLM after multiple retries.")
 
 def get_relevant_armory_repos(goal: str, top_n: int = 3) -> List[dict]:
     """
