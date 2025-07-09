@@ -10,7 +10,7 @@ load_dotenv(dotenv_path=dotenv_path)
 LLM_MODEL = os.getenv("LLM_MODEL", "gemma3n:e4b")
 
 # --- Embedding Model Configuration ---
-EMBED_MODEL = os.getenv("EMBED_MODEL", "BAAI/bge-base-en-v1.5")
+EMBED_MODEL = os.getenv("EMBED_MODEL", "all-MiniLM-L6-v2")
 
 # --- Vector Store Configuration ---
 VECTOR_STORE_PATH = "./vector_store"
@@ -19,3 +19,8 @@ VECTOR_STORE_PATH = "./vector_store"
 # Use an absolute path for the armory to ensure consistency
 ARMORY_PATH = os.path.join(os.path.expanduser("~"), ".curators-atlas", "armory")
 ARMORY_INDEX_PATH = os.path.join(os.path.expanduser("~"), ".curators-atlas", "armory_index")
+
+# --- Cache Configuration ---
+# Type can be 'redis' or 'in-memory'
+CACHE_TYPE = os.getenv("CACHE_TYPE", "in-memory")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")

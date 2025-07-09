@@ -1,4 +1,0 @@
-127.0.0.1 - - [09/Jul/2025 20:02:00] "POST /api/find_solution_candidates HTTP/1.1" 200 -
-127.0.0.1 - - [09/Jul/2025 20:03:35] "POST /api/run_impact_analysis HTTP/1.1" 200 -
-127.0.0.1 - - [09/Jul/2025 20:05:12] "POST /api/run_impact_analysis HTTP/1.1" 200 -
-127.0.0.1 - - [09/Jul/2025 20:06:53] "POST /api/run_impact_analysis HTTP/1.1" 200 -

@@ -1,107 +1,77 @@
-import sys
-import io
 import traceback
-from flask import Blueprint, request, jsonify
-from services.enrichment_service import enrich_repo, run_impact_analysis_for_repo
-from services.armory_service import build_armory_index
-from services.llm_service import llm_service # Import the llm_service instance
+from fastapi import APIRouter, HTTPException, Body
+from pydantic import BaseModel, Field
+from ..services.enrichment_service import enrich_repo, run_impact_analysis_for_repo, get_readme_summary_for_repo
+from ..services.armory_service import build_armory_index, delete_repo as delete_repo_service, get_armory_index_doc_count
 
-armory_bp = Blueprint('armory', __name__)
+# Define Pydantic models for request bodies
+class RepoURL(BaseModel):
+    url: str
 
-@armory_bp.route('/get_ollama_models', methods=['GET'])
-def get_ollama_models_route():
+class ImpactAnalysisRequest(BaseModel):
+    goal: str
+    repo_url: str
+    project_structure: dict
+
+class ReadmeSummaryRequest(BaseModel):
+    repo_url: str
+
+armory_router = APIRouter()
+
+@armory_router.get('/doc_count')
+async def get_armory_doc_count_route():
+    """Returns the number of documents in the Armory index."""
     try:
-        models = llm_service.get_available_models()
-        return jsonify(models), 200
+        count = get_armory_index_doc_count()
+        return {"doc_count": count}
     except Exception as e:
-        return jsonify({"error": f"An error occurred: {e}"}), 500
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
-@armory_bp.route('/set_llm_model', methods=['POST'])
-def set_llm_model_route():
-    if not request.is_json:
-        return jsonify({"error": "Missing JSON in request"}), 400
-
-    data = request.get_json()
-    model_name = data.get('model_name')
-
-    if not model_name:
-        return jsonify({"error": "Missing 'model_name' in request body"}), 400
-
+@armory_router.post('/enrich_repo')
+async def enrich_repo_route(repo: RepoURL):
     try:
-        result = llm_service.set_model(model_name)
-        return jsonify(result), 200
+        # Note: This now calls the improved service that handles incremental indexing
+        enriched_data = await enrich_repo(repo.url)
+        return enriched_data
     except Exception as e:
-        return jsonify({"error": f"An error occurred: {e}"}), 500
+        tb = traceback.format_exc()
+        print(f"Error during enrich_repo: {tb}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@armory_bp.route('/enrich_repo', methods=['POST'])
-def enrich_repo_route():
-    if not request.is_json:
-        return jsonify({"error": "Missing JSON in request"}), 400
-
-    data = request.get_json()
-    repo_url = data.get('url')
-
-    if not repo_url:
-        return jsonify({"error": "Missing 'url' in request body"}), 400
-
+@armory_router.post('/build_armory_index')
+async def build_armory_index_route():
     try:
-        enriched_data = enrich_repo(repo_url)
-        # After successful enrichment, rebuild the armory index
+        # This is a long-running task and should ideally be run in the background
         build_armory_index()
-        return jsonify(enriched_data), 200
+        return {"message": "Armory index build process started."}
     except Exception as e:
-        # Capture the full traceback
-        sio = io.StringIO()
-        traceback.print_exc(file=sio)
-        full_traceback = sio.getvalue()
-        
-        print(f"Error during enrich_repo: {full_traceback}", file=sys.stderr) # Also print to stderr for terminal visibility
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
-        return jsonify({"error": f"An error occurred: {e}", "traceback": full_traceback}), 500
-
-@armory_bp.route('/build_armory_index', methods=['POST'])
-def build_armory_index_route():
+@armory_router.post('/run_impact_analysis')
+async def run_impact_analysis_route(request: ImpactAnalysisRequest):
     try:
-        build_armory_index()
-        return jsonify({"message": "Armory index built successfully."}), 200
+        analysis = await run_impact_analysis_for_repo(request.goal, request.project_structure, request.repo_url)
+        return analysis
     except Exception as e:
-        return jsonify({"error": f"An error occurred: {e}"}), 500
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
-@armory_bp.route('/run_impact_analysis', methods=['POST'])
-def run_impact_analysis_route():
-    if not request.is_json:
-        return jsonify({"error": "Missing JSON in request"}), 400
-
-    data = request.get_json()
-    goal = data.get('goal')
-    repo_url = data.get('repo_url')
-    project_structure = data.get('project_structure')
-
-    if not goal or not repo_url or not project_structure:
-        return jsonify({"error": "Missing 'goal', 'repo_url', or 'project_structure' in request body"}), 400
-
+@armory_router.post('/readme-summary')
+async def readme_summary_route(request: ReadmeSummaryRequest):
     try:
-        analysis = run_impact_analysis_for_repo(goal, project_structure, repo_url)
-        return jsonify(analysis), 200
+        summary = await get_readme_summary_for_repo(request.repo_url)
+        if summary:
+            return {"summary": summary}
+        else:
+            raise HTTPException(status_code=404, detail="Could not generate README summary.")
     except Exception as e:
-        return jsonify({"error": f"An error occurred: {e}"}), 500
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
-@armory_bp.route('/delete_repo', methods=['DELETE'])
-def delete_repo_route():
-    if not request.is_json:
-        return jsonify({"error": "Missing JSON in request"}), 400
-
-    data = request.get_json()
-    repo_url = data.get('repo_url')
-
-    if not repo_url:
-        return jsonify({"error": "Missing 'repo_url' in request body"}), 400
-
+@armory_router.delete('/delete_repo')
+async def delete_repo_route(repo: RepoURL):
     try:
-        from services.armory_service import delete_repo
-        delete_repo(repo_url)
-        return jsonify({"message": f"Repository {repo_url} deleted successfully."}), 200
-    except FileNotFoundError:
-        return jsonify({"error": f"Repository {repo_url} not found."}), 404
+        delete_repo_service(repo.url)
+        return {"message": f"Repository {repo.url} deleted successfully."}
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        return jsonify({"error": f"An error occurred: {e}"}), 500
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")

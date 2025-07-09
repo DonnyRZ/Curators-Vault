@@ -2,15 +2,15 @@
 
 import requests
 from llama_index.llms.ollama import Ollama
-from config import LLM_MODEL
+from ..config import LLM_MODEL
 
 class LLMService:
     def __init__(self):
         self._llm_model = LLM_MODEL
         self._llm = Ollama(model=self._llm_model, temperature=0.1, request_timeout=300.0)
 
-    def get_llm(self):
-        return self._llm
+    def get_llm(self, timeout: float = 300.0):
+        return Ollama(model=self._llm_model, temperature=0.1, request_timeout=timeout)
 
     def get_model_name(self):
         return self._llm_model
