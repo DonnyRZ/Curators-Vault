@@ -739,3 +739,42 @@ input[type="text"]:focus {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary-light);
 }
+
+/* --- Inspector Panel --- */
+#inspector-section {
+    flex: 1;
+}
+
+#inspector-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.inspector-group h4 {
+    color: var(--secondary);
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--secondary);
+    padding-bottom: 5px;
+}
+
+.inspector-group p {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.inspector-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inspector-list-item {
+    background: rgba(0,0,0,0.2);
+    padding: 8px 12px;
+    border-radius: 6px;
+}

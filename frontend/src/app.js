@@ -25,6 +25,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const armoryList = document.getElementById('armory-list');
     const deleteRepoBtn = document.getElementById('delete-repo-btn');
 
+    // --- Inspector Elements ---
+    const inspectorSection = document.getElementById('inspector-section');
+    const inspectorContent = document.getElementById('inspector-content');
+    const closeInspectorBtn = document.getElementById('close-inspector-btn');
+
     // --- Footer & Status Elements ---
     const statusIndicator = document.getElementById('status-indicator');
     const statusMessage = document.getElementById('status-message');
@@ -200,8 +205,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    const renderFileTree = (node, parentElement) => {
+    const renderFileTree = (node, parentElement, currentPath) => {
         if (!node) return;
+
+        const itemPath = currentPath ? `${currentPath}/${node.name}` : node.name;
+        node.path = itemPath; // Assign the full path to the node object
 
         const itemDiv = document.createElement('div');
         itemDiv.className = 'file-tree-item';
@@ -223,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             itemDiv.classList.add('collapsed');
             
             if (node.children && node.children.length > 0) {
-                node.children.forEach(child => renderFileTree(child, childrenContainer));
+                node.children.forEach(child => renderFileTree(child, childrenContainer, itemPath));
                 itemDiv.appendChild(childrenContainer);
             }
         } else {
@@ -231,6 +239,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         parentElement.appendChild(itemDiv);
+
+        if (node.type === 'file') {
+            itemDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleFileItemClick(node);
+            });
+        }
+    };
+
+    const handleFileItemClick = async (node) => {
+        if (node.type === 'file') {
+            updateStatus(`Analyzing ${node.name}...`);
+            try {
+                const response = await fetch('http://127.0.0.1:5001/api/analyse_item', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        project_path: activeProject.path,
+                        file_path: node.path
+                    }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    renderInspector(data);
+                    updateStatus(`Analysis complete for ${node.name}`);
+                } else {
+                    updateStatus(`Analysis failed: ${data.error}`, true);
+                }
+            } catch (error) {
+                updateStatus(`Error connecting to backend: ${error.message}`, true);
+            }
+        }
+    };
+
+    const renderInspector = (data) => {
+        inspectorContent.innerHTML = `
+            <div class="inspector-group">
+                <h4>Summary</h4>
+                <p>${data.summary}</p>
+            </div>
+            <div class="inspector-group">
+                <h4>Key Components</h4>
+                <ul class="inspector-list">
+                    ${data.components.map(c => `<li class="inspector-list-item">${c}</li>`).join('')}
+                </ul>
+            </div>
+            <div class="inspector-group">
+                <h4>Dependencies (Imports)</h4>
+                <ul class="inspector-list">
+                    ${data.dependencies.map(d => `<li class="inspector-list-item">${d}</li>`).join('')}
+                </ul>
+            </div>
+            <div class="inspector-group">
+                <h4>Dependents (Imported By)</h4>
+                <ul class="inspector-list">
+                    ${data.dependents.map(d => `<li class="inspector-list-item">${d}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        inspectorSection.style.display = 'flex';
     };
 
     const renderProjects = () => {
@@ -258,7 +327,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             projectCard.querySelector('.remove-project-btn').addEventListener('click', async (event) => {
                 event.stopPropagation();
                 const projectPathToRemove = event.target.dataset.path;
-                if (confirm(`Remove project: ${project.name}?`)) {
+                if (confirm(`Are you sure you want to delete ${project.name}?`)) {
                     projects = projects.filter(p => p.path !== projectPathToRemove);
                     await window.electronAPI.writeProjectsFile(projects);
                     renderProjects();
@@ -330,7 +399,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 activeProject.structure = data; // Store the project structure
                 updateStatus(`Project "${project.name}" loaded successfully`);
                 fileTreeContainer.innerHTML = '';
-                data.children.forEach(child => renderFileTree(child, fileTreeContainer));
+                data.children.forEach(child => renderFileTree(child, fileTreeContainer, project.path)); // Pass project.path here
             } else {
                 updateStatus(`Scan failed: ${data.error}`, true);
                 switchToHubView(); // Go back if scan fails
@@ -346,7 +415,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const handleAddProject = async () => {
         const selectedPath = await window.electronAPI.openDirectoryDialog();
         if (selectedPath) {
-            const projectName = selectedPath.split(/[\\/]/).pop();            const newProject = { id: generateUUID(), name: projectName, path: selectedPath };
+            const projectName = selectedPath.split(/[\/]/).pop();            const newProject = { id: generateUUID(), name: projectName, path: selectedPath };
 
             if (!projects.some(p => p.path === newProject.path)) {
                 projects.push(newProject);
@@ -502,6 +571,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     
+    closeInspectorBtn.addEventListener('click', () => {
+        inspectorSection.style.display = 'none';
+    });
+
     // --- Initial Load ---
     const initialLoad = async () => {
         await loadProjects();
@@ -590,4 +663,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             updateStatus(`Error loading Ollama models: ${error.message}`, true);
         }
-    }});
+    }
+});

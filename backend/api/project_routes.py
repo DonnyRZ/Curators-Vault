@@ -4,6 +4,7 @@ import os
 
 from ..services.scanner_service import scan_directory
 from ..services.armory_service import query_armory_index
+from ..services.analysis.orchestrator import run_analysis
 
 # Define Pydantic models for request bodies
 class ScanRequest(BaseModel):
@@ -11,6 +12,10 @@ class ScanRequest(BaseModel):
 
 class GoalRequest(BaseModel):
     goal: str
+
+class AnalysisRequest(BaseModel):
+    project_path: str
+    file_path: str
 
 project_router = APIRouter()
 
@@ -54,3 +59,17 @@ async def find_raw_solution_candidates_route(request: GoalRequest):
         return candidates
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
+
+@project_router.post("/analyse_item")
+async def analyse_item_route(request: AnalysisRequest):
+    """
+    API endpoint to run the analysis pipeline on a specific file or directory.
+    """
+    if not os.path.isabs(request.project_path) or not os.path.isabs(request.file_path):
+        raise HTTPException(status_code=400, detail="Paths must be absolute")
+
+    try:
+        analysis_result = run_analysis(request.project_path, request.file_path)
+        return analysis_result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred during analysis: {e}")
