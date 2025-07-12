@@ -17,8 +17,8 @@ VECTOR_STORE_PATH = "./vector_store"
 
 # --- Armory Configuration ---
 # Use an absolute path for the armory to ensure consistency
-ARMORY_PATH = os.path.join(os.path.expanduser("~"), ".curators-atlas", "armory")
-ARMORY_INDEX_PATH = os.path.join(os.path.expanduser("~"), ".curators-atlas", "armory_index")
+ARMORY_PATH = "./armory"
+ARMORY_INDEX_PATH = "./armory_index"
 
 # --- Cache Configuration ---
 # Type can be 'redis' or 'in-memory'

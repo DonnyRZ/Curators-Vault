@@ -3,8 +3,11 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from .llm_service import llm_service
 from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.vector_stores.simple import SimpleVectorStore
 from llama_index.core import StorageContext, load_index_from_storage
+
+# Import FAISS specific modules
+import faiss
+from llama_index.vector_stores.faiss import FaissVectorStore
 
 from ..config import EMBED_MODEL, VECTOR_STORE_PATH
 
@@ -28,6 +31,17 @@ def initialize_codebase_vector_store(project_path: str):
         print(f"Loading cached in-memory vector store for project: {project_path}")
         return _codebase_index_cache[project_vector_store_path]
 
+    # Determine embedding dimension
+    try:
+        embed_dim = Settings.embed_model.embed_dim
+    except AttributeError:
+        print("Warning: embed_dim not found on Settings.embed_model. Defaulting to 768.")
+        embed_dim = 768 # Common dimension for many sentence-transformer models
+
+    # Initialize FAISS index (HNSWFlat for ANN) for CPU
+    faiss_index = faiss.IndexHNSWFlat(embed_dim, 32) # M=32 is a common default
+    vector_store = FaissVectorStore(faiss_index=faiss_index)
+
     if not os.path.exists(project_vector_store_path):
         print(f"Creating new vector store for project: {project_path}")
         # Load documents from the project path
@@ -48,9 +62,10 @@ def initialize_codebase_vector_store(project_path: str):
             print(f"No documents found in {project_path}. Cannot create index.")
             return None
 
-        # Create a new index
-        print("Creating index from documents...")
-        index = VectorStoreIndex.from_documents(documents)
+        # Create a new index with the FAISS vector store
+        print("Creating index from documents with FAISS...")
+        storage_context = StorageContext.from_defaults(vector_store=vector_store)
+        index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
         
         # Persist the index to disk
         print(f"Saving vector store to: {project_vector_store_path}")
@@ -58,7 +73,11 @@ def initialize_codebase_vector_store(project_path: str):
     else:
         print(f"Loading existing vector store from disk for project: {project_path}")
         # Load the existing index from disk
-        storage_context = StorageContext.from_defaults(persist_dir=project_vector_store_path)
+        # When loading, we need to provide the FaissVectorStore instance
+        storage_context = StorageContext.from_defaults(
+            vector_store=vector_store,
+            persist_dir=project_vector_store_path
+        )
         index = load_index_from_storage(storage_context)
         print("Vector store loaded from disk.")
     

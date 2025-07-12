@@ -7,6 +7,10 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from .llm_service import llm_service
 from llama_index.core import Settings
 
+# Import FAISS specific modules
+import faiss
+from llama_index.vector_stores.faiss import FaissVectorStore
+
 from ..config import ARMORY_PATH, ARMORY_INDEX_PATH, EMBED_MODEL
 
 # --- Global In-Memory Cache for the Index ---
@@ -21,6 +25,19 @@ def _get_doc_id(repo_url: str) -> str:
     """Generates a consistent and unique document ID from the repository URL."""
     print(f"Generating doc_id for repo_url: '{repo_url}'")
     return hashlib.md5(repo_url.encode('utf-8')).hexdigest()
+
+def _get_faiss_vector_store():
+    """Helper to initialize a FaissVectorStore with IndexHNSWFlat for CPU."""
+    # Determine embedding dimension
+    try:
+        embed_dim = Settings.embed_model.embed_dim
+    except AttributeError:
+        print("Warning: embed_dim not found on Settings.embed_model. Defaulting to 768.")
+        embed_dim = 768 # Common dimension for many sentence-transformer models
+
+    # Initialize FAISS index (HNSWFlat for ANN) for CPU
+    faiss_index = faiss.IndexHNSWFlat(embed_dim, 32) # M=32 is a common default
+    return FaissVectorStore(faiss_index=faiss_index)
 
 def build_armory_index():
     """
@@ -37,7 +54,10 @@ def build_armory_index():
     if not os.path.exists(ARMORY_PATH):
         os.makedirs(ARMORY_PATH)
         print(f"Created Armory path: {ARMORY_PATH}")
-        _armory_index = VectorStoreIndex.from_documents([]) # Create empty index
+        # Create empty index with FAISS vector store
+        vector_store = _get_faiss_vector_store()
+        storage_context = StorageContext.from_defaults(vector_store=vector_store)
+        _armory_index = VectorStoreIndex.from_documents([], storage_context=storage_context)
         _armory_index.storage_context.persist(persist_dir=ARMORY_INDEX_PATH)
         return
 
@@ -67,9 +87,10 @@ def build_armory_index():
             except Exception as e:
                 print(f"Error processing file {filepath}: {e}")
 
-    index = VectorStoreIndex([])
-    for document in documents:
-        index.insert(document)
+    # Create a new index with the FAISS vector store
+    vector_store = _get_faiss_vector_store()
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
 
     index.storage_context.persist(persist_dir=ARMORY_INDEX_PATH)
     _armory_index = index
@@ -84,7 +105,12 @@ def load_armory_index():
     if os.path.exists(ARMORY_INDEX_PATH):
         try:
             print("Loading Armory index from disk into memory...")
-            storage_context = StorageContext.from_defaults(persist_dir=ARMORY_INDEX_PATH)
+            # When loading, we need to provide the FaissVectorStore instance
+            vector_store = _get_faiss_vector_store()
+            storage_context = StorageContext.from_defaults(
+                vector_store=vector_store,
+                persist_dir=ARMORY_INDEX_PATH
+            )
             _armory_index = load_index_from_storage(storage_context)
             print("Armory index loaded into memory.")
             print(f"Documents in docstore after loading: {len(_armory_index.docstore.docs)}")
