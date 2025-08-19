@@ -1,0 +1,12 @@
+{
+  "appType": "SPA",
+  "language": "javascript-vanilla",
+  "typescript": false,
+  "html": true,
+  "css": true,
+  "constraints": [
+    "single index.html at root",
+    "multiple JS/CSS files allowed",
+    "no frameworks by default"
+  ]
+}

@@ -11,7 +11,7 @@ module.exports = {
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        name: 'gemini_electron_template',
+        name: 'curators_vault_mvp',
       },
     },
   ],

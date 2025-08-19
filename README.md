@@ -1,161 +1,130 @@
-# Gemini-CLI Electron Template
+# Curator's Vault MVP Generator
 
-A minimal, beginner-friendly scaffold that shows how to wire **Electron + Gemini CLI** together.
+A desktop application built with Electron and the Gemini CLI to generate MVPs (Minimum Viable Products) from mockups, features, and rules.
 
----
+## Overview
 
-## Why this template?
+The Curator's Vault MVP Generator is a tool that streamlines the process of turning design mockups into functional web applications. By leveraging the power of the Gemini CLI for AI-driven code generation, this application allows users to:
 
-This template is designed for developers who want to build desktop AI applications using Electron and the Gemini CLI without getting bogged down in complex setup or environment issues. It provides a robust, pre-configured foundation, allowing you to focus on your application's unique features.
+1. Define a project workspace
+2. Upload design mockups
+3. Map features to each mockup
+4. Set project-wide rules and constraints
+5. Automatically generate a complete Single Page Application (SPA)
 
-**Key Principles:**
+## Project Structure
 
-- **"Black Box" Core:** The template's core logic is stable and should generally **not be modified**. This prevents accidental breakage of the complex Electron-Gemini CLI integration.
-- **Clear Separation of Concerns:** Distinguishes between the template's core functionality and your application's specific UI and AI prompts.
-- **Easy Extensibility:** Designed to be easily extended by adding your own UI components and Gemini prompts.
+```
+MVP-01/
+├── src/
+│   ├── main/
+│   │   ├── main.js          # Electron main process entry point
+│   │   ├── preload.js       # Secure IPC bridge
+│   │   ├── ipc-handlers.js  # Handles Electron IPC messages
+│   │   └── server.js        # Express server for core logic and Gemini CLI interaction
+│   ├── renderer/
+│   │   ├── index.html       # Main UI HTML
+│   │   ├── renderer.js      # Frontend application logic
+│   │   └── styles.css       # Application styling
+│   └── prompts/
+│       ├── planning-prompt.yaml  # Prompt for the planning stage
+│       ├── build-prompt.yaml     # Prompt for the build stage
+│       └── default-rules.json    # Default project rules
+├── package.json             # Project metadata and dependencies
+├── forge.config.js          # Electron Forge configuration
+└── .gitignore               # Git ignore rules
+```
 
----
+## Key Features
 
-## Installing Gemini CLI
+1.  **Workspace Management**: Create or select a project workspace where all files will be generated.
+2.  **Mockup Organization**: Upload and manage design mockups with automatic organization into numbered folders.
+3.  **Feature Mapping**: Define features for each mockup with a structured form interface.
+4.  **Rule Definition**: Set project-wide rules that guide the code generation process.
+5.  **Two-Stage Generation**:
+    *   **Planning**: AI analyzes inputs and creates a development plan.
+    *   **Building**: AI implements the plan to generate the actual SPA code.
+6.  **Progress Monitoring**: Real-time output display during the generation process.
+7.  **Live Preview**: Instantly preview the generated MVP with hot-reload capabilities.
 
-You can install the Gemini CLI in two ways:
+## Technology Stack
 
-1.  **Run without installing:**
+*   **Electron**: For building the cross-platform desktop application.
+*   **Node.js / Express**: For the backend server that orchestrates the generation process.
+*   **Gemini CLI**: For AI-powered code generation.
+*   **HTML/CSS/JavaScript**: For the frontend user interface.
+*   **AJV**: For JSON schema validation of project rules and features.
+*   **Chokidar**: For file watching to enable live preview.
+
+## Installation
+
+1.  Clone the repository:
     ```bash
-    npx https://github.com/google-gemini/gemini-cli
+    git clone <repository-url>
+    cd MVP-01
     ```
-
-2.  **Global installation:**
-    ```bash
-    # 1. Install the CLI globally
-    npm install -g @google/gemini-cli
-
-    # 2. Run the CLI
-    gemini
-    ```
-
----
-
-## Quick Start
-
-To get started with this template, follow these steps:
-
-1.  **Clone the repository:**
-
-    ```bash
-    git clone https://github.com/DonnyRZ/dorez.git
-    cd dorez
-    ```
-
-2.  **Install Node.js dependencies:**
-
+2.  Install dependencies:
     ```bash
     npm install
     ```
+3.  Ensure you have the Gemini CLI installed. If not, install it globally:
+    ```bash
+    npm install -g @google/gemini-cli
+    ```
 
-3.  **Start the application:**
+## Usage
+
+1.  Start the application in development mode:
     ```bash
     npm start
     ```
-    This will launch the Electron application and its local backend server.
+2.  Follow the in-app workflow:
+    *   **Workspace Setup**: Choose or create a workspace directory.
+    *   **Mockups Manager**: Upload your design mockups.
+    *   **Feature Mapping**: Define features for each mockup.
+    *   **Project Rules**: Set project constraints and technology preferences.
+    *   **Generate & Monitor**: Start the AI-powered generation process and monitor progress.
+    *   **Live Preview**: View and interact with the generated MVP.
 
-> **Tip:** If you haven't installed Google's **Gemini CLI**, `npm install` will install it as a local dependency, and `npx gemini` will fall back to it automatically.
+## Development Workflow
 
----
+1.  The application uses Electron Forge for packaging. To package the app for your current platform:
+    ```bash
+    npm run make
+    ```
+2.  Linting and formatting are handled by ESLint and Prettier:
+    ```bash
+    npm run lint
+    npm run format
+    ```
 
-## Project Structure (Overview)
+## Architecture
 
-The project is organized to clearly separate the template's core logic from your application's custom code.
+The application follows a client-server architecture within the Electron framework:
 
-```
-.
-├── src/
-│   ├── core/           # Template Core: DO NOT MODIFY these files unless you know what you're doing.
-│   │   ├── main.js         # Electron main process entry point.
-│   │   ├── preload.js      # Secure IPC bridge for renderer-main communication.
-│   │   ├── ipc-handlers.js # Handles communication between renderer and local server.
-│   │   └── server.js       # Local Express server for Gemini CLI integration.
-│   │
-│   ├── renderer/       # Your Application UI: MODIFY these files to build your UI.
-│   │   ├── index.html      # Main HTML file for the user interface.
-│   │   ├── renderer.js     # Your UI logic and interaction with the core API.
-│   │   └── styles.css      # Your application's styling.
-│   │
-│   └── prompts/        # Your Gemini Prompts: Add your custom prompt files here.
-│       └── readme-prompt.yaml # Example prompt for README generation.
-│
-├── assets/             # Application assets (e.g., logo).
-├── package.json        # Project metadata and dependencies.
-├── package-lock.json   # Locked dependencies for reproducible builds.
-├── forge.config.js     # Electron Forge configuration for packaging.
-└── README.md           # This file.
-```
+1.  **Renderer Process**: The frontend UI built with HTML, CSS, and JavaScript. It communicates with the main process via IPC.
+2.  **Main Process**: The Electron main process handles window creation, IPC message routing, and spawning the backend server.
+3.  **Backend Server**: An Express server that handles the core application logic, including:
+    *   Workspace management
+    *   Mockup processing and organization
+    *   Feature and rule handling
+    *   Interaction with the Gemini CLI for code generation
+    *   File system operations
+4.  **Gemini CLI**: An external AI tool that performs the actual code generation based on prompts provided by the backend server.
 
----
+## Prompts
 
-## How the Gemini CLI Integration Works
+The application uses two main prompts for the Gemini CLI:
 
-This template uses a local Express server (`src/core/server.js`) to manage the Gemini CLI process. This approach offers several benefits:
+1.  **Planning Prompt** (`src/prompts/planning-prompt.yaml`): Guides the AI in creating a development plan based on the project inputs.
+2.  **Build Prompt** (`src/prompts/build-prompt.yaml`): Guides the AI in implementing the development plan to generate the actual code.
 
-- **UI Responsiveness:** Prevents the Electron UI from freezing during long-running Gemini CLI operations.
-- **Environment Isolation:** Handles complex command execution and environment setup in a controlled Node.js server environment.
-- **Security:** Ensures the Gemini CLI operates within the correct working directory (`cwd`) for security and proper file access.
+These prompts are designed to produce high-quality, maintainable code that adheres to the specified project rules and constraints.
 
-When you interact with the UI (e.g., drop a folder):
+## Contributing
 
-1.  The UI (`src/renderer/renderer.js`) sends a request to the Electron main process (`src/core/ipc-handlers.js`).
-2.  The main process forwards this request to the local Express server (`src/core/server.js`).
-3.  The server:
-    - Scans the dropped folder to create a code outline.
-    - Combines the outline with a specified prompt (from `src/prompts/`).
-    - Spawns the `npx gemini` command, setting its working directory (`cwd`) to the dropped folder.
-    - Streams the Gemini CLI's output back to the Electron app.
-4.  The Electron app receives the streamed output and displays it in the UI.
-
----
-
-## Extending Your Application
-
-This template is designed for easy extension without modifying its core.
-
-### Adding New Gemini Prompts:
-
-1.  Create a new `.yaml` file in the `src/prompts/` directory (e.g., `my-new-feature.yaml`).
-2.  Define your Gemini prompt within this file.
-3.  In your UI logic (`src/renderer/renderer.js`), you can then call `window.api.processFolderPath(folderPath, 'my-new-feature')` (or a similar API if you customize `ipc-handlers.js` to accept prompt names) to trigger your new prompt.
-
-### Building Your User Interface:
-
-- Modify `src/renderer/index.html` to define your UI structure.
-- Write your JavaScript logic in `src/renderer/renderer.js` to handle user interactions and communicate with the core API (`window.api`).
-- Style your application using `src/renderer/styles.css`.
-- You are free to integrate any frontend framework (React, Vue, Angular, etc.) within the `src/renderer/` directory.
-
----
-
-## Security Checklist (Already Enabled)
-
-This template comes with secure defaults to protect your application:
-
-- `contextIsolation: true` & `nodeIntegration: false` in `BrowserWindow` settings.
-- Strict `Content-Security-Policy` (`default-src 'self'`) in `index.html`.
-- Electron Fuses are configured to disable `remote` module and strip unused internals.
-- Safe IPC bridge (`src/core/preload.js`) exposes only a minimal, whitelisted API to the renderer.
-
----
-
-## Scripts
-
-| Command          | Purpose                                        |
-| ---------------- | ---------------------------------------------- |
-| `npm start`      | Run Electron in dev mode (starts local server) |
-| `npm run make`   | Package app for current OS                     |
-| `npm run lint`   | ESLint check (auto-fixed on commit via Husky)  |
-| `npm run format` | Prettier formatting                            |
-
----
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.
 
 ## License
 
-[MIT](./LICENSE) — free for personal & commercial use.
-Made with ❤️
+[MIT](LICENSE)

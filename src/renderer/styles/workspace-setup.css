@@ -1,0 +1,75 @@
+/* ====================  WORKSPACE SETUP PAGE  ==================== */
+
+#workspace-setup-page .content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.workspace-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.workspace-actions .primary-btn,
+.workspace-actions .secondary-btn {
+  width: 100%;
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-lg);
+}
+
+#workspace-info {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+#workspace-info h3 {
+  margin-bottom: var(--spacing-md);
+  color: var(--dark-color);
+}
+
+#workspace-path {
+  font-family: monospace;
+  background: rgba(0, 0, 0, 0.05);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-lg);
+  word-break: break-all;
+}
+
+#precondition-checks h3 {
+  margin-bottom: var(--spacing-md);
+}
+
+#precondition-checks ul {
+  list-style: none;
+  padding: 0;
+}
+
+#precondition-checks li {
+  padding: var(--spacing-sm) 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+#precondition-checks li:last-child {
+  border-bottom: none;
+}
+
+#precondition-checks .status {
+  min-width: 100px;
+  text-align: center;
+}
+
+#continue-to-pages-btn {
+  width: 100%;
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-lg);
+  margin-top: var(--spacing-xl);
+}

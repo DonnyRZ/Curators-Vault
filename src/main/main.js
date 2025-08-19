@@ -1,47 +1,26 @@
 /**
- * This file is part of the template's core. DO NOT MODIFY.
- *
- * Electron main-process entry for the Gemini-CLI template.
- * ─────────────────────────────────────────────────────────
- * Responsibilities:
- *   • Create a secure BrowserWindow
- *   • Register IPC handlers (folder scan → Gemini → README)
- *   • Manage standard Electron lifecycle events
+ * Main process entry point for the Curator's Vault MVP application.
+ * Based on the Electron template but customized for our specific needs.
  */
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
 
-// Register all Gemini-related IPC logic (kept in a separate module for clarity)
+// Register all IPC logic
 const { registerIpcHandlers } = require('./ipc-handlers');
 
 let mainWindow;
-let serverProcess;
 
 /* ------------------------------------------------------------------ */
 /* Create the main application window                                 */
 /* ------------------------------------------------------------------ */
 function createWindow() {
-  // Start the local server
-  serverProcess = spawn('node', [path.join(__dirname, 'server.js')], { stdio: 'inherit' });
-
-  serverProcess.on('error', (err) => {
-    console.error('Failed to start server process:', err);
-  });
-
-  serverProcess.on('close', (code) => {
-    console.log(`Server process closed with code ${code}`);
-  });
-
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 600,
-    title: 'Gemini README Demo',
+    width: 1200,
+    height: 800,
+    title: 'Curator\'s Vault MVP Generator',
     webPreferences: {
       // Security: Enable contextIsolation and disable nodeIntegration
-      // This ensures that your preload script runs in a separate context
-      // and the renderer process does not have direct access to Node.js APIs.
       contextIsolation: true,
       nodeIntegration: false,
       preload: path.join(__dirname, 'preload.js'),

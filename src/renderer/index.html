@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1"
     />
-    <title>Gemini README Generator</title>
+    <title>Curator's Vault MVP Generator</title>
 
     <!-- ====================  GOOGLE FONTS  ==================== -->
     <link
@@ -19,75 +19,229 @@
       crossorigin
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
     <!-- ====================  GLOBAL STYLES  ==================== -->
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles/global.css" />
+    <link rel="stylesheet" href="styles/workspace-setup.css" />
+    <link rel="stylesheet" href="styles/pages-manager.css" />
+    <link rel="stylesheet" href="styles/feature-mapping.css" />
+    <link rel="stylesheet" href="styles/project-rules.css" />
+    <link rel="stylesheet" href="styles/generate-monitor.css" />
+    <link rel="stylesheet" href="styles/live-preview.css" />
   </head>
 
   <body>
     <!-- =========   Animated gradient backdrop   ========= -->
     <div class="bg-gradient"></div>
 
-    <!-- =========   Main card   ========= -->
-    <main id="card">
-      <header>
-        <img
-          id="logo"
-          src="../../assets/logo.png"
-          alt="Gemini logo"
-        />
-        <h1>Instant&nbsp;README&nbsp;Generator</h1>
-        <p class="subtitle">Drop your local codebase and relax ✨</p>
-      </header>
-
-      <!-- =========   Drop-zone   ========= -->
-      <section
-        id="dropzone"
-        class="dropzone"
-        tabindex="0"
-        aria-label="Drag & drop your project folder here"
-      >
-        <div class="dz-instructions">
-          <svg
-            class="dz-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            width="56"
-            height="56"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 17V3m0 0L8 7m4-4 4 4M4 15a3 3 0 003 3h10a3 3 0 003-3v0"
-            />
-          </svg>
-          <p><strong>Drag a folder here</strong><br />or click to browse</p>
+    <!-- =========   Main Application Container   ========= -->
+    <main id="app-container">
+      <!-- Navigation Bar -->
+      <nav id="navbar">
+        <div class="nav-left">
+          <h1>Curator's Vault</h1>
         </div>
+        <div class="nav-right">
+          <button id="minimize-btn" class="window-btn">_</button>
+          <button id="maximize-btn" class="window-btn">□</button>
+          <button id="close-btn" class="window-btn">✕</button>
+        </div>
+      </nav>
 
-        
-      </section>
+      <!-- Application Pages Container -->
+      <div id="pages-container">
+        <!-- Workspace Setup Page -->
+        <section id="workspace-setup-page" class="page active">
+          <header>
+            <h2>Workspace Setup</h2>
+            <p>Choose or create your project workspace</p>
+          </header>
+          
+          <div class="content">
+            <div class="workspace-actions">
+              <button id="select-workspace-btn" class="primary-btn">Select Workspace</button>
+              <button id="create-workspace-btn" class="secondary-btn">Create New Workspace</button>
+            </div>
+            
+            <div id="workspace-info" class="hidden">
+              <h3>Selected Workspace:</h3>
+              <p id="workspace-path"></p>
+              <div id="precondition-checks">
+                <h3>Precondition Checks:</h3>
+                <ul>
+                  <li id="gemini-check">Gemini CLI: <span class="status">Checking...</span></li>
+                  <li id="yolo-check">--yolo Support: <span class="status">Checking...</span></li>
+                  <li id="permissions-check">Write Permissions: <span class="status">Checking...</span></li>
+                </ul>
+              </div>
+              <button id="continue-to-pages-btn" disabled class="primary-btn">Continue</button>
+            </div>
+          </div>
+        </section>
 
-      <!-- =========   Progress spinner   ========= -->
-      <div id="spinner" class="spinner hidden" aria-hidden="true">
-        <div class="loader"></div>
-        <p>Generating README…</p>
+        <!-- Pages Manager Page -->
+        <section id="pages-manager-page" class="page">
+          <header>
+            <h2>Pages Manager</h2>
+            <p>Define and organize your application pages</p>
+          </header>
+          
+          <div class="content">
+            <div class="pages-actions">
+              <button id="add-page-btn" class="primary-btn">+ Add New Page</button>
+              <button id="bulk-import-pages-btn" class="secondary-btn">Bulk Import</button>
+            </div>
+            
+            <div id="pages-list">
+              <!-- Pages will be dynamically added here -->
+            </div>
+            
+            <button id="continue-to-features-btn" disabled class="primary-btn">Continue</button>
+          </div>
+        </section>
+
+        <!-- Feature Mapping Page -->
+        <section id="feature-mapping-page" class="page">
+          <header>
+            <h2>Feature Mapping</h2>
+            <p>Define features for your pages</p>
+          </header>
+          
+          <div class="content">
+            <div id="page-selector">
+              <label for="page-select">Select Page:</label>
+              <select id="page-select">
+                <!-- Options will be dynamically added -->
+              </select>
+            </div>
+            
+            <div id="feature-form-container">
+              <!-- Feature form will be dynamically loaded here -->
+            </div>
+            
+            <div class="feature-actions">
+              <button id="save-features-btn" class="primary-btn">Save Features</button>
+              <button id="bulk-import-btn" class="secondary-btn">Bulk Import</button>
+              <button id="bulk-export-btn" class="secondary-btn">Bulk Export</button>
+            </div>
+            
+            <button id="continue-to-rules-btn" disabled class="primary-btn">Continue</button>
+          </div>
+        </section>
+
+        <!-- Project Rules Page -->
+        <section id="project-rules-page" class="page">
+          <header>
+            <h2>Project Rules</h2>
+            <p>Define global build constraints</p>
+          </header>
+          
+          <div class="content">
+            <form id="rules-form">
+              <div class="form-group">
+                <label for="app-type">App Type:</label>
+                <select id="app-type">
+                  <option value="SPA">Single Page Application</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="language">Language:</label>
+                <select id="language">
+                  <option value="javascript-vanilla">JavaScript (Vanilla)</option>
+                  <option value="typescript">TypeScript</option>
+                </select>
+              </div>
+              
+              <div class="form-group checkbox-group">
+                <input type="checkbox" id="html-support" checked>
+                <label for="html-support">HTML Support</label>
+              </div>
+              
+              <div class="form-group checkbox-group">
+                <input type="checkbox" id="css-support" checked>
+                <label for="css-support">CSS Support</label>
+              </div>
+              
+              <div class="form-group">
+                <label for="constraints">Constraints:</label>
+                <textarea id="constraints" rows="4">single index.html at root
+multiple JS/CSS files allowed
+no frameworks by default</textarea>
+              </div>
+              
+              <div class="form-actions">
+                <button type="button" id="use-default-rules-btn" class="secondary-btn">Use Defaults</button>
+                <button type="button" id="save-rules-btn" class="primary-btn">Save Rules</button>
+              </div>
+            </form>
+            
+            <button id="continue-to-generate-btn" disabled class="primary-btn">Continue</button>
+          </div>
+        </section>
+
+        <!-- Generate & Monitor Page -->
+        <section id="generate-monitor-page" class="page">
+          <header>
+            <h2>Generate & Monitor</h2>
+            <p>Run the MVP generation process</p>
+          </header>
+          
+          <div class="content">
+            <div class="generation-controls">
+              <button id="start-generate-btn" class="primary-btn">Start Generate</button>
+              <button id="stop-generate-btn" disabled class="secondary-btn">Stop</button>
+            </div>
+            
+            <div class="stage-indicators">
+              <div id="planning-stage" class="stage">
+                <span class="stage-name">Planning</span>
+                <span class="stage-status">Pending</span>
+              </div>
+              <div id="building-stage" class="stage">
+                <span class="stage-name">Building</span>
+                <span class="stage-status">Pending</span>
+              </div>
+            </div>
+            
+            <div id="generation-output" class="output-console">
+              <!-- Generation output will appear here -->
+            </div>
+            
+            <button id="continue-to-preview-btn" disabled class="primary-btn">Continue</button>
+          </div>
+        </section>
+
+        <!-- Live Preview Page -->
+        <section id="live-preview-page" class="page">
+          <header>
+            <h2>Live Preview</h2>
+            <p>See your MVP in real-time</p>
+          </header>
+          
+          <div class="content">
+            <div class="preview-container">
+              <iframe id="preview-frame" src="about:blank"></iframe>
+            </div>
+            
+            <div class="preview-controls">
+              <button id="refresh-preview-btn" class="secondary-btn">Refresh</button>
+              <button id="open-external-btn" class="secondary-btn">Open in External Browser</button>
+            </div>
+            
+            <div class="completion-actions">
+              <button id="rebuild-btn" class="secondary-btn">Rebuild</button>
+              <button id="export-project-btn" class="primary-btn">Export Project</button>
+            </div>
+          </div>
+        </section>
       </div>
-
-      <!-- =========   Live Markdown preview   ========= -->
-      <section id="preview" class="preview hidden" aria-live="polite">
-      </section>
-
-      <!-- =========   Toast   ========= -->
-      <div id="toast" class="toast hidden"></div>
     </main>
 
     <!-- ====================  RENDERER SCRIPT  ==================== -->
-    <script type="module" src="renderer.js"></script>
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>

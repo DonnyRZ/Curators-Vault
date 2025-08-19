@@ -1,0 +1,120 @@
+/* ====================  PROJECT RULES PAGE  ==================== */
+
+#project-rules-page .content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+#rules-form {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: var(--spacing-xl);
+}
+
+#rules-form .form-group {
+  margin-bottom: var(--spacing-xl);
+}
+
+#rules-form .form-group label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--dark-color);
+}
+
+#rules-form .form-group select {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  transition: border-color var(--transition-fast);
+}
+
+#rules-form .form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+}
+
+#rules-form .form-group .checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+#rules-form .form-group .checkbox-group input[type="checkbox"] {
+  width: auto;
+}
+
+#rules-form .form-group .checkbox-group label {
+  margin-bottom: 0;
+}
+
+#rules-form .form-group #constraints {
+  width: 100%;
+  min-height: 120px;
+  padding: var(--spacing-md);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  transition: border-color var(--transition-fast);
+  resize: vertical;
+}
+
+#rules-form .form-group #constraints:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xl);
+  flex-wrap: wrap;
+}
+
+.form-actions .primary-btn,
+.form-actions .secondary-btn {
+  flex: 1;
+  min-width: 150px;
+}
+
+#use-default-rules-btn {
+  padding: var(--spacing-md);
+}
+
+#save-rules-btn {
+  padding: var(--spacing-md);
+}
+
+#continue-to-generate-btn {
+  width: 100%;
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-lg);
+  margin-top: var(--spacing-xl);
+}
+
+/* ====================  RESPONSIVE  ==================== */
+
+@media (max-width: 768px) {
+  #rules-form {
+    padding: var(--spacing-lg);
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions .primary-btn,
+  .form-actions .secondary-btn {
+    width: 100%;
+  }
+}

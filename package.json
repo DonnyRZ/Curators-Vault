@@ -1,8 +1,8 @@
 {
-  "name": "gemini-electron-template",
+  "name": "curators-vault-mvp",
   "version": "0.1.0",
-  "description": "A minimal Electron + Gemini CLI template for instant README generation",
-  "main": "src/core/main.js",
+  "description": "MVP Generator using Gemini CLI",
+  "main": "src/main/main.js",
   "scripts": {
     "start": "electron-forge start",
     "make": "electron-forge make",
@@ -31,6 +31,8 @@
   "dependencies": {
     "@google/gemini-cli": "latest",
     "cors": "^2.8.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "ajv": "^8.12.0",
+    "chokidar": "^3.5.3"
   }
 }
