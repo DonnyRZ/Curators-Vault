@@ -15,7 +15,7 @@ The Curator's Vault MVP Generator is a tool that streamlines the process of turn
 ## Project Structure
 
 ```
-MVP-01/
+Curators-Vault/
 ├── src/
 │   ├── main/
 │   │   ├── main.js          # Electron main process entry point
