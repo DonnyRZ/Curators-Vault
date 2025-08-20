@@ -1,14 +1,14 @@
 # Curator's Vault MVP Generator
 
-A desktop application built with Electron and the Gemini CLI to generate MVPs (Minimum Viable Products) from mockups, features, and rules.
+A desktop application built with Electron and the Gemini CLI to generate MVPs (Minimum Viable Products) from pages, features, and rules.
 
 ## Overview
 
-The Curator's Vault MVP Generator is a tool that streamlines the process of turning design mockups into functional web applications. By leveraging the power of the Gemini CLI for AI-driven code generation, this application allows users to:
+The Curator's Vault MVP Generator is a tool that streamlines the process of turning design pages into functional web applications. By leveraging the power of the Gemini CLI for AI-driven code generation, this application allows users to:
 
 1. Define a project workspace
-2. Upload design mockups
-3. Map features to each mockup
+2. Create and manage application pages
+3. Map features to each page
 4. Set project-wide rules and constraints
 5. Automatically generate a complete Single Page Application (SPA)
 
@@ -20,26 +20,41 @@ MVP-01/
 │   ├── main/
 │   │   ├── main.js          # Electron main process entry point
 │   │   ├── preload.js       # Secure IPC bridge
-│   │   ├── ipc-handlers.js  # Handles Electron IPC messages
-│   │   └── server.js        # Express server for core logic and Gemini CLI interaction
+│   │   ├── ipc-handlers/    # Handles Electron IPC messages
+│   │   │   ├── index.js     # Main IPC handler registration
+│   │   │   ├── workspace.js # Workspace-related handlers
+│   │   │   ├── pages.js     # Pages-related handlers
+│   │   │   ├── features.js  # Features-related handlers
+│   │   │   ├── rules.js     # Rules-related handlers
+│   │   │   ├── generation.js# Generation-related handlers
+│   │   │   └── window.js    # Window-related handlers
+│   │   └── state.js         # Application state management
 │   ├── renderer/
 │   │   ├── index.html       # Main UI HTML
-│   │   ├── renderer.js      # Frontend application logic
-│   │   └── styles.css       # Application styling
+│   │   ├── js/              # Modular frontend application logic
+│   │   │   ├── main.js      # Main renderer entry point
+│   │   │   ├── router.js    # Hash-based routing
+│   │   │   ├── dashboard.js # Dashboard functionality
+│   │   │   ├── workspace-setup.js # Workspace setup functionality
+│   │   │   ├── pages-manager.js   # Pages management functionality
+│   │   │   ├── feature-mapping/   # Feature mapping modules
+│   │   │   ├── project-rules.js   # Project rules functionality
+│   │   │   ├── generate-monitor.js# Generation monitoring functionality
+│   │   │   ├── live-preview.js    # Live preview functionality
+│   │   │   └── ui/                # UI components
+│   │   └── styles/
+│   │       └── professional/      # Professional styling
 │   └── prompts/
 │       ├── planning-prompt.yaml  # Prompt for the planning stage
 │       ├── build-prompt.yaml     # Prompt for the build stage
 │       └── default-rules.json    # Default project rules
-├── package.json             # Project metadata and dependencies
-├── forge.config.js          # Electron Forge configuration
-└── .gitignore               # Git ignore rules
 ```
 
 ## Key Features
 
 1.  **Workspace Management**: Create or select a project workspace where all files will be generated.
-2.  **Mockup Organization**: Upload and manage design mockups with automatic organization into numbered folders.
-3.  **Feature Mapping**: Define features for each mockup with a structured form interface.
+2.  **Page Management**: Create and manage application pages with automatic organization into numbered folders.
+3.  **Feature Mapping**: Define features for each page with a structured form interface.
 4.  **Rule Definition**: Set project-wide rules that guide the code generation process.
 5.  **Two-Stage Generation**:
     *   **Planning**: AI analyzes inputs and creates a development plan.
@@ -50,7 +65,7 @@ MVP-01/
 ## Technology Stack
 
 *   **Electron**: For building the cross-platform desktop application.
-*   **Node.js / Express**: For the backend server that orchestrates the generation process.
+*   **Node.js**: For the backend logic that orchestrates the generation process.
 *   **Gemini CLI**: For AI-powered code generation.
 *   **HTML/CSS/JavaScript**: For the frontend user interface.
 *   **AJV**: For JSON schema validation of project rules and features.
@@ -80,8 +95,8 @@ MVP-01/
     ```
 2.  Follow the in-app workflow:
     *   **Workspace Setup**: Choose or create a workspace directory.
-    *   **Mockups Manager**: Upload your design mockups.
-    *   **Feature Mapping**: Define features for each mockup.
+    *   **Pages Manager**: Create and manage your application pages.
+    *   **Feature Mapping**: Define features for each page.
     *   **Project Rules**: Set project constraints and technology preferences.
     *   **Generate & Monitor**: Start the AI-powered generation process and monitor progress.
     *   **Live Preview**: View and interact with the generated MVP.
@@ -100,17 +115,16 @@ MVP-01/
 
 ## Architecture
 
-The application follows a client-server architecture within the Electron framework:
+The application follows a modular architecture within the Electron framework:
 
-1.  **Renderer Process**: The frontend UI built with HTML, CSS, and JavaScript. It communicates with the main process via IPC.
-2.  **Main Process**: The Electron main process handles window creation, IPC message routing, and spawning the backend server.
-3.  **Backend Server**: An Express server that handles the core application logic, including:
+1.  **Renderer Process**: The frontend UI built with HTML, CSS, and JavaScript, organized into modular components. It communicates with the main process via IPC.
+2.  **Main Process**: The Electron main process handles window creation, IPC message routing, and core application logic including:
     *   Workspace management
-    *   Mockup processing and organization
+    *   Page processing and organization
     *   Feature and rule handling
     *   Interaction with the Gemini CLI for code generation
     *   File system operations
-4.  **Gemini CLI**: An external AI tool that performs the actual code generation based on prompts provided by the backend server.
+3.  **Gemini CLI**: An external AI tool that performs the actual code generation based on prompts provided by the main process.
 
 ## Prompts
 

@@ -39,26 +39,5 @@ export function initializeFeatureMapping() {
     initFeatureMappingObserver();
   }
   
-  // Set up navigation for "Continue" button
-  const continueToRulesBtn = document.getElementById('continue-to-rules-btn');
-  if (continueToRulesBtn) {
-    // Remove existing event listener if any
-    if (continueToRulesBtn.eventListener) {
-      continueToRulesBtn.removeEventListener('click', continueToRulesBtn.eventListener);
-    }
-    
-    // Create new event listener
-    const continueListener = () => {
-      // Import the navigation function dynamically to avoid circular dependencies
-      import('../main.js').then(module => {
-        module.navigateToPage('project-rules-page');
-      });
-    };
-    
-    // Store reference to listener for cleanup
-    continueToRulesBtn.eventListener = continueListener;
-    
-    // Add event listener
-    continueToRulesBtn.addEventListener('click', continueListener);
-  }
+  // No more Continue button; navigate via sidebar
 }

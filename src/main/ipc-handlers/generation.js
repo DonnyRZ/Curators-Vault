@@ -8,6 +8,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { spawn } = require('child_process');
 const state = require('../state');
+let currentChild = null;
 
 /**
  * Runs a generation phase (Planning or Building) using the Gemini CLI.
@@ -18,7 +19,7 @@ const state = require('../state');
  * @param {string} [outputFilePath] - Optional. If provided, stdout will be written to this file.
  */
 function runGenerationPhase(win, phase, promptPath, promptData, outputFilePath) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const sendOutput = (data) => win.webContents.send('generate:output', data);
     sendOutput(`[${phase}] Starting...`);
 
@@ -29,86 +30,91 @@ function runGenerationPhase(win, phase, promptPath, promptData, outputFilePath) 
     const tempPromptFilename = `.tmp-prompt-${phase.toLowerCase()}.yaml`;
     const tempPromptPath = path.join(normalizedWorkspacePath, tempPromptFilename);
 
-    try {
-      let promptContent = await fs.readFile(promptPath, 'utf-8');
-      for (const key in promptData) {
-        const regex = new RegExp(`{{${key}}}`, 'g');
-        let dataString = typeof promptData[key] === 'string' ? promptData[key] : JSON.stringify(promptData[key], null, 2);
-        promptContent = promptContent.replace(regex, dataString);
-      }
-      await fs.writeFile(tempPromptPath, promptContent);
-      sendOutput(`[${phase}] Created temporary prompt file at ${tempPromptPath}`);
-    } catch (error) {
-      return reject(new Error(`Failed to create temp prompt for ${phase}: ${error.message}`));
-    }
+    fs.readFile(promptPath, 'utf-8')
+      .then(promptContent => {
+        for (const key in promptData) {
+          const regex = new RegExp(`{{${key}}}`, 'g');
+          let dataString = typeof promptData[key] === 'string' ? promptData[key] : JSON.stringify(promptData[key], null, 2);
+          promptContent = promptContent.replace(regex, dataString);
+        }
+        return fs.writeFile(tempPromptPath, promptContent);
+      })
+      .then(() => {
+        sendOutput(`[${phase}] Created temporary prompt file at ${tempPromptPath}`);
+        
+        // Use a more robust approach for the prompt path
+        const quotedPromptPath = `"${tempPromptFilename}"`;
+        const args = ['-p', `@${quotedPromptPath}`, '--model', 'gemini-2.5-flash', '--yolo'];
+        sendOutput(`[${phase}] Running command: gemini ${args.join(' ')}`);
+        sendOutput(`[${phase}] Working directory: ${normalizedWorkspacePath}`);
+        
+        // Use the normalized workspace path as the cwd
+        const child = spawn('gemini', args, { 
+          cwd: normalizedWorkspacePath, 
+          shell: true,
+          windowsVerbatimArguments: true  // This might help with Windows path issues
+        });
+        currentChild = child;
 
-    // Use a more robust approach for the prompt path
-    const quotedPromptPath = `"${tempPromptFilename}"`;
-    const args = ['-p', `@${quotedPromptPath}`, '--model', 'gemini-2.5-flash', '--yolo'];
-    sendOutput(`[${phase}] Running command: gemini ${args.join(' ')}`);
-    sendOutput(`[${phase}] Working directory: ${normalizedWorkspacePath}`);
-    
-    // Use the normalized workspace path as the cwd
-    const child = spawn('gemini', args, { 
-      cwd: normalizedWorkspacePath, 
-      shell: true,
-      windowsVerbatimArguments: true  // This might help with Windows path issues
-    });
+        let stdoutBuffer = '';
+        child.stdout.on('data', (data) => {
+          const text = data.toString();
+          sendOutput(text);
+          stdoutBuffer += text;
+        });
+        
+        child.stderr.on('data', (data) => {
+          const text = data.toString();
+          sendOutput(`[${phase}] STDERR: ${text}`);
+        });
 
-    let stdoutBuffer = '';
-    child.stdout.on('data', (data) => {
-      const text = data.toString();
-      sendOutput(text);
-      stdoutBuffer += text;
-    });
-    
-    child.stderr.on('data', (data) => {
-      const text = data.toString();
-      sendOutput(`[${phase}] STDERR: ${text}`);
-    });
-
-    const writePromise = new Promise((resolveWrite, rejectWrite) => {
-      child.stdout.on('end', () => {
-        if (outputFilePath) {
-          fs.writeFile(outputFilePath, stdoutBuffer)
-            .then(() => {
-              sendOutput(`[${phase}] Output saved to ${outputFilePath}`);
+        const writePromise = new Promise((resolveWrite, rejectWrite) => {
+          child.stdout.on('end', () => {
+            if (outputFilePath) {
+              fs.writeFile(outputFilePath, stdoutBuffer)
+                .then(() => {
+                  sendOutput(`[${phase}] Output saved to ${outputFilePath}`);
+                  resolveWrite();
+                })
+                .catch((error) => {
+                  rejectWrite(new Error(`Failed to save output for ${phase}: ${error.message}`));
+                });
+            } else {
               resolveWrite();
+            }
+          });
+        });
+
+        child.on('close', (code) => {
+          fs.unlink(tempPromptPath)
+            .then(() => {
+              sendOutput(`[${phase}] Cleaned up temporary prompt file`);
             })
-            .catch((error) => {
-              rejectWrite(new Error(`Failed to save output for ${phase}: ${error.message}`));
+            .catch(e => {
+              sendOutput(`[${phase}] Warning: Could not clean up temporary prompt file: ${e.message}`);
+            })
+            .finally(() => {
+              currentChild = null;
+              if (code === 0) {
+                writePromise.then(() => {
+                  sendOutput(`[${phase}] Completed successfully.`);
+                  resolve();
+                }).catch(reject);
+              } else {
+                reject(new Error(`[${phase}] Failed with exit code ${code}.`));
+              }
             });
-        } else {
-          resolveWrite();
-        }
+        });
+
+        child.on('error', (err) => {
+          sendOutput(`[${phase}] Process error: ${err.message}`);
+          currentChild = null;
+          reject(err);
+        });
+      })
+      .catch(error => {
+        reject(new Error(`Failed to create temp prompt for ${phase}: ${error.message}`));
       });
-    });
-
-    child.on('close', async (code) => {
-      try { 
-        await fs.unlink(tempPromptPath); 
-        sendOutput(`[${phase}] Cleaned up temporary prompt file`);
-      } catch (e) { 
-        sendOutput(`[${phase}] Warning: Could not clean up temporary prompt file: ${e.message}`);
-      }
-      
-      if (code === 0) {
-        try {
-          await writePromise; // Wait for the file to be written
-          sendOutput(`[${phase}] Completed successfully.`);
-          resolve();
-        } catch (error) {
-          reject(error);
-        }
-      } else {
-        reject(new Error(`[${phase}] Failed with exit code ${code}.`));
-      }
-    });
-
-    child.on('error', (err) => {
-      sendOutput(`[${phase}] Process error: ${err.message}`);
-      reject(err);
-    });
   });
 }
 
@@ -231,6 +237,10 @@ function registerGenerationHandlers(win) {
           page_features: features
         });
         sendOutput('[Info] Building stage completed successfully');
+        // Notify renderer to reload any preview frames
+        try { win.webContents.send('preview:reload'); } catch (e) { 
+          // Ignore errors when sending preview reload message
+        }
       } catch (error) {
         sendError(`Building stage failed: ${error.message}`);
         throw error;
@@ -244,6 +254,102 @@ function registerGenerationHandlers(win) {
       console.error('[IPC] Error during generation:', error);
       sendError(`Generation failed: ${error.message}`);
       state.generationInProgress = false;
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Run Planning only
+  ipcMain.handle('generate:plan', async () => {
+    if (!state.workspacePath) return { success: false, error: 'Workspace not initialized' };
+    if (state.generationInProgress) return { success: false, error: 'Generation already in progress' };
+    state.generationInProgress = true;
+    const sendOutput = (msg) => win.webContents.send('generate:output', msg);
+    try {
+      const normalizedWorkspacePath = path.resolve(state.workspacePath);
+      const promptsPath = path.resolve(__dirname, '..', '..', 'prompts');
+      const rulesPath = path.join(normalizedWorkspacePath, 'rules.json');
+      let rules = {};
+      try { rules = JSON.parse(await fs.readFile(rulesPath, 'utf8')); } catch { 
+        // Use default rules if file cannot be read or parsed
+        rules = {}; 
+      }
+      const pageDirs = (await fs.readdir(normalizedWorkspacePath, { withFileTypes: true }))
+        .filter(d => d.isDirectory() && /^page-\d+$/.test(d.name)).map(d => d.name);
+      const features = {};
+      for (const dir of pageDirs) {
+        try { features[dir] = JSON.parse(await fs.readFile(path.join(normalizedWorkspacePath, dir, 'features.json'), 'utf8')); } catch {
+          // Skip features for this page if file cannot be read or parsed
+        }
+      }
+      const devPlanPath = path.join(normalizedWorkspacePath, 'development_phases.txt');
+      await runGenerationPhase(win, 'Planning', path.join(promptsPath, 'planning-prompt.yaml'), {
+        workspace_path: normalizedWorkspacePath,
+        project_rules: rules,
+        pages_and_features: features
+      }, devPlanPath);
+      state.generationInProgress = false;
+      return { success: true, devPlanPath };
+    } catch (error) {
+      win.webContents.send('generate:error', `Planning failed: ${error.message}`);
+      state.generationInProgress = false;
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Run Building only
+  ipcMain.handle('generate:build', async () => {
+    if (!state.workspacePath) return { success: false, error: 'Workspace not initialized' };
+    if (state.generationInProgress) return { success: false, error: 'Generation already in progress' };
+    state.generationInProgress = true;
+    const sendOutput = (msg) => win.webContents.send('generate:output', msg);
+    try {
+      const normalizedWorkspacePath = path.resolve(state.workspacePath);
+      const promptsPath = path.resolve(__dirname, '..', '..', 'prompts');
+      const rulesPath = path.join(normalizedWorkspacePath, 'rules.json');
+      let rules = {};
+      try { rules = JSON.parse(await fs.readFile(rulesPath, 'utf8')); } catch { rules = {}; }
+      const pageDirs = (await fs.readdir(normalizedWorkspacePath, { withFileTypes: true }))
+        .filter(d => d.isDirectory() && /^page-\d+$/.test(d.name)).map(d => d.name);
+      const features = {};
+      for (const dir of pageDirs) {
+        try { features[dir] = JSON.parse(await fs.readFile(path.join(normalizedWorkspacePath, dir, 'features.json'), 'utf8')); } catch {
+          // Skip features for this page if file cannot be read or parsed
+        }
+      }
+      const devPlanPath = path.join(normalizedWorkspacePath, 'development_phases.txt');
+      try { await fs.access(devPlanPath); }
+      catch { throw new Error('Development plan not found. Run Planning first.'); }
+
+      const devPlan = await fs.readFile(devPlanPath, 'utf-8');
+      await runGenerationPhase(win, 'Building', path.join(promptsPath, 'build-prompt.yaml'), {
+        workspace_path: normalizedWorkspacePath,
+        development_phases: devPlan,
+        project_rules: rules,
+        page_features: features
+      });
+      try { win.webContents.send('preview:reload'); } catch { 
+        // Ignore errors when sending preview reload message
+      }
+      state.generationInProgress = false;
+      return { success: true };
+    } catch (error) {
+      win.webContents.send('generate:error', `Building failed: ${error.message}`);
+      state.generationInProgress = false;
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Stop current generation if possible
+  ipcMain.handle('generate:stop', async () => {
+    try {
+      if (currentChild) {
+        currentChild.kill('SIGTERM');
+        currentChild = null;
+        state.generationInProgress = false;
+        return { success: true, message: 'Generation stopped' };
+      }
+      return { success: false, error: 'No generation in progress' };
+    } catch (error) {
       return { success: false, error: error.message };
     }
   });

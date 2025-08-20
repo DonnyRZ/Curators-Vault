@@ -47,6 +47,10 @@ function registerPageHandlers(win) {
       // Create an empty features.json file
       const featuresPath = path.join(pageDir, 'features.json');
       await fs.writeFile(featuresPath, JSON.stringify([], null, 2));
+      // Create/update page.json metadata
+      const metaPath = path.join(pageDir, 'page.json');
+      const meta = { id: pageId, name: pageName };
+      await fs.writeFile(metaPath, JSON.stringify(meta, null, 2));
       
       return { success: true, message: `Created page ${pageId}` };
     } catch (error) {
@@ -77,14 +81,14 @@ function registerPageHandlers(win) {
             hasFeatures = Array.isArray(features) && features.length > 0;
           } catch (err) { /* features.json doesn't exist or is invalid */ }
           
-          // Get a more user-friendly name if available
+          // Read page name from page.json if available
           let pageName = pageId.replace('page-', 'Page ');
           try {
-            // If there's a page.json or similar metadata file, we could read the page name from there
-            // For now, we'll just use the ID-based name
-          } catch (err) {
-            // Ignore errors in reading metadata
-          }
+            const metaPath = path.join(pageDirPath, 'page.json');
+            const metaData = await fs.readFile(metaPath, 'utf8');
+            const meta = JSON.parse(metaData);
+            if (meta && meta.name) pageName = meta.name;
+          } catch (err) { /* ignore */ }
           
           pages.push({ 
             id: pageId, 
@@ -126,6 +130,26 @@ function registerPageHandlers(win) {
       return { success: true, message: `Deleted page ${id}` };
     } catch (error) {
       console.error(`[IPC] Error deleting page ${id}:`, error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Update page name metadata
+  ipcMain.handle('page:update-name', async (event, id, name) => {
+    if (!state.workspacePath) {
+      return { success: false, error: 'Workspace not initialized' };
+    }
+    if (!id || !name) {
+      return { success: false, error: 'Page id and name are required' };
+    }
+    try {
+      const pageDir = path.join(state.workspacePath, id);
+      const metaPath = path.join(pageDir, 'page.json');
+      const meta = { id, name };
+      await fs.writeFile(metaPath, JSON.stringify(meta, null, 2));
+      return { success: true };
+    } catch (error) {
+      console.error(`[IPC] Error updating page name for ${id}:`, error);
       return { success: false, error: error.message };
     }
   });

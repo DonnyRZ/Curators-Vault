@@ -1,0 +1,30 @@
+/* Stepper */
+.stepper {
+  grid-area: navbar;
+  padding: 6px 16px 0 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.stepper-item {
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+  color: #333;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.stepper-item.active { border-color: #6a11cb; color: #6a11cb; }
+.stepper-item.completed { background: rgba(106,17,203,0.1); }
+
+/* Dashboard */
+.dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+.stat-card { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 16px; box-shadow: var(--shadow-sm); text-align: center; }
+.stat-value { font-size: 24px; font-weight: 700; }
+.stat-label { color: #667; font-size: 12px; }
+.dash-actions { margin-top: 16px; display: flex; gap: 8px; }
+
+/* Ghost button */
+.ghost-btn { background: transparent; border: 1px dashed rgba(0,0,0,0.2); color: #333; border-radius: 8px; padding: 10px 12px; }
+

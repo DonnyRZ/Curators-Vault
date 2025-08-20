@@ -1,0 +1,298 @@
+/* ====================  PROFESSIONAL WORKSPACE SETUP  ==================== */
+
+#workspace-setup-page .content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.workspace-header {
+  text-align: center;
+  margin-bottom: var(--spacing-3xl);
+}
+
+.workspace-header h2 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--dark-900);
+}
+
+.workspace-header p {
+  font-size: var(--font-size-lg);
+  color: var(--dark-500);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.workspace-illustration {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.workspace-illustration img {
+  max-width: 300px;
+  height: auto;
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.workspace-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-3xl);
+}
+
+.workspace-action-card {
+  background: var(--white);
+  border: 1px solid var(--light-200);
+  border-radius: var(--border-radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition: var(--transition-all);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.workspace-action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-200);
+}
+
+.workspace-action-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-400), var(--secondary-400));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.workspace-action-card:hover::before {
+  transform: scaleX(1);
+}
+
+.workspace-action-icon {
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-lg);
+  color: var(--primary-500);
+}
+
+.workspace-action-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+  color: var(--dark-900);
+}
+
+.workspace-action-desc {
+  font-size: var(--font-size-base);
+  color: var(--dark-500);
+  margin-bottom: var(--spacing-lg);
+}
+
+.workspace-info {
+  background: linear-gradient(135deg, var(--white), var(--light-50));
+  border-radius: var(--border-radius-2xl);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--light-200);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.workspace-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--light-200);
+}
+
+.workspace-info-title {
+  margin-bottom: 0;
+  color: var(--dark-900);
+}
+
+.workspace-path-container {
+  background: var(--dark-900);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.workspace-path {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  font-size: var(--font-size-sm);
+  color: var(--light-100);
+  word-break: break-all;
+  margin: 0;
+}
+
+.precondition-checks {
+  background: var(--white);
+  border: 1px solid var(--light-200);
+  border-radius: var(--border-radius-xl);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.precondition-checks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--light-200);
+}
+
+.precondition-checks-title {
+  margin-bottom: 0;
+  color: var(--dark-900);
+}
+
+.precondition-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.precondition-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+  background: var(--light-50);
+  transition: var(--transition-all);
+}
+
+.precondition-item:hover {
+  background: var(--light-100);
+}
+
+.precondition-name {
+  font-weight: var(--font-weight-medium);
+  color: var(--dark-800);
+}
+
+.precondition-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.precondition-status-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+}
+
+.precondition-status-checking {
+  background: var(--warning-100);
+  color: var(--warning-800);
+}
+
+.precondition-status-success {
+  background: var(--success-100);
+  color: var(--success-800);
+}
+
+.precondition-status-error {
+  background: var(--accent-100);
+  color: var(--accent-800);
+}
+
+.workspace-setup-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--spacing-2xl);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .workspace-header h2 {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .workspace-header p {
+    font-size: var(--font-size-base);
+  }
+  
+  .workspace-action-card {
+    padding: var(--spacing-lg);
+  }
+  
+  .workspace-action-icon {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .workspace-action-title {
+    font-size: var(--font-size-lg);
+  }
+  
+  .workspace-info {
+    padding: var(--spacing-xl);
+  }
+  
+  .workspace-info-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .precondition-checks-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .workspace-header {
+    margin-bottom: var(--spacing-2xl);
+  }
+  
+  .workspace-action-card {
+    padding: var(--spacing-md);
+  }
+  
+  .workspace-action-icon {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .workspace-action-title {
+    font-size: var(--font-size-base);
+  }
+  
+  .workspace-action-desc {
+    font-size: var(--font-size-sm);
+  }
+  
+  .workspace-info {
+    padding: var(--spacing-lg);
+  }
+  
+  .precondition-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+  
+  .precondition-status {
+    align-self: flex-end;
+  }
+}

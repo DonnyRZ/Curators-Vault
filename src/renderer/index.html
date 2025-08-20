@@ -19,18 +19,20 @@
       crossorigin
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
 
-    <!-- ====================  GLOBAL STYLES  ==================== -->
-    <link rel="stylesheet" href="styles/global.css" />
-    <link rel="stylesheet" href="styles/workspace-setup.css" />
-    <link rel="stylesheet" href="styles/pages-manager.css" />
-    <link rel="stylesheet" href="styles/feature-mapping.css" />
-    <link rel="stylesheet" href="styles/project-rules.css" />
-    <link rel="stylesheet" href="styles/generate-monitor.css" />
-    <link rel="stylesheet" href="styles/live-preview.css" />
+    <!-- ====================  PROFESSIONAL STYLES  ==================== -->
+    <link rel="stylesheet" href="styles/professional/design-system.css" />
+    <link rel="stylesheet" href="styles/professional/components.css" />
+    <link rel="stylesheet" href="styles/professional/dashboard.css" />
+    <link rel="stylesheet" href="styles/professional/workspace-setup.css" />
+    <link rel="stylesheet" href="styles/professional/pages-manager.css" />
+    <link rel="stylesheet" href="styles/professional/feature-mapping.css" />
+    <link rel="stylesheet" href="styles/professional/project-rules.css" />
+    <link rel="stylesheet" href="styles/professional/generate-monitor.css" />
+    <link rel="stylesheet" href="styles/professional/live-preview.css" />
   </head>
 
   <body>
@@ -39,202 +41,403 @@
 
     <!-- =========   Main Application Container   ========= -->
     <main id="app-container">
+      <!-- Sidebar Navigation -->
+      <aside id="sidebar">
+        <a href="#/dashboard" class="nav-link" data-route="dashboard">
+          <i>📊</i> Dashboard
+        </a>
+        <a href="#/workspace" class="nav-link" data-route="workspace">
+          <i>📁</i> Workspace
+        </a>
+        <a href="#/pages" class="nav-link" data-route="pages">
+          <i>📄</i> Pages
+        </a>
+        <a href="#/features" class="nav-link" data-route="features">
+          <i>⚙️</i> Features
+        </a>
+        <a href="#/rules" class="nav-link" data-route="rules">
+          <i>📝</i> Rules
+        </a>
+        <a href="#/generate" class="nav-link" data-route="generate">
+          <i>⚡</i> Generate
+        </a>
+        <a href="#/preview" class="nav-link" data-route="preview">
+          <i>👁️</i> Preview
+        </a>
+      </aside>
       <!-- Navigation Bar -->
       <nav id="navbar">
         <div class="nav-left">
           <h1>Curator's Vault</h1>
         </div>
-        <div class="nav-right">
-          <button id="minimize-btn" class="window-btn">_</button>
-          <button id="maximize-btn" class="window-btn">□</button>
-          <button id="close-btn" class="window-btn">✕</button>
-        </div>
+        <!-- Removed window control buttons -->
       </nav>
+
+      <!-- Top Stepper -->
+      <div id="stepper" class="stepper"></div>
 
       <!-- Application Pages Container -->
       <div id="pages-container">
+        <!-- Dashboard Page -->
+        <section id="dashboard-page" class="page active">
+          <header class="dashboard-header">
+            <h2>Curator's Vault Dashboard</h2>
+            <p>Your AI-powered MVP Generator</p>
+          </header>
+          <div class="content">
+            <div class="dashboard-welcome">
+              <h3>Welcome to Curator's Vault</h3>
+              <p>Transform your ideas into working applications with the power of AI</p>
+            </div>
+            <div id="dashboard-stats" class="dashboard-stats"></div>
+            <div class="quick-actions">
+              <div class="quick-action-card" id="dash-go-pages">
+                <div class="quick-action-icon">📄</div>
+                <h3 class="quick-action-title">Manage Pages</h3>
+                <p class="quick-action-desc">Define and organize your application pages</p>
+              </div>
+              <div class="quick-action-card" id="dash-go-generate">
+                <div class="quick-action-icon">⚡</div>
+                <h3 class="quick-action-title">Generate MVP</h3>
+                <p class="quick-action-desc">Create your application with AI</p>
+              </div>
+            </div>
+          </div>
+        </section>
         <!-- Workspace Setup Page -->
-        <section id="workspace-setup-page" class="page active">
-          <header>
+        <section id="workspace-setup-page" class="page">
+          <header class="workspace-header">
             <h2>Workspace Setup</h2>
             <p>Choose or create your project workspace</p>
           </header>
           
           <div class="content">
-            <div class="workspace-actions">
-              <button id="select-workspace-btn" class="primary-btn">Select Workspace</button>
-              <button id="create-workspace-btn" class="secondary-btn">Create New Workspace</button>
+            <div class="workspace-illustration">
+              <div class="workspace-action-card" id="select-workspace-btn">
+                <div class="workspace-action-icon">📁</div>
+                <h3 class="workspace-action-title">Select Workspace</h3>
+                <p class="workspace-action-desc">Choose an existing project folder</p>
+              </div>
             </div>
             
             <div id="workspace-info" class="hidden">
-              <h3>Selected Workspace:</h3>
-              <p id="workspace-path"></p>
-              <div id="precondition-checks">
-                <h3>Precondition Checks:</h3>
-                <ul>
-                  <li id="gemini-check">Gemini CLI: <span class="status">Checking...</span></li>
-                  <li id="yolo-check">--yolo Support: <span class="status">Checking...</span></li>
-                  <li id="permissions-check">Write Permissions: <span class="status">Checking...</span></li>
-                </ul>
+              <div class="workspace-info">
+                <div class="workspace-info-header">
+                  <h3 class="workspace-info-title">Selected Workspace</h3>
+                </div>
+                <div class="workspace-path-container">
+                  <p id="workspace-path" class="workspace-path"></p>
+                </div>
+                <div class="precondition-checks">
+                  <div class="precondition-checks-header">
+                    <h4 class="precondition-checks-title">Precondition Checks</h4>
+                  </div>
+                  <div class="precondition-list">
+                    <div class="precondition-item">
+                      <span class="precondition-name">Gemini CLI</span>
+                      <span class="precondition-status" id="gemini-check">
+                        <span class="precondition-status-icon">⏳</span>
+                        <span>Checking...</span>
+                      </span>
+                    </div>
+                    <div class="precondition-item">
+                      <span class="precondition-name">--yolo Support</span>
+                      <span class="precondition-status" id="yolo-check">
+                        <span class="precondition-status-icon">⏳</span>
+                        <span>Checking...</span>
+                      </span>
+                    </div>
+                    <div class="precondition-item">
+                      <span class="precondition-name">Write Permissions</span>
+                      <span class="precondition-status" id="permissions-check">
+                        <span class="precondition-status-icon">⏳</span>
+                        <span>Checking...</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <button id="continue-to-pages-btn" disabled class="primary-btn">Continue</button>
             </div>
           </div>
         </section>
 
         <!-- Pages Manager Page -->
         <section id="pages-manager-page" class="page">
-          <header>
+          <header class="pages-header">
             <h2>Pages Manager</h2>
-            <p>Define and organize your application pages</p>
+            <div class="pages-header-actions">
+              <button id="add-page-btn" class="btn btn-primary">
+                + Add New Page
+              </button>
+            </div>
           </header>
           
           <div class="content">
-            <div class="pages-actions">
-              <button id="add-page-btn" class="primary-btn">+ Add New Page</button>
-              <button id="bulk-import-pages-btn" class="secondary-btn">Bulk Import</button>
-            </div>
-            
-            <div id="pages-list">
+            <div id="pages-list" class="pages-list">
               <!-- Pages will be dynamically added here -->
             </div>
             
-            <button id="continue-to-features-btn" disabled class="primary-btn">Continue</button>
+            <div id="empty-pages-placeholder" class="empty-pages hidden">
+              <div class="empty-pages-icon">📄</div>
+              <h3 class="empty-pages-title">No Pages Yet</h3>
+              <p class="empty-pages-desc">Create your first page to start defining features for your application</p>
+              <button id="add-first-page-btn" class="btn btn-primary">+ Add First Page</button>
+            </div>
           </div>
         </section>
 
         <!-- Feature Mapping Page -->
         <section id="feature-mapping-page" class="page">
-          <header>
+          <header class="features-header">
             <h2>Feature Mapping</h2>
-            <p>Define features for your pages</p>
+            <div class="features-header-actions">
+              <button id="bulk-import-btn" class="btn btn-secondary">
+                📥 Import
+              </button>
+              <button id="bulk-export-btn" class="btn btn-secondary">
+                📤 Export
+              </button>
+            </div>
           </header>
           
           <div class="content">
-            <div id="page-selector">
-              <label for="page-select">Select Page:</label>
-              <select id="page-select">
-                <!-- Options will be dynamically added -->
-              </select>
+            <div class="page-selector-container">
+              <div class="page-selector-header">
+                <h3 class="page-selector-title">Select Page</h3>
+              </div>
+              <div class="page-selector">
+                <label class="page-selector-label" for="page-select">Page:</label>
+                <select id="page-select" class="page-selector-select">
+                  <!-- Options will be dynamically added -->
+                </select>
+              </div>
             </div>
             
-            <div id="feature-form-container">
+            <div id="feature-form-container" class="feature-form-container">
               <!-- Feature form will be dynamically loaded here -->
             </div>
             
             <div class="feature-actions">
-              <button id="save-features-btn" class="primary-btn">Save Features</button>
-              <button id="bulk-import-btn" class="secondary-btn">Bulk Import</button>
-              <button id="bulk-export-btn" class="secondary-btn">Bulk Export</button>
+              <button id="save-features-btn" class="btn btn-primary">
+                💾 Save Features
+              </button>
             </div>
-            
-            <button id="continue-to-rules-btn" disabled class="primary-btn">Continue</button>
           </div>
         </section>
 
         <!-- Project Rules Page -->
         <section id="project-rules-page" class="page">
-          <header>
+          <header class="rules-header">
             <h2>Project Rules</h2>
-            <p>Define global build constraints</p>
+            <div class="rules-header-actions">
+              <button id="use-default-rules-btn" class="btn btn-secondary">
+                🔄 Use Defaults
+              </button>
+            </div>
           </header>
           
           <div class="content">
-            <form id="rules-form">
-              <div class="form-group">
-                <label for="app-type">App Type:</label>
-                <select id="app-type">
-                  <option value="SPA">Single Page Application</option>
-                </select>
+            <form id="rules-form" class="rules-form">
+              <div class="rules-form-header">
+                <h3>Define Build Constraints</h3>
+                <p>Set the technical requirements and limitations for your generated application</p>
               </div>
               
-              <div class="form-group">
-                <label for="language">Language:</label>
-                <select id="language">
-                  <option value="javascript-vanilla">JavaScript (Vanilla)</option>
-                  <option value="typescript">TypeScript</option>
-                </select>
-              </div>
-              
-              <div class="form-group checkbox-group">
-                <input type="checkbox" id="html-support" checked>
-                <label for="html-support">HTML Support</label>
-              </div>
-              
-              <div class="form-group checkbox-group">
-                <input type="checkbox" id="css-support" checked>
-                <label for="css-support">CSS Support</label>
-              </div>
-              
-              <div class="form-group">
-                <label for="constraints">Constraints:</label>
-                <textarea id="constraints" rows="4">single index.html at root
+              <div class="rules-form-groups">
+                <div class="rules-form-group">
+                  <div class="rules-form-group-header">
+                    <h4 class="rules-form-group-title">Application Type</h4>
+                  </div>
+                  <div class="rules-form-controls">
+                    <div class="rules-form-control">
+                      <label class="rules-form-label" for="app-type">App Type:</label>
+                      <select id="app-type" class="rules-form-select">
+                        <option value="SPA">Single Page Application</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="rules-form-group">
+                  <div class="rules-form-group-header">
+                    <h4 class="rules-form-group-title">Language & Framework</h4>
+                  </div>
+                  <div class="rules-form-controls">
+                    <div class="rules-form-control">
+                      <label class="rules-form-label" for="language">Language:</label>
+                      <select id="language" class="rules-form-select">
+                        <option value="javascript-vanilla">JavaScript (Vanilla)</option>
+                        <option value="typescript">TypeScript</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="rules-form-group">
+                  <div class="rules-form-group-header">
+                    <h4 class="rules-form-group-title">Technology Support</h4>
+                  </div>
+                  <div class="rules-form-controls">
+                    <div class="rules-form-control">
+                      <div class="rules-form-checkbox-group">
+                        <input type="checkbox" id="html-support" class="rules-form-checkbox" checked>
+                        <label class="rules-form-label" for="html-support">HTML Support</label>
+                      </div>
+                    </div>
+                    <div class="rules-form-control">
+                      <div class="rules-form-checkbox-group">
+                        <input type="checkbox" id="css-support" class="rules-form-checkbox" checked>
+                        <label class="rules-form-label" for="css-support">CSS Support</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="rules-form-group">
+                  <div class="rules-form-group-header">
+                    <h4 class="rules-form-group-title">Constraints</h4>
+                    <p class="rules-form-group-desc">Define limitations for the generated application</p>
+                  </div>
+                  <div class="rules-form-controls">
+                    <div class="rules-form-control">
+                      <label class="rules-form-label" for="constraints">Constraints:</label>
+                      <textarea id="constraints" class="rules-form-textarea" rows="6">single index.html at root
 multiple JS/CSS files allowed
 no frameworks by default</textarea>
+                    </div>
+                  </div>
+                </div>
               </div>
               
-              <div class="form-actions">
-                <button type="button" id="use-default-rules-btn" class="secondary-btn">Use Defaults</button>
-                <button type="button" id="save-rules-btn" class="primary-btn">Save Rules</button>
+              <div class="rules-form-actions">
+                <button type="button" id="save-rules-btn" class="btn btn-primary">
+                  💾 Save Rules
+                </button>
               </div>
             </form>
-            
-            <button id="continue-to-generate-btn" disabled class="primary-btn">Continue</button>
           </div>
         </section>
 
         <!-- Generate & Monitor Page -->
         <section id="generate-monitor-page" class="page">
-          <header>
+          <header class="generate-header">
             <h2>Generate & Monitor</h2>
-            <p>Run the MVP generation process</p>
           </header>
           
           <div class="content">
-            <div class="generation-controls">
-              <button id="start-generate-btn" class="primary-btn">Start Generate</button>
-              <button id="stop-generate-btn" disabled class="secondary-btn">Stop</button>
-            </div>
-            
-            <div class="stage-indicators">
-              <div id="planning-stage" class="stage">
-                <span class="stage-name">Planning</span>
-                <span class="stage-status">Pending</span>
+            <div class="generate-controls">
+              <div class="generate-main-controls">
+                <button id="plan-btn" class="btn btn-secondary">
+                  📋 Plan
+                </button>
+                <button id="build-btn" class="btn btn-secondary">
+                  🛠️ Build
+                </button>
+                <button id="plan-build-btn" class="btn btn-primary">
+                  ⚡ Plan + Build
+                </button>
               </div>
-              <div id="building-stage" class="stage">
-                <span class="stage-name">Building</span>
-                <span class="stage-status">Pending</span>
+              <div class="generate-secondary-controls">
+                <button id="stop-generate-btn" disabled class="btn btn-ghost">
+                  🛑 Stop
+                </button>
+                <button id="toggle-side-preview-btn" class="btn btn-secondary">
+                  👁️ Show Preview
+                </button>
               </div>
             </div>
             
-            <div id="generation-output" class="output-console">
-              <!-- Generation output will appear here -->
+            <div class="generate-stage-indicators">
+              <div id="planning-stage" class="generate-stage">
+                <div class="generate-stage-icon">📋</div>
+                <h3 class="generate-stage-name">Planning</h3>
+                <p class="generate-stage-desc">Creating development plan based on your features</p>
+                <span class="generate-stage-status pending">Pending</span>
+              </div>
+              <div id="building-stage" class="generate-stage">
+                <div class="generate-stage-icon">🛠️</div>
+                <h3 class="generate-stage-name">Building</h3>
+                <p class="generate-stage-desc">Generating code based on the development plan</p>
+                <span class="generate-stage-status pending">Pending</span>
+              </div>
             </div>
             
-            <button id="continue-to-preview-btn" disabled class="primary-btn">Continue</button>
+            <div class="generate-output-container">
+              <div class="generate-output-header">
+                <h4 class="generate-output-title">Generation Output</h4>
+                <div class="generate-output-actions">
+                  <button id="clear-output-btn" class="btn btn-icon">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              <div id="generation-output" class="generate-output-content">
+                <div class="generate-output-placeholder">
+                  <p>Generation output will appear here...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Optional side-by-side live preview during generation -->
+            <div id="side-preview" class="generate-preview-container hidden">
+              <div class="generate-preview-header">
+                <h4 class="generate-preview-title">Live Preview</h4>
+              </div>
+              <iframe id="side-preview-frame" class="generate-preview-frame" src="about:blank"></iframe>
+            </div>
           </div>
         </section>
 
         <!-- Live Preview Page -->
         <section id="live-preview-page" class="page">
-          <header>
+          <header class="preview-header">
             <h2>Live Preview</h2>
-            <p>See your MVP in real-time</p>
           </header>
           
           <div class="content">
             <div class="preview-container">
-              <iframe id="preview-frame" src="about:blank"></iframe>
+              <div class="preview-toolbar">
+                <div class="preview-toolbar-left">
+                  <button id="preview-back-btn" class="preview-toolbar-btn" disabled>
+                    ←
+                  </button>
+                  <button id="preview-forward-btn" class="preview-toolbar-btn" disabled>
+                    →
+                  </button>
+                  <button id="preview-reload-btn" class="preview-toolbar-btn">
+                    ↻
+                  </button>
+                </div>
+                <input type="text" id="preview-url" class="preview-url" placeholder="http://localhost:3000" readonly>
+                <div class="preview-toolbar-right">
+                  <button id="preview-devtools-btn" class="preview-toolbar-btn">
+                    ⚙️
+                  </button>
+                </div>
+              </div>
+              <iframe id="preview-frame" class="preview-frame" src="about:blank"></iframe>
             </div>
             
-            <div class="preview-controls">
-              <button id="refresh-preview-btn" class="secondary-btn">Refresh</button>
-              <button id="open-external-btn" class="secondary-btn">Open in External Browser</button>
+            <div class="preview-actions">
+              <div class="preview-main-actions">
+                <button id="refresh-preview-btn" class="btn btn-secondary">
+                  ↻ Refresh
+                </button>
+                <button id="open-external-btn" class="btn btn-secondary">
+                  🌐 Open in Browser
+                </button>
+              </div>
+              <div class="preview-secondary-actions">
+                <button id="rebuild-btn" class="btn btn-secondary">
+                  🔁 Rebuild
+                </button>
+              </div>
             </div>
             
-            <div class="completion-actions">
-              <button id="rebuild-btn" class="secondary-btn">Rebuild</button>
-              <button id="export-project-btn" class="primary-btn">Export Project</button>
+            <div class="preview-completion-actions">
+              <button id="export-project-btn" class="btn btn-primary">
+                📦 Export Project
+              </button>
             </div>
           </div>
         </section>

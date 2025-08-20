@@ -7,7 +7,7 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
 // Register all IPC logic
-const { registerIpcHandlers } = require('./ipc-handlers');
+const { registerIpcHandlers } = require('./ipc-handlers/index.js');
 
 let mainWindow;
 

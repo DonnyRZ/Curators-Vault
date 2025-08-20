@@ -11,11 +11,13 @@ contextBridge.exposeInMainWorld('api', {
   createWorkspace: (path) => ipcRenderer.invoke('workspace:create', path),
   checkPreconditions: (path) => ipcRenderer.invoke('workspace:check-preconditions', path),
   getWorkspacePath: () => ipcRenderer.invoke('workspace:get-path'),
+  getWorkspaceStats: () => ipcRenderer.invoke('workspace:stats'),
   
   // --- Pages Manager ---
   createPage: (pageId, pageName) => ipcRenderer.invoke('pages:create', pageId, pageName),
   listPages: () => ipcRenderer.invoke('pages:list'),
   deletePage: (id) => ipcRenderer.invoke('page:delete', id),
+  updatePageName: (id, name) => ipcRenderer.invoke('page:update-name', id, name),
   
   // --- Feature Mapping ---
   saveFeatures: (pageId, featuresData) => ipcRenderer.invoke('features:save', pageId, featuresData),
@@ -29,6 +31,9 @@ contextBridge.exposeInMainWorld('api', {
   
   // --- Generate & Monitor ---
   startGeneration: () => ipcRenderer.invoke('generate:start'),
+  planGeneration: () => ipcRenderer.invoke('generate:plan'),
+  buildGeneration: () => ipcRenderer.invoke('generate:build'),
+  stopGeneration: () => ipcRenderer.invoke('generate:stop'),
   retryStage: (stage) => ipcRenderer.invoke('generate:retry', stage),
   onGenerationOutput: (callback) => {
     if (typeof callback !== 'function') return;

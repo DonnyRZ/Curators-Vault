@@ -1,0 +1,259 @@
+/* ====================  PROFESSIONAL PROJECT RULES  ==================== */
+
+#project-rules-page .content {
+  max-width: 800px;
+}
+
+.rules-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--light-200);
+}
+
+.rules-header h2 {
+  margin-bottom: 0;
+  color: var(--dark-900);
+}
+
+.rules-header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.rules-form {
+  background: var(--white);
+  border: 1px solid var(--light-200);
+  border-radius: var(--border-radius-xl);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.rules-form-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.rules-form-header h3 {
+  margin-bottom: var(--spacing-sm);
+  color: var(--dark-900);
+  font-size: var(--font-size-xl);
+}
+
+.rules-form-header p {
+  color: var(--dark-500);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.rules-form-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.rules-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.rules-form-group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.rules-form-group-title {
+  margin-bottom: 0;
+  color: var(--dark-900);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.rules-form-group-desc {
+  color: var(--dark-500);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-2xs);
+}
+
+.rules-form-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.rules-form-control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.rules-form-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--dark-700);
+  font-size: var(--font-size-sm);
+}
+
+.rules-form-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--light-300);
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  transition: var(--transition-all);
+  background: var(--white);
+}
+
+.rules-form-input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(144, 99, 202, 0.2);
+}
+
+.rules-form-select {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--light-300);
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  transition: var(--transition-all);
+  background: var(--white);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+}
+
+.rules-form-select:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(144, 99, 202, 0.2);
+}
+
+.rules-form-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.rules-form-checkbox {
+  width: auto;
+  margin: 0;
+}
+
+.rules-form-textarea {
+  min-height: 150px;
+  resize: vertical;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  font-size: var(--font-size-sm);
+}
+
+.rules-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-xl);
+  border-top: 1px solid var(--light-200);
+  flex-wrap: wrap;
+}
+
+.rules-preview {
+  background: var(--dark-900);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.rules-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rules-preview-title {
+  margin-bottom: 0;
+  color: var(--light-100);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.rules-preview-content {
+  color: var(--light-300);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .rules-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+  
+  .rules-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .rules-form {
+    padding: var(--spacing-xl);
+  }
+  
+  .rules-form-controls {
+    gap: var(--spacing-sm);
+  }
+  
+  .rules-form-actions {
+    flex-direction: column;
+  }
+  
+  .rules-form-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .rules-header h2 {
+    font-size: var(--font-size-xl);
+  }
+  
+  .rules-form {
+    padding: var(--spacing-lg);
+  }
+  
+  .rules-form-header h3 {
+    font-size: var(--font-size-lg);
+  }
+  
+  .rules-form-group-title {
+    font-size: var(--font-size-base);
+  }
+  
+  .rules-form-label {
+    font-size: var(--font-size-xs);
+  }
+  
+  .rules-form-input,
+  .rules-form-select,
+  .rules-form-textarea {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+}

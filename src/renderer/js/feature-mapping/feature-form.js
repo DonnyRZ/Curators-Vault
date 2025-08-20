@@ -17,20 +17,24 @@ function createFeatureItem(feature = {}) {
   featureElement.dataset.id = featureId;
   
   featureElement.innerHTML = `
-    <div class="feature-header">
-      <input type="text" class="feature-name" placeholder="Feature Name" value="${feature.name || ''}">
-      <button type="button" class="remove-feature-btn" title="Remove Feature">✕</button>
+    <div class="feature-item-header">
+      <input type="text" class="feature-item-title-input" placeholder="Feature Name" value="${feature.name || ''}">
+      <div class="feature-item-actions">
+        <button type="button" class="btn btn-icon remove-feature-btn" title="Remove Feature">
+          ✕
+        </button>
+      </div>
     </div>
-    <div class="feature-details">
+    <div class="feature-item-content">
       <div class="form-group">
-        <label>Description:</label>
-        <textarea class="feature-description" placeholder="Describe what this feature does...">${feature.description || ''}</textarea>
+        <label class="form-label">Description:</label>
+        <textarea class="form-control feature-description-textarea" placeholder="Describe what this feature does...">${feature.description || ''}</textarea>
       </div>
       <div class="form-group">
-        <label>
-          <input type="checkbox" class="feature-required" ${feature.required ? 'checked' : ''}>
-          Required Feature
-        </label>
+        <div class="feature-required-checkbox">
+          <input type="checkbox" class="form-checkbox feature-required-checkbox-input" ${feature.required ? 'checked' : ''}>
+          <label class="form-label">Required Feature</label>
+        </div>
       </div>
     </div>
   `;
@@ -44,7 +48,7 @@ function createFeatureItem(feature = {}) {
   });
   
   // Add event listeners for input fields to enable real-time validation
-  const nameInput = featureElement.querySelector('.feature-name');
+  const nameInput = featureElement.querySelector('.feature-item-title-input');
   nameInput.addEventListener('input', () => {
     // Could add validation here if needed
   });
@@ -88,9 +92,11 @@ export async function loadFeatureFormForPage(pageId) {
     // Create feature form with add button
     featureFormContainer.innerHTML = `
       <div class="feature-form">
-        <div class="form-header">
-          <h3>Features for Page ${pageId}</h3>
-          <button type="button" id="add-feature-btn" class="secondary-btn">+ Add Feature</button>
+        <div class="feature-form-header">
+          <h3 class="feature-form-title">Features for Page ${pageId}</h3>
+          <button type="button" id="add-feature-btn" class="btn btn-secondary">
+            + Add Feature
+          </button>
         </div>
         <div class="feature-list"></div>
       </div>
@@ -118,7 +124,11 @@ export async function loadFeatureFormForPage(pageId) {
     await checkAndEnableContinueButton();
   } catch (error) {
     console.error(`Error loading feature form for page ${pageId}:`, error);
-    featureFormContainer.innerHTML = `<p>Error loading features for page ${pageId}</p>`;
+    featureFormContainer.innerHTML = `<div class="empty-features">
+      <div class="empty-features-icon">⚙️</div>
+      <h3 class="empty-features-title">Error Loading Features</h3>
+      <p class="empty-features-desc">Could not load features for page ${pageId}</p>
+    </div>`;
   }
 }
 
@@ -132,9 +142,9 @@ export function collectFeaturesFromForm() {
   
   featureItems.forEach((item, index) => {
     const id = item.dataset.id || `feature-${index + 1}`;
-    const nameInput = item.querySelector('.feature-name');
-    const descInput = item.querySelector('.feature-description');
-    const requiredInput = item.querySelector('.feature-required');
+    const nameInput = item.querySelector('.feature-item-title-input');
+    const descInput = item.querySelector('.feature-description-textarea');
+    const requiredInput = item.querySelector('.feature-required-checkbox-input');
     
     const name = nameInput ? nameInput.value.trim() : '';
     const description = descInput ? descInput.value.trim() : '';

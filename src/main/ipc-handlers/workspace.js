@@ -113,6 +113,44 @@ function registerWorkspaceHandlers(win) {
   ipcMain.handle('workspace:get-path', async () => {
     return state.workspacePath || null;
   });
+
+  // Workspace stats: pages count, features count, last plan/build
+  ipcMain.handle('workspace:stats', async () => {
+    const result = { pages: 0, features: 0, lastPlanAt: null, lastBuildAt: null };
+    try {
+      if (!state.workspacePath) return result;
+      const entries = await fs.readdir(state.workspacePath, { withFileTypes: true });
+      const pageDirs = entries.filter(e => e.isDirectory() && /^page-\d+$/.test(e.name));
+      result.pages = pageDirs.length;
+      for (const dir of pageDirs) {
+        try {
+          const featuresPath = path.join(state.workspacePath, dir.name, 'features.json');
+          const featuresData = await fs.readFile(featuresPath, 'utf8');
+          const arr = JSON.parse(featuresData);
+          if (Array.isArray(arr)) result.features += arr.length;
+        } catch {
+          // Skip this directory if features.json cannot be read or parsed
+        }
+      }
+      // lastPlanAt from development_phases.txt mtime
+      try {
+        const planStat = await fs.stat(path.join(state.workspacePath, 'development_phases.txt'));
+        result.lastPlanAt = planStat.mtimeMs;
+      } catch {
+        // Ignore if development_phases.txt doesn't exist
+      }
+      // lastBuildAt from index.html mtime
+      try {
+        const buildStat = await fs.stat(path.join(state.workspacePath, 'index.html'));
+        result.lastBuildAt = buildStat.mtimeMs;
+      } catch {
+        // Ignore if index.html doesn't exist
+      }
+    } catch (e) {
+      // swallow; return what we have
+    }
+    return result;
+  });
 }
 
 module.exports = { registerWorkspaceHandlers };

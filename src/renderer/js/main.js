@@ -9,28 +9,12 @@ import { initializeFeatureMapping } from './feature-mapping/index.js';
 import { initializeProjectRules } from './project-rules.js';
 import { initializeGenerateMonitor } from './generate-monitor.js';
 import { initializeLivePreview } from './live-preview.js';
-
-// DOM Elements
-const appContainer = document.getElementById('app-container');
-const pages = document.querySelectorAll('.page');
-const navbar = document.getElementById('navbar');
-
-// Navigation function
-export function navigateToPage(pageId) {
-  // Hide all pages
-  pages.forEach(page => {
-    page.classList.remove('active');
-  });
-  
-  // Show the requested page
-  const targetPage = document.getElementById(pageId);
-  if (targetPage) {
-    targetPage.classList.add('active');
-  }
-}
+import { initRouter, navigateToPage } from './router.js';
+import { initStepper } from './ui/stepper.js';
+import { initializeDashboard } from './dashboard.js';
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('Renderer process loaded');
   
   // Initialize all modules
@@ -40,4 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeProjectRules();
   initializeGenerateMonitor();
   initializeLivePreview();
+
+  // Router and stepper
+  await initRouter('dashboard'); // Make sure router is initialized
+  initStepper(navigateToPage);
+  initializeDashboard();
 });

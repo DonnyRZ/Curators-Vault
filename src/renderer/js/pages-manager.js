@@ -3,7 +3,11 @@
  * Handles page creation, management, and navigation
  */
 
-let addPageBtn, pagesList, continueToFeaturesBtn;
+import { showError, showSuccess } from './ui/toast.js';
+import { navigateToPage } from './router.js'; // Import navigateToPage for automatic navigation
+
+let addPageBtn, addFirstPageBtn, pagesList, emptyPagesPlaceholder;
+let lastCreatedPageId = null; // To track the last created page
 
 // Helper function to create a page card element
 function createPageCard(page) {
@@ -12,16 +16,30 @@ function createPageCard(page) {
   pageCard.dataset.id = page.id;
   
   pageCard.innerHTML = `
-    <div class="page-header">
-      <input type="text" class="page-name" value="${page.name}" placeholder="Page Name">
-      <button type="button" class="remove-page-btn" title="Remove Page">✕</button>
+    <div class="page-card-header">
+      <input type="text" class="page-card-title-input" value="${page.name}" placeholder="Page Name">
+      <div class="page-card-actions">
+        <button type="button" class="btn btn-icon remove-page-btn" title="Remove Page">
+          ✕
+        </button>
+      </div>
     </div>
-    <div class="page-info">
-      <p>ID: ${page.id}</p>
-      <p>Status: <span class="status ${page.hasFeatures ? 'success' : 'pending'}">${page.hasFeatures ? 'Features Defined' : 'Missing Features'}</span></p>
+    <div class="page-card-content">
+      <div class="page-card-info">
+        <div class="page-info-item">
+          <span class="page-info-icon">🆔</span>
+          <span>ID: ${page.id}</span>
+        </div>
+        <div class="page-info-item">
+          <span class="page-info-icon">⚙️</span>
+          <span>Features: <span class="page-features-count">${page.featuresCount || 0}</span></span>
+        </div>
+      </div>
     </div>
-    <div class="page-actions">
-      <button type="button" class="edit-features-btn secondary-btn">Edit Features</button>
+    <div class="page-card-footer">
+      <button type="button" class="btn btn-secondary edit-features-btn">
+        Edit Features
+      </button>
     </div>
   `;
   
@@ -33,9 +51,17 @@ function createPageCard(page) {
   }
   
   // Create new event listener
-  const removeListener = () => {
-    pageCard.remove();
-    checkAndEnableContinueButton();
+  const removeListener = async () => {
+    try {
+      const res = await window.api.deletePage(page.id);
+      if (!res.success) throw new Error(res.error || 'Failed to delete');
+      showSuccess(`Deleted ${page.name}`);
+      // Refresh list from source of truth
+      await refreshPagesList();
+    } catch (e) {
+      console.error('Delete page error:', e);
+      showError(`Error deleting page: ${e.message}`);
+    }
   };
   
   // Store reference to listener for cleanup
@@ -53,11 +79,8 @@ function createPageCard(page) {
   // Create new event listener
   const editListener = () => {
     // Navigate to feature mapping page with this page selected
-    import('./main.js').then(module => {
-      // Store the selected page ID in a global variable or state
-      window.selectedPageId = page.id;
-      module.navigateToPage('feature-mapping-page');
-    });
+    window.selectedPageId = page.id;
+    navigateToPage('feature-mapping-page');
   };
   
   // Store reference to listener for cleanup
@@ -67,9 +90,20 @@ function createPageCard(page) {
   editFeaturesBtn.addEventListener('click', editListener);
   
   // Update page name when input changes
-  const nameInput = pageCard.querySelector('.page-name');
-  nameInput.addEventListener('input', () => {
-    page.name = nameInput.value;
+  const nameInput = pageCard.querySelector('.page-card-title-input');
+  nameInput.addEventListener('blur', async () => {
+    const newName = nameInput.value.trim() || page.name;
+    if (newName !== page.name) {
+      try {
+        const res = await window.api.updatePageName(page.id, newName);
+        if (!res.success) throw new Error(res.error || 'Failed to save name');
+        page.name = newName;
+        showSuccess('Page name saved');
+      } catch (e) {
+        console.error('Update page name error:', e);
+        showError(`Error saving name: ${e.message}`);
+      }
+    }
   });
   
   return pageCard;
@@ -98,19 +132,34 @@ export async function refreshPagesList() {
     const result = await window.api.listPages();
     
     if (result.success && result.pages.length > 0) {
+      // Hide empty pages placeholder
+      if (emptyPagesPlaceholder) {
+        emptyPagesPlaceholder.classList.add('hidden');
+      }
+      
       // Populate the list with pages
       result.pages.forEach(page => {
         const pageCard = createPageCard(page);
         pagesList.appendChild(pageCard);
       });
       
-      // Enable continue button if we have pages
-      if (continueToFeaturesBtn) {
-        continueToFeaturesBtn.disabled = false;
+      // Check if we should automatically navigate to features after creating a page
+      if (lastCreatedPageId) {
+        const createdPage = result.pages.find(p => p.id === lastCreatedPageId);
+        if (createdPage && !createdPage.hasFeatures) {
+          // Automatically open features for the newly created page
+          window.selectedPageId = lastCreatedPageId;
+          setTimeout(() => {
+            navigateToPage('feature-mapping-page');
+          }, 500); // Small delay to let the UI update
+        }
+        lastCreatedPageId = null; // Reset
       }
     } else {
-      // Show a message if no pages
-      pagesList.innerHTML = '<p class="empty-message">No pages created yet. Add your first page!</p>';
+      // Show empty pages placeholder
+      if (emptyPagesPlaceholder) {
+        emptyPagesPlaceholder.classList.remove('hidden');
+      }
     }
   } catch (error) {
     console.error('Error refreshing pages list:', error);
@@ -118,100 +167,56 @@ export async function refreshPagesList() {
   }
 }
 
-// Helper function to check if all pages have features and enable continue button
-async function checkAndEnableContinueButton() {
-  try {
-    const result = await window.api.listPages();
-    if (result.success && result.pages.length > 0) {
-      // Check if all pages have features
-      const allHaveFeatures = result.pages.every(page => page.hasFeatures);
-      
-      // Enable/disable continue button based on this
-      if (continueToFeaturesBtn) {
-        continueToFeaturesBtn.disabled = !allHaveFeatures;
-      }
-    } else {
-      // Disable continue button if no pages
-      if (continueToFeaturesBtn) {
-        continueToFeaturesBtn.disabled = true;
-      }
-    }
-  } catch (error) {
-    console.error('Error checking page features:', error);
-  }
-}
-
 export function initializePagesManager() {
   // Pages Manager Page Elements
   addPageBtn = document.getElementById('add-page-btn');
+  addFirstPageBtn = document.getElementById('add-first-page-btn');
   pagesList = document.getElementById('pages-list');
-  continueToFeaturesBtn = document.getElementById('continue-to-features-btn');
-  
-  // Set up navigation for "Continue" button
-  if (continueToFeaturesBtn) {
-    // Remove existing event listener if any
-    if (continueToFeaturesBtn.eventListener) {
-      continueToFeaturesBtn.removeEventListener('click', continueToFeaturesBtn.eventListener);
-    }
-    
-    // Create new event listener
-    const continueListener = () => {
-      // Import the navigation function dynamically to avoid circular dependencies
-      import('./main.js').then(module => {
-        module.navigateToPage('feature-mapping-page');
-      });
-    };
-    
-    // Store reference to listener for cleanup
-    continueToFeaturesBtn.eventListener = continueListener;
-    
-    // Add event listener
-    continueToFeaturesBtn.addEventListener('click', continueListener);
-  }
+  emptyPagesPlaceholder = document.getElementById('empty-pages-placeholder');
   
   // Pages Manager Page Logic
-  if (addPageBtn) {
-    // Remove existing event listener if any
-    if (addPageBtn.eventListener) {
-      addPageBtn.removeEventListener('click', addPageBtn.eventListener);
-    }
-    
-    // Create new event listener
-    const addPageListener = async () => {
-      try {
-        const pageId = getNextPageId();
-        const pageName = `Page ${pageId.split('-')[1]}`;
+  const addPageHandler = async () => {
+    try {
+      const pageId = getNextPageId();
+      const pageName = `Page ${pageId.split('-')[1]}`;
+      
+      // Create page on the server
+      const result = await window.api.createPage(pageId, pageName);
+      
+      if (result.success) {
+        // Track the last created page ID
+        lastCreatedPageId = pageId;
         
-        // Create page on the server
-        const result = await window.api.createPage(pageId, pageName);
+        // Create page card in UI
+        const pageCard = createPageCard({
+          id: pageId,
+          name: pageName,
+          featuresCount: 0
+        });
+        pagesList.appendChild(pageCard);
         
-        if (result.success) {
-          // Create page card in UI
-          const pageCard = createPageCard({
-            id: pageId,
-            name: pageName,
-            hasFeatures: false
-          });
-          pagesList.appendChild(pageCard);
-          
-          // Enable continue button
-          if (continueToFeaturesBtn) {
-            continueToFeaturesBtn.disabled = false;
-          }
-        } else {
-          alert(`Error creating page: ${result.error}`);
+        // Hide empty pages placeholder
+        if (emptyPagesPlaceholder) {
+          emptyPagesPlaceholder.classList.add('hidden');
         }
-      } catch (error) {
-        console.error('Error creating page:', error);
-        alert(`Error creating page: ${error.message}`);
+        
+        // The refreshPagesList function will handle automatic navigation
+        
+      } else {
+        showError(`Error creating page: ${result.error}`);
       }
-    };
-    
-    // Store reference to listener for cleanup
-    addPageBtn.eventListener = addPageListener;
-    
-    // Add event listener
-    addPageBtn.addEventListener('click', addPageListener);
+    } catch (error) {
+      console.error('Error creating page:', error);
+      showError(`Error creating page: ${error.message}`);
+    }
+  };
+  
+  if (addPageBtn) {
+    addPageBtn.addEventListener('click', addPageHandler);
+  }
+  
+  if (addFirstPageBtn) {
+    addFirstPageBtn.addEventListener('click', addPageHandler);
   }
   
   // Initialize the pages list

@@ -4,6 +4,8 @@
  */
 
 import { collectFeaturesFromForm } from './feature-form.js';
+import { showError, showSuccess } from '../ui/toast.js';
+import { navigateToPage } from '../router.js'; // Import navigateToPage for automatic navigation
 
 let saveFeaturesBtn, bulkImportBtn, bulkExportBtn;
 let selectedPageId = null;
@@ -22,10 +24,12 @@ async function checkAndEnableContinueButton() {
       // Check if all pages have features
       const allHaveFeatures = result.pages.every(page => page.hasFeatures);
       
-      // Enable/disable continue button based on this
-      const continueBtn = document.getElementById('continue-to-rules-btn');
-      if (continueBtn) {
-        continueBtn.disabled = !allHaveFeatures;
+      // If all pages have features, automatically navigate to the next step (Rules)
+      if (allHaveFeatures) {
+         // Use a small delay to allow any success messages to be seen
+        setTimeout(() => {
+          navigateToPage('project-rules-page');
+        }, 1500);
       }
     }
   } catch (error) {
@@ -44,18 +48,18 @@ function handleBulkImportFileSelect(event) {
       const data = JSON.parse(e.target.result);
       
       // Show loading message
-      const originalBtnText = bulkImportBtn.textContent;
-      bulkImportBtn.textContent = 'Importing...';
+      const originalBtnText = bulkImportBtn.innerHTML;
+      bulkImportBtn.innerHTML = '📥 Importing...';
       bulkImportBtn.disabled = true;
       
       const result = await window.api.bulkImportFeatures(data);
       
       // Restore button
-      bulkImportBtn.textContent = originalBtnText;
+      bulkImportBtn.innerHTML = originalBtnText;
       bulkImportBtn.disabled = false;
       
-      if (result.success) {
-        alert('Features imported successfully!');
+        if (result.success) {
+          showSuccess('Features imported successfully!');
         // Refresh the page selector and feature form
         const { populatePageSelector } = await import('./page-selector.js');
         await populatePageSelector();
@@ -72,19 +76,19 @@ function handleBulkImportFileSelect(event) {
           module.refreshPagesList();
         });
         
-        // Check if we should enable the continue button
+        // Check if we should enable the continue button or navigate
         await checkAndEnableContinueButton();
-      } else {
-        alert(`Error importing features: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Error parsing or importing features:', error);
-      alert(`Error importing features: ${error.message}`);
+        } else {
+          showError(`Error importing features: ${result.error}`);
+        }
+      } catch (error) {
+        console.error('Error parsing or importing features:', error);
+        showError(`Error importing features: ${error.message}`);
       
       // Restore button
       if (bulkImportBtn) {
-        const originalBtnText = bulkImportBtn.textContent.replace('Importing...', 'Bulk Import');
-        bulkImportBtn.textContent = originalBtnText;
+        const originalBtnText = bulkImportBtn.innerHTML.replace('📥 Importing...', '📥 Import');
+        bulkImportBtn.innerHTML = originalBtnText;
         bulkImportBtn.disabled = false;
       }
     } finally {
@@ -96,12 +100,12 @@ function handleBulkImportFileSelect(event) {
   };
   
   reader.onerror = () => {
-    alert('Error reading file');
+    showError('Error reading file');
     
     // Restore button
     if (bulkImportBtn) {
-      const originalBtnText = bulkImportBtn.textContent.replace('Importing...', 'Bulk Import');
-      bulkImportBtn.textContent = originalBtnText;
+      const originalBtnText = bulkImportBtn.innerHTML.replace('📥 Importing...', '📥 Import');
+      bulkImportBtn.innerHTML = originalBtnText;
       bulkImportBtn.disabled = false;
     }
     
@@ -112,6 +116,118 @@ function handleBulkImportFileSelect(event) {
   };
   
   reader.readAsText(file);
+}
+
+// Function to show bulk import modal
+function showBulkImportModal() {
+  // Create modal HTML
+  const modalHTML = `
+    <div class="modal-overlay" id="bulk-import-modal">
+      <div class="modal bulk-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Bulk Import Features</h3>
+          <button class="modal-close" id="bulk-import-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Upload a JSON file with your features data:</p>
+          <input type="file" id="bulk-import-file" accept=".json" class="form-control">
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Add modal to body
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Add event listeners
+  const modal = document.getElementById('bulk-import-modal');
+  const closeBtn = document.getElementById('bulk-import-close');
+  const fileInput = document.getElementById('bulk-import-file');
+  
+  const closeModal = () => {
+    if (modal) {
+      modal.remove();
+    }
+  };
+  
+  closeBtn.addEventListener('click', closeModal);
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+  
+  fileInput.addEventListener('change', (e) => {
+    handleBulkImportFileSelect(e);
+    closeModal();
+  });
+}
+
+// Function to show bulk export modal
+function showBulkExportModal(data) {
+  // Create modal HTML
+  const modalHTML = `
+    <div class="modal-overlay" id="bulk-export-modal">
+      <div class="modal bulk-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Bulk Export Features</h3>
+          <button class="modal-close" id="bulk-export-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Copy the JSON data below or download as a file:</p>
+          <textarea class="form-control bulk-textarea" readonly>${JSON.stringify(data, null, 2)}</textarea>
+          <div class="bulk-actions">
+            <button class="btn btn-secondary" id="bulk-export-copy">📋 Copy to Clipboard</button>
+            <button class="btn btn-primary" id="bulk-export-download">📥 Download JSON</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Add modal to body
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Add event listeners
+  const modal = document.getElementById('bulk-export-modal');
+  const closeBtn = document.getElementById('bulk-export-close');
+  const copyBtn = document.getElementById('bulk-export-copy');
+  const downloadBtn = document.getElementById('bulk-export-download');
+  const textarea = modal.querySelector('.bulk-textarea');
+  
+  const closeModal = () => {
+    if (modal) {
+      modal.remove();
+    }
+  };
+  
+  closeBtn.addEventListener('click', closeModal);
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+  
+  copyBtn.addEventListener('click', () => {
+    textarea.select();
+    document.execCommand('copy');
+    showSuccess('Copied to clipboard!');
+  });
+  
+  downloadBtn.addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'features-export.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showSuccess('Features exported successfully!');
+  });
 }
 
 export function initializeFeatureActions() {
@@ -131,13 +247,13 @@ export function initializeFeatureActions() {
     const listener = async () => {
       const pageId = getCurrentPageId();
       if (!pageId) {
-        alert('Please select a page first.');
+        showError('Please select a page first.');
         return;
       }
       
       // Show loading message
-      const originalBtnText = saveFeaturesBtn.textContent;
-      saveFeaturesBtn.textContent = 'Saving...';
+      const originalBtnText = saveFeaturesBtn.innerHTML;
+      saveFeaturesBtn.innerHTML = '💾 Saving...';
       saveFeaturesBtn.disabled = true;
       
       try {
@@ -145,27 +261,27 @@ export function initializeFeatureActions() {
         const result = await window.api.saveFeatures(pageId, features);
         
         // Restore button
-        saveFeaturesBtn.textContent = originalBtnText;
+        saveFeaturesBtn.innerHTML = originalBtnText;
         saveFeaturesBtn.disabled = false;
         
         if (result.success) {
-          alert('Features saved successfully!');
+          showSuccess('Features saved successfully!');
           // Refresh the pages list to update the status
           import('../pages-manager.js').then(module => {
             module.refreshPagesList();
           });
           
-          // Check if we should enable the continue button
+          // Check if we should enable the continue button or navigate
           await checkAndEnableContinueButton();
         } else {
-          alert(`Error saving features: ${result.error}`);
+          showError(`Error saving features: ${result.error}`);
         }
       } catch (error) {
         console.error('Error saving features:', error);
-        alert(`Error saving features: ${error.message}`);
+        showError(`Error saving features: ${error.message}`);
         
         // Restore button
-        saveFeaturesBtn.textContent = originalBtnText;
+        saveFeaturesBtn.innerHTML = originalBtnText;
         saveFeaturesBtn.disabled = false;
       }
     };
@@ -186,21 +302,10 @@ export function initializeFeatureActions() {
     // Create new event listener
     const listener = async () => {
       try {
-        // Create a hidden file input element
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = '.json';
-        fileInput.style.display = 'none';
-        
-        // Add event listener for file selection
-        fileInput.addEventListener('change', handleBulkImportFileSelect);
-        
-        // Add to DOM, trigger click, then remove
-        document.body.appendChild(fileInput);
-        fileInput.click();
+        showBulkImportModal();
       } catch (error) {
         console.error('Error setting up bulk import:', error);
-        alert(`Error setting up bulk import: ${error.message}`);
+        showError(`Error setting up bulk import: ${error.message}`);
       }
     };
     
@@ -221,39 +326,29 @@ export function initializeFeatureActions() {
     const listener = async () => {
       try {
         // Show loading message
-        const originalBtnText = bulkExportBtn.textContent;
-        bulkExportBtn.textContent = 'Exporting...';
+        const originalBtnText = bulkExportBtn.innerHTML;
+        bulkExportBtn.innerHTML = '📤 Exporting...';
         bulkExportBtn.disabled = true;
         
         const result = await window.api.bulkExportFeatures();
         
         // Restore button
-        bulkExportBtn.textContent = originalBtnText;
+        bulkExportBtn.innerHTML = originalBtnText;
         bulkExportBtn.disabled = false;
         
         if (result.success) {
-          // Create a blob and download link
-          const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'features-export.json';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          alert('Features exported successfully!');
+          showBulkExportModal(result.data);
         } else {
-          alert(`Error exporting features: ${result.error}`);
+          showError(`Error exporting features: ${result.error}`);
         }
       } catch (error) {
         console.error('Error exporting features:', error);
-        alert(`Error exporting features: ${error.message}`);
+        showError(`Error exporting features: ${error.message}`);
         
         // Restore button
         if (bulkExportBtn) {
-          const originalBtnText = bulkExportBtn.textContent.replace('Exporting...', 'Bulk Export');
-          bulkExportBtn.textContent = originalBtnText;
+          const originalBtnText = bulkExportBtn.innerHTML.replace('📤 Exporting...', '📤 Export');
+          bulkExportBtn.innerHTML = originalBtnText;
           bulkExportBtn.disabled = false;
         }
       }
