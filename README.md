@@ -76,7 +76,7 @@ MVP-01/
 1.  Clone the repository:
     ```bash
     git clone <repository-url>
-    cd MVP-01
+    cd Curators-Vault
     ```
 2.  Install dependencies:
     ```bash
