@@ -3,7 +3,7 @@
  * Handles all window-related IPC communication
  */
 
-const { ipcMain } = require('electron');
+const { ipcMain, shell } = require('electron');
 
 /**
  * Register window-related IPC handlers
@@ -25,6 +25,10 @@ function registerWindowHandlers(win) {
 
   ipcMain.handle('window:close', () => {
     win.close();
+  });
+
+  ipcMain.handle('open-external-url', async (event, url) => {
+    await shell.openExternal(url);
   });
 }
 

@@ -128,13 +128,12 @@ export function initializeLivePreview() {
   if (openExternalBtn) {
     openExternalBtn.addEventListener('click', async () => {
       if (previewFrame && previewFrame.src && previewFrame.src !== 'about:blank') {
-        // In a real implementation, this would open in external browser
-        showInfo(`In a full implementation, this would open: ${previewFrame.src}`);
+        await window.api.openExternal(previewFrame.src);
       } else {
         // Try to load the preview first
         await loadPreview();
         if (previewFrame && previewFrame.src && previewFrame.src !== 'about:blank') {
-          showInfo(`In a full implementation, this would open: ${previewFrame.src}`);
+          await window.api.openExternal(previewFrame.src);
         } else {
           showError('No preview available to open in external browser.');
         }
