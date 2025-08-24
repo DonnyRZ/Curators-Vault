@@ -1,0 +1,33 @@
+### Color and Contrast
+
+- The interface has a washed-out appearance due to the very low contrast between the primary background color and the card/panel backgrounds. This makes it difficult to distinguish different layout sections.
+- The use of multiple, slightly different shades of teal/green for primary actions remains, creating a lack of color cohesion.
+- The gray used for secondary buttons (`Import`, `Export`, `Plan`, `Build`) has very low contrast against the light gray background, making these interactive elements appear disabled or non-interactive.
+- The subtle drop shadows on almost every panel and button add significant visual noise and contribute to a cluttered, dated feel.
+- The bright yellow moon icon and the separate blue `Use Defaults` button feel disconnected from the primary teal color palette, making the overall color scheme feel arbitrary.
+
+### Typography and Hierarchy
+
+- The typographic hierarchy is still inverted. Low-level section headers like "PAGES" and "FEATURE MAPPING" are styled with less visual weight (small, all-caps) than the titles within the cards ("Planning," "Building"), which is counter-intuitive.
+- The white text on the darker teal buttons (`Save Features`, `Export Project`) has borderline accessibility contrast, which can be difficult for some users to read.
+- The font used appears thin, and when combined with the low-contrast grays for some text elements, it can strain the eyes.
+
+### Spacing, Layout, and Alignment
+
+- The overall layout remains very dense. There is a lack of sufficient whitespace (padding and margins) within and between panels, making the interface feel cramped and overwhelming.
+- The vertical alignment of icons and text within components is inconsistent. For example, in the "Planning" and "Building" cards, the icons are not vertically centered with the title text.
+- The reliance on numerous bordered and drop-shadowed containers for segmentation results in a visually fragmented and busy layout.
+
+### Iconography
+
+- The icons continue to be stylistically inconsistent. There's a mix of filled icons (save), outlined icons (plan, build), thin-line icons (+), and icons with different stroke weights, indicating they are not from a single, unified icon set. This creates a disjointed visual language.
+
+### Component Consistency
+
+- There is a significant lack of consistency in button design. At least five distinct styles are present:
+  1.  Filled, bright green (`+ Add New Page`).
+  2.  Filled, dark teal with an icon (`Save Features`).
+  3.  Light gray with a thin border (`Open Project`, `Dark Mode`).
+  4.  Light gray, filled, with a drop shadow (`Plan`, `Build`).
+  5.  A standalone red circle (`Stop`).
+- Input fields and dropdown menus are not styled uniformly. The "Select a Page" dropdown has a standard field appearance, while the "Responsive" dropdown is styled as a pill-shaped button, creating an inconsistent user experience for similar actions.

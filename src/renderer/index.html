@@ -2,124 +2,131 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <title>Curator's Vault MVP Generator</title>
 
-    <!-- ====================  GOOGLE FONTS  ==================== -->
-    <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com"
-    />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-    <!-- ====================  PROFESSIONAL STYLES  ==================== -->
+    <!-- Styles -->
     <link rel="stylesheet" href="styles/professional/design-system.css" />
     <link rel="stylesheet" href="styles/professional/components.css" />
-    <link rel="stylesheet" href="styles/professional/dashboard.css" />
     <link rel="stylesheet" href="styles/professional/workspace-setup.css" />
     <link rel="stylesheet" href="styles/professional/pages-manager.css" />
     <link rel="stylesheet" href="styles/professional/feature-mapping.css" />
     <link rel="stylesheet" href="styles/professional/project-rules.css" />
     <link rel="stylesheet" href="styles/professional/generate-monitor.css" />
     <link rel="stylesheet" href="styles/professional/live-preview.css" />
+    <link rel="stylesheet" href="styles/professional/workspace.css" />
+    <link rel="stylesheet" href="styles/theme.css" />
   </head>
 
   <body>
-    <!-- =========   Animated gradient backdrop   ========= -->
+    <!-- SVG Icon Sprite: unified icon set for buttons and UI controls -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute; width:0; height:0; overflow:hidden">
+      <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14"/>
+      </symbol>
+      <symbol id="i-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5h6a2 2 0 012 2v12a2 2 0 01-2 2H9a2 2 0 01-2-2V7a2 2 0 012-2z"/>
+        <path d="M9 5a2 2 0 002 2h2a2 2 0 002-2"/>
+      </symbol>
+      <symbol id="i-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.7 6.3a5 5 0 01-6.4 6.4L3 18l3 3 5.3-5.3a5 5 0 006.4-6.4l-3-3z"/>
+      </symbol>
+      <symbol id="i-flash" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7 2h9l-4 8h5l-9 12 2-9H6l1-11z"/>
+      </symbol>
+      <symbol id="i-stop" viewBox="0 0 24 24" fill="currentColor">
+        <rect x="6" y="6" width="12" height="12" rx="2"/>
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+      </symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15A9 9 0 116 6"/>
+      </symbol>
+      <symbol id="i-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <path d="M15 3h6v6"/>
+        <path d="M10 14L21 3"/>
+      </symbol>
+      <symbol id="i-rotate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="1 4 1 10 7 10"/>
+        <path d="M3.51 15a9 9 0 1 0 2-9.36"/>
+      </symbol>
+      <symbol id="i-fit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 9 3 3 9 3"/>
+        <polyline points="21 15 21 21 15 21"/>
+        <line x1="3" y1="3" x2="10" y2="10"/>
+        <line x1="21" y1="21" x2="14" y2="14"/>
+      </symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/>
+      </symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5l2 2h9a2 2 0 0 1 2 2z"/>
+      </symbol>
+      <symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/>
+        <polyline points="7 3 7 8 15 8"/>
+      </symbol>
+      <symbol id="i-import" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12"/>
+        <polyline points="8 11 12 15 16 11"/>
+        <rect x="3" y="19" width="18" height="2" rx="1"/>
+      </symbol>
+      <symbol id="i-export" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 21V9"/>
+        <polyline points="16 13 12 9 8 13"/>
+        <rect x="3" y="3" width="18" height="2" rx="1"/>
+      </symbol>
+      <symbol id="i-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 18 22 12 16 6"/>
+        <polyline points="8 6 2 12 8 18"/>
+      </symbol>
+    </svg>
     <div class="bg-gradient"></div>
 
-    <!-- =========   Main Application Container   ========= -->
     <main id="app-container">
-      <!-- Sidebar Navigation -->
-      <aside id="sidebar">
-        <a href="#/dashboard" class="nav-link" data-route="dashboard">
-          <i>📊</i> Dashboard
-        </a>
-        <a href="#/workspace" class="nav-link" data-route="workspace">
-          <i>📁</i> Workspace
-        </a>
-        <a href="#/pages" class="nav-link" data-route="pages">
-          <i>📄</i> Pages
-        </a>
-        <a href="#/features" class="nav-link" data-route="features">
-          <i>⚙️</i> Features
-        </a>
-        <a href="#/rules" class="nav-link" data-route="rules">
-          <i>📝</i> Rules
-        </a>
-        <a href="#/generate" class="nav-link" data-route="generate">
-          <i>⚡</i> Generate
-        </a>
-        <a href="#/preview" class="nav-link" data-route="preview">
-          <i>👁️</i> Preview
-        </a>
-      </aside>
-      <!-- Navigation Bar -->
-      <nav id="navbar">
-        <div class="nav-left">
-          <h1>Curator's Vault</h1>
-        </div>
-        <!-- Removed window control buttons -->
-      </nav>
-
-      <!-- Top Stepper -->
-      <div id="stepper" class="stepper"></div>
-
-      <!-- Application Pages Container -->
-      <div id="pages-container">
-        <!-- Dashboard Page -->
-        <section id="dashboard-page" class="page active">
-          <header class="dashboard-header">
-            <h2>Curator's Vault Dashboard</h2>
-            <p>Your AI-powered MVP Generator</p>
-          </header>
-          <div class="content">
-            <div class="dashboard-welcome">
-              <h3>Welcome to Curator's Vault</h3>
-              <p>Transform your ideas into working applications with the power of AI</p>
-            </div>
-            <div id="dashboard-stats" class="dashboard-stats"></div>
-            <div class="quick-actions">
-              <div class="quick-action-card" id="dash-go-pages">
-                <div class="quick-action-icon">📄</div>
-                <h3 class="quick-action-title">Manage Pages</h3>
-                <p class="quick-action-desc">Define and organize your application pages</p>
-              </div>
-              <div class="quick-action-card" id="dash-go-generate">
-                <div class="quick-action-icon">⚡</div>
-                <h3 class="quick-action-title">Generate MVP</h3>
-                <p class="quick-action-desc">Create your application with AI</p>
-              </div>
-            </div>
-          </div>
-        </section>
-        <!-- Workspace Setup Page -->
-        <section id="workspace-setup-page" class="page">
-          <header class="workspace-header">
-            <h2>Workspace Setup</h2>
-            <p>Choose or create your project workspace</p>
-          </header>
-          
-          <div class="content">
+      <!-- Welcome Page -->
+      <section id="welcome-page" class="top-level-page active">
+        <header class="workspace-header">
+          <h2>Welcome to Curator's Vault</h2>
+          <p>Open an existing project or choose a folder to start</p>
+        </header>
+        <div class="content welcome-content">
+          <div class="welcome-left">
             <div class="workspace-illustration">
               <div class="workspace-action-card" id="select-workspace-btn">
                 <div class="workspace-action-icon">📁</div>
-                <h3 class="workspace-action-title">Select Workspace</h3>
-                <p class="workspace-action-desc">Choose an existing project folder</p>
+                <h3 class="workspace-action-title">Open Project Folder</h3>
+                <p class="workspace-action-desc">Choose an existing workspace directory</p>
               </div>
             </div>
-            
             <div id="workspace-info" class="hidden">
               <div class="workspace-info">
                 <div class="workspace-info-header">
@@ -159,111 +166,75 @@
               </div>
             </div>
           </div>
-        </section>
-
-        <!-- Pages Manager Page -->
-        <section id="pages-manager-page" class="page">
-          <header class="pages-header">
-            <h2>Pages Manager</h2>
-            <div class="pages-header-actions">
-              <button id="add-page-btn" class="btn btn-primary">
-                + Add New Page
-              </button>
-            </div>
-          </header>
-          
-          <div class="content">
-            <div id="pages-list" class="pages-list">
-              <!-- Pages will be dynamically added here -->
-            </div>
-            
-            <div id="empty-pages-placeholder" class="empty-pages hidden">
-              <div class="empty-pages-icon">📄</div>
-              <h3 class="empty-pages-title">No Pages Yet</h3>
-              <p class="empty-pages-desc">Create your first page to start defining features for your application</p>
-              <button id="add-first-page-btn" class="btn btn-primary">+ Add First Page</button>
-            </div>
+          <div class="welcome-right">
+            <h3>Recent Projects</h3>
+            <div id="recent-workspaces" class="recent-workspaces"></div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- Feature Mapping Page -->
-        <section id="feature-mapping-page" class="page">
-          <header class="features-header">
-            <h2>Feature Mapping</h2>
-            <div class="features-header-actions">
-              <button id="bulk-import-btn" class="btn btn-secondary">
-                📥 Import
-              </button>
-              <button id="bulk-export-btn" class="btn btn-secondary">
-                📤 Export
-              </button>
+      <!-- Workspace Page (Integrated Layout) -->
+      <section id="workspace-page" class="top-level-page">
+        <header class="workspace-topbar">
+          <div class="workspace-title" id="workspace-title">No Project</div>
+          <div class="workspace-topbar-actions">
+            <button id="open-folder-btn" class="btn btn-secondary">Open Project</button>
+            <button id="theme-toggle-btn" class="btn btn-secondary">🌓 Toggle Theme</button>
+            <button id="change-workspace-btn" class="btn btn-ghost">Back to Welcome</button>
+          </div>
+        </header>
+        <div class="workspace-grid">
+          <!-- Left panel -->
+          <aside class="workspace-panel left-panel">
+            <div class="panel-section">
+              <div class="panel-header">
+                <h3>Pages</h3>
+                <button id="add-page-btn" class="btn btn-primary">+ Add New Page</button>
+              </div>
+              <div id="pages-list" class="pages-list"></div>
+              <div id="empty-pages-placeholder" class="empty-pages hidden">
+                <div class="empty-pages-icon">📄</div>
+                <h4 class="empty-pages-title">No Pages Yet</h4>
+                <p class="empty-pages-desc">Create your first page to start defining features</p>
+                <button id="add-first-page-btn" class="btn btn-primary">+ Add First Page</button>
+              </div>
             </div>
-          </header>
-          
-          <div class="content">
-            <div class="page-selector-container">
-              <div class="page-selector-header">
-                <h3 class="page-selector-title">Select Page</h3>
+
+            <div class="panel-section">
+              <div class="panel-header">
+                <h3>Feature Mapping</h3>
+                <div class="features-header-actions">
+                  <button id="bulk-import-btn" class="btn btn-secondary">📥 Import</button>
+                  <button id="bulk-export-btn" class="btn btn-secondary">📤 Export</button>
+                </div>
               </div>
               <div class="page-selector">
                 <label class="page-selector-label" for="page-select">Page:</label>
-                <select id="page-select" class="page-selector-select">
-                  <!-- Options will be dynamically added -->
-                </select>
+                <select id="page-select" class="page-selector-select"></select>
+              </div>
+              <div id="feature-form-container" class="feature-form-container"></div>
+              <div class="feature-actions">
+                <button id="save-features-btn" class="btn btn-primary">💾 Save Features</button>
               </div>
             </div>
-            
-            <div id="feature-form-container" class="feature-form-container">
-              <!-- Feature form will be dynamically loaded here -->
-            </div>
-            
-            <div class="feature-actions">
-              <button id="save-features-btn" class="btn btn-primary">
-                💾 Save Features
-              </button>
-            </div>
-          </div>
-        </section>
 
-        <!-- Project Rules Page -->
-        <section id="project-rules-page" class="page">
-          <header class="rules-header">
-            <h2>Project Rules</h2>
-            <div class="rules-header-actions">
-              <button id="use-default-rules-btn" class="btn btn-secondary">
-                🔄 Use Defaults
-              </button>
-            </div>
-          </header>
-          
-          <div class="content">
-            <form id="rules-form" class="rules-form">
-              <div class="rules-form-header">
-                <h3>Define Build Constraints</h3>
-                <p>Set the technical requirements and limitations for your generated application</p>
+            <div class="panel-section">
+              <div class="panel-header">
+                <h3>Project Rules</h3>
+                <button id="use-default-rules-btn" class="btn btn-secondary">🔄 Use Defaults</button>
               </div>
-              
-              <div class="rules-form-groups">
-                <div class="rules-form-group">
-                  <div class="rules-form-group-header">
-                    <h4 class="rules-form-group-title">Application Type</h4>
-                  </div>
-                  <div class="rules-form-controls">
-                    <div class="rules-form-control">
+              <form id="rules-form" class="rules-form">
+                <div class="rules-form-groups">
+                  <div class="rules-form-group">
+                    <div class="rules-form-controls">
                       <label class="rules-form-label" for="app-type">App Type:</label>
                       <select id="app-type" class="rules-form-select">
                         <option value="SPA">Single Page Application</option>
                       </select>
                     </div>
                   </div>
-                </div>
-                
-                <div class="rules-form-group">
-                  <div class="rules-form-group-header">
-                    <h4 class="rules-form-group-title">Language & Framework</h4>
-                  </div>
-                  <div class="rules-form-controls">
-                    <div class="rules-form-control">
+                  <div class="rules-form-group">
+                    <div class="rules-form-controls">
                       <label class="rules-form-label" for="language">Language:</label>
                       <select id="language" class="rules-form-select">
                         <option value="javascript-vanilla">JavaScript (Vanilla)</option>
@@ -271,180 +242,139 @@
                       </select>
                     </div>
                   </div>
-                </div>
-                
-                <div class="rules-form-group">
-                  <div class="rules-form-group-header">
-                    <h4 class="rules-form-group-title">Technology Support</h4>
-                  </div>
-                  <div class="rules-form-controls">
-                    <div class="rules-form-control">
+                  <div class="rules-form-group">
+                    <div class="rules-form-controls">
                       <div class="rules-form-checkbox-group">
-                        <input type="checkbox" id="html-support" class="rules-form-checkbox" checked>
+                        <input type="checkbox" id="html-support" class="rules-form-checkbox" checked />
                         <label class="rules-form-label" for="html-support">HTML Support</label>
                       </div>
-                    </div>
-                    <div class="rules-form-control">
                       <div class="rules-form-checkbox-group">
-                        <input type="checkbox" id="css-support" class="rules-form-checkbox" checked>
+                        <input type="checkbox" id="css-support" class="rules-form-checkbox" checked />
                         <label class="rules-form-label" for="css-support">CSS Support</label>
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                <div class="rules-form-group">
-                  <div class="rules-form-group-header">
-                    <h4 class="rules-form-group-title">Constraints</h4>
-                    <p class="rules-form-group-desc">Define limitations for the generated application</p>
-                  </div>
-                  <div class="rules-form-controls">
-                    <div class="rules-form-control">
+                  <div class="rules-form-group">
+                    <div class="rules-form-controls">
                       <label class="rules-form-label" for="constraints">Constraints:</label>
-                      <textarea id="constraints" class="rules-form-textarea" rows="6">single index.html at root
+                      <textarea id="constraints" class="rules-form-textarea" rows="4">single index.html at root
 multiple JS/CSS files allowed
 no frameworks by default</textarea>
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              <div class="rules-form-actions">
-                <button type="button" id="save-rules-btn" class="btn btn-primary">
-                  💾 Save Rules
-                </button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <!-- Generate & Monitor Page -->
-        <section id="generate-monitor-page" class="page">
-          <header class="generate-header">
-            <h2>Generate & Monitor</h2>
-          </header>
-          
-          <div class="content">
-            <div class="generate-controls">
-              <div class="generate-main-controls">
-                <button id="plan-btn" class="btn btn-secondary">
-                  📋 Plan
-                </button>
-                <button id="build-btn" class="btn btn-secondary">
-                  🛠️ Build
-                </button>
-                <button id="plan-build-btn" class="btn btn-primary">
-                  ⚡ Plan + Build
-                </button>
-              </div>
-              <div class="generate-secondary-controls">
-                <button id="stop-generate-btn" disabled class="btn btn-ghost">
-                  🛑 Stop
-                </button>
-                <button id="toggle-side-preview-btn" class="btn btn-secondary">
-                  👁️ Show Preview
-                </button>
-              </div>
-            </div>
-            
-            <div class="generate-stage-indicators">
-              <div id="planning-stage" class="generate-stage">
-                <div class="generate-stage-icon">📋</div>
-                <h3 class="generate-stage-name">Planning</h3>
-                <p class="generate-stage-desc">Creating development plan based on your features</p>
-                <span class="generate-stage-status pending">Pending</span>
-              </div>
-              <div id="building-stage" class="generate-stage">
-                <div class="generate-stage-icon">🛠️</div>
-                <h3 class="generate-stage-name">Building</h3>
-                <p class="generate-stage-desc">Generating code based on the development plan</p>
-                <span class="generate-stage-status pending">Pending</span>
-              </div>
-            </div>
-            
-            <div class="generate-output-container">
-              <div class="generate-output-header">
-                <h4 class="generate-output-title">Generation Output</h4>
-                <div class="generate-output-actions">
-                  <button id="clear-output-btn" class="btn btn-icon">
-                    🗑️
-                  </button>
+                <div class="rules-form-actions">
+                  <button type="button" id="save-rules-btn" class="btn btn-primary">💾 Save Rules</button>
                 </div>
+              </form>
+            </div>
+          </aside>
+
+          <!-- Center: Live Preview -->
+          <section class="workspace-center preview-panel">
+            <div class="preview-toolbar">
+              <div class="preview-title">MVP Preview</div>
+              <div class="preview-toolbar-left">
+                <button id="preview-back-btn" class="btn btn-icon" disabled>←</button>
+                <button id="preview-forward-btn" class="btn btn-icon" disabled>→</button>
+                <button id="preview-reload-btn" class="btn btn-icon">↻</button>
               </div>
-              <div id="generation-output" class="generate-output-content">
-                <div class="generate-output-placeholder">
-                  <p>Generation output will appear here...</p>
-                </div>
+              <div class="preview-controls-inline">
+                <select id="preview-device" class="preview-device">
+                  <option value="responsive">Responsive</option>
+                  <option value="mobile">Mobile (375×667)</option>
+                  <option value="tablet">Tablet (768×1024)</option>
+                  <option value="desktop">Desktop (1280×800)</option>
+                </select>
+                <button id="preview-rotate-btn" class="btn btn-secondary">⟳ Rotate</button>
+                <button id="preview-fit-btn" class="btn btn-secondary">↔ Fit to Width</button>
+                <button id="preview-fix-btn" class="btn btn-ghost">🩺 Fix Preview</button>
+                <input type="text" id="preview-url" class="preview-url" placeholder="file:///.../index.html" readonly />
+              </div>
+              <div class="preview-toolbar-right">
+                <button id="preview-devtools-btn" class="btn btn-icon">⚙️</button>
               </div>
             </div>
-
-            <!-- Optional side-by-side live preview during generation -->
-            <div id="side-preview" class="generate-preview-container hidden">
-              <div class="generate-preview-header">
-                <h4 class="generate-preview-title">Live Preview</h4>
-              </div>
-              <iframe id="side-preview-frame" class="generate-preview-frame" src="about:blank"></iframe>
-            </div>
-          </div>
-        </section>
-
-        <!-- Live Preview Page -->
-        <section id="live-preview-page" class="page">
-          <header class="preview-header">
-            <h2>Live Preview</h2>
-          </header>
-          
-          <div class="content">
-            <div class="preview-container">
-              <div class="preview-toolbar">
-                <div class="preview-toolbar-left">
-                  <button id="preview-back-btn" class="preview-toolbar-btn" disabled>
-                    ←
-                  </button>
-                  <button id="preview-forward-btn" class="preview-toolbar-btn" disabled>
-                    →
-                  </button>
-                  <button id="preview-reload-btn" class="preview-toolbar-btn">
-                    ↻
-                  </button>
-                </div>
-                <input type="text" id="preview-url" class="preview-url" placeholder="http://localhost:3000" readonly>
-                <div class="preview-toolbar-right">
-                  <button id="preview-devtools-btn" class="preview-toolbar-btn">
-                    ⚙️
-                  </button>
+            <div id="preview-frame-wrap" class="preview-frame-wrap">
+              <div id="preview-placeholder" class="preview-placeholder hidden">
+                <div class="preview-placeholder-content">
+                  <div class="preview-placeholder-icon">👁️</div>
+                  <h3>No preview yet</h3>
+                  <p>Generate your MVP to see the live preview here.</p>
+                  <button id="run-plan-build-btn" class="btn btn-primary">⚡ Run Plan + Build</button>
                 </div>
               </div>
               <iframe id="preview-frame" class="preview-frame" src="about:blank"></iframe>
             </div>
-            
             <div class="preview-actions">
               <div class="preview-main-actions">
-                <button id="refresh-preview-btn" class="btn btn-secondary">
-                  ↻ Refresh
-                </button>
-                <button id="open-external-btn" class="btn btn-secondary">
-                  🌐 Open in Browser
-                </button>
+                <button id="refresh-preview-btn" class="btn btn-secondary">↻ Refresh</button>
+                <button id="open-external-btn" class="btn btn-secondary">🌐 Open in Browser</button>
               </div>
               <div class="preview-secondary-actions">
-                <button id="rebuild-btn" class="btn btn-secondary">
-                  🔁 Rebuild
-                </button>
+                <button id="rebuild-btn" class="btn btn-secondary">🔁 Rebuild</button>
+              </div>
+              <div class="preview-completion-actions">
+                <button id="export-project-btn" class="btn btn-primary">📦 Export Project</button>
               </div>
             </div>
-            
-            <div class="preview-completion-actions">
-              <button id="export-project-btn" class="btn btn-primary">
-                📦 Export Project
-              </button>
+          </section>
+
+          <!-- Right panel: Generate & Output -->
+          <aside class="workspace-panel right-panel">
+            <div class="panel-section">
+              <div class="generate-controls">
+                <div class="generate-main-controls">
+                  <button id="plan-btn" class="btn btn-secondary">📋 Plan</button>
+                  <button id="build-btn" class="btn btn-secondary">🛠️ Build</button>
+                  <button id="plan-build-btn" class="btn btn-primary">⚡ Plan + Build</button>
+                </div>
+                <div class="generate-secondary-controls">
+                  <button id="stop-generate-btn" disabled class="btn btn-ghost">🛑 Stop</button>
+                </div>
+              </div>
+
+              <div class="generate-stage-indicators">
+                <div id="planning-stage" class="generate-stage">
+                  <div class="generate-stage-icon">📋</div>
+                  <h4 class="generate-stage-name">Planning</h4>
+                  <span class="generate-stage-status pending">Pending</span>
+                </div>
+                <div id="building-stage" class="generate-stage">
+                  <div class="generate-stage-icon">🛠️</div>
+                  <h4 class="generate-stage-name">Building</h4>
+                  <span class="generate-stage-status pending">Pending</span>
+                </div>
+              </div>
+
+              <div class="generate-output-container">
+                <div class="generate-output-header">
+                  <h4 class="generate-output-title">Generation Output</h4>
+                  <div class="generate-output-actions">
+                    <button id="clear-output-btn" class="btn btn-icon">🗑️</button>
+                  </div>
+                </div>
+                <div id="generation-output" class="generate-output-content">
+                  <div class="generate-output-placeholder"><p>Generation output will appear here...</p></div>
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
-      </div>
+          </aside>
+
+          <!-- Resizers -->
+          <div id="left-resizer" class="workspace-resizer left" role="separator" aria-orientation="vertical" tabindex="0"></div>
+          <div id="right-resizer" class="workspace-resizer right" role="separator" aria-orientation="vertical" tabindex="0"></div>
+        </div>
+        <footer class="workspace-statusbar">
+          <div class="status-item" id="status-workspace">Workspace: <span id="status-workspace-name">—</span></div>
+          <div class="status-item" id="status-gemini">Gemini: <span id="status-gemini-state">Checking…</span></div>
+          <div class="status-item" id="status-build">Last Build: <span id="status-build-time">—</span></div>
+          <div class="status-spacer"></div>
+          <div class="status-item">Curator's Vault</div>
+        </footer>
+      </section>
     </main>
 
-    <!-- ====================  RENDERER SCRIPT  ==================== -->
     <script type="module" src="js/main.js"></script>
   </body>
-</html>
+  </html>

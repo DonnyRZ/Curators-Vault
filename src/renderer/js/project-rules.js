@@ -4,7 +4,6 @@
  */
 
 import { showError, showSuccess } from './ui/toast.js';
-import { navigateToPage } from './router.js'; // Import navigateToPage for automatic navigation
 
 // Helper function to update the rules preview
 function updateRulesPreview() {
@@ -104,10 +103,10 @@ export function initializeProjectRules() {
         const result = await window.api.saveRules(rulesData);
         if (result.success) {
           showSuccess('Rules saved successfully');
-          // Automatically navigate to the next step (Generate) after a short delay
+          // Scroll to the generate panel on the right
           setTimeout(() => {
-            navigateToPage('generate-monitor-page');
-          }, 1500);
+            document.querySelector('.right-panel')?.scrollIntoView({ behavior: 'smooth' });
+          }, 500);
         } else {
           showError(`Error saving rules: ${result.error}`);
         }

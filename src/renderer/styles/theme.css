@@ -1,0 +1,253 @@
+/* ====================  SEMANTIC THEME SYSTEM  ==================== */
+
+/* Define semantic color roles that components will use */
+:root {
+  /* Background colors */
+  --bg-page: initial;
+  --bg-surface: initial;
+  --bg-surface-hover: initial;
+  --bg-overlay: initial;
+  --bg-primary: initial;
+  --bg-primary-hover: initial;
+  --bg-secondary: initial;
+  --bg-secondary-hover: initial;
+  --bg-ghost: initial;
+  --bg-ghost-hover: initial;
+  --bg-success: initial;
+  --bg-warning: initial;
+  --bg-error: initial;
+  --bg-info: initial;
+  
+  /* Text colors */
+  --text-primary: initial;
+  --text-secondary: initial;
+  --text-disabled: initial;
+  --text-on-primary: initial;
+  --text-on-secondary: initial;
+  --text-on-ghost: initial;
+  --text-on-success: initial;
+  --text-on-warning: initial;
+  --text-on-error: initial;
+  --text-on-info: initial;
+  
+  /* Border colors */
+  --border-default: initial;
+  --border-strong: initial;
+  --border-primary: initial;
+  
+  /* Focus ring */
+  --focus-inner: initial;
+  --focus-outer: initial;
+  
+  /* Gradients */
+  --gradient-bg: initial;
+  --gradient-primary: initial;
+  
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Light Theme */
+:root[data-theme="light"],
+:root:not([data-theme]) {
+  /* Background colors */
+  --bg-page: #FAFBFB; /* neutral-025 */
+  --bg-surface: #FFFFFF; /* neutral-000 */
+  --bg-surface-hover: #F1F3F4; /* neutral-050 */
+  --bg-overlay: rgba(15, 17, 18, 0.45);
+  --bg-primary: #097F7E; /* primary-600 */
+  --bg-primary-hover: #075B5A; /* primary-700 */
+  --bg-secondary: #F1F3F4; /* neutral-050 */
+  --bg-secondary-hover: #E7EBEC; /* neutral-100 */
+  --bg-ghost: transparent;
+  --bg-ghost-hover: #F1F3F4; /* neutral-050 */
+  --bg-success: #16A34A; /* success-500 */
+  --bg-warning: #D97706; /* warning-500 */
+  --bg-error: #E11D48; /* error-500 */
+  --bg-info: #2563EB; /* info-500 */
+  
+  /* Text colors */
+  --text-primary: #0F1112; /* neutral-950 */
+  --text-secondary: #4C5354; /* neutral-700 */
+  --text-disabled: #B8C1C2; /* neutral-300 */
+  --text-on-primary: #FFFFFF; /* neutral-000 */
+  --text-on-secondary: #4C5354; /* neutral-700 */
+  --text-on-ghost: #4C5354; /* neutral-700 */
+  --text-on-success: #FFFFFF; /* neutral-000 */
+  --text-on-warning: #0F1112; /* neutral-950 */
+  --text-on-error: #FFFFFF; /* neutral-000 */
+  --text-on-info: #FFFFFF; /* neutral-000 */
+  
+  /* Border colors */
+  --border-default: #E7EBEC; /* neutral-100 */
+  --border-strong: #D7DDDE; /* neutral-200 */
+  --border-primary: #097F7E; /* primary-600 */
+  
+  /* Focus ring */
+  --focus-inner: #FFFFFF; /* neutral-000 */
+  --focus-outer: #097F7E; /* primary-600 */
+  
+  /* Gradients */
+  --gradient-bg: linear-gradient(135deg, #0BA4A3, #66D9D5); /* primary-500 to primary-300 */
+  --gradient-primary: linear-gradient(90deg, #097F7E, #075B5A); /* primary-600 to primary-700 */
+
+  /* --- Alias professional tokens (color-*) to semantic theme roles --- */
+  /* Surfaces */
+  --color-bg-page: var(--bg-page);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-hover: var(--bg-surface-hover);
+  --color-bg-overlay: var(--bg-overlay);
+  /* Brand and accents */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-primary-hover: var(--bg-primary-hover);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-secondary-hover: var(--bg-secondary-hover);
+  --color-bg-ghost: var(--bg-ghost);
+  --color-bg-ghost-hover: var(--bg-ghost-hover);
+  /* Semantics */
+  --color-bg-success: var(--bg-success);
+  --color-bg-warning: var(--bg-warning);
+  --color-bg-error: var(--bg-error);
+  --color-bg-info: var(--bg-info);
+  /* Text */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-on-primary: var(--text-on-primary);
+  --color-text-on-secondary: var(--text-on-secondary);
+  --color-text-on-ghost: var(--text-on-ghost);
+  --color-text-on-success: var(--text-on-success);
+  --color-text-on-warning: var(--text-on-warning);
+  --color-text-on-error: var(--text-on-error);
+  --color-text-on-info: var(--text-on-info);
+  /* Borders */
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-border-primary: var(--border-primary);
+  /* Focus */
+  --color-focus-inner: var(--focus-inner);
+  --color-focus-outer: var(--focus-outer);
+}
+
+/* Dark Theme */
+:root[data-theme="dark"] {
+  /* Background colors */
+  --bg-page: #0F1112; /* neutral-950 */
+  --bg-surface: #1B1F20; /* neutral-900 */
+  --bg-surface-hover: #2E3233; /* neutral-800 */
+  --bg-overlay: rgba(15, 17, 18, 0.7);
+  --bg-primary: #097F7E; /* primary-600 */
+  --bg-primary-hover: #075B5A; /* primary-700 */
+  --bg-secondary: #1B1F20; /* neutral-900 */
+  --bg-secondary-hover: #2E3233; /* neutral-800 */
+  --bg-ghost: transparent;
+  --bg-ghost-hover: #1B1F20; /* neutral-900 */
+  --bg-success: #16A34A; /* success-500 */
+  --bg-warning: #D97706; /* warning-500 */
+  --bg-error: #E11D48; /* error-500 */
+  --bg-info: #2563EB; /* info-500 */
+  
+  /* Text colors */
+  --text-primary: #FAFBFB; /* neutral-025 */
+  --text-secondary: #667071; /* neutral-600 */
+  --text-disabled: #B8C1C2; /* neutral-300 */
+  --text-on-primary: #FFFFFF; /* neutral-000 */
+  --text-on-secondary: #FAFBFB; /* neutral-025 */
+  --text-on-ghost: #667071; /* neutral-600 */
+  --text-on-success: #FFFFFF; /* neutral-000 */
+  --text-on-warning: #0F1112; /* neutral-950 */
+  --text-on-error: #FFFFFF; /* neutral-000 */
+  --text-on-info: #FFFFFF; /* neutral-000 */
+  
+  /* Border colors */
+  --border-default: #2E3233; /* neutral-800 */
+  --border-strong: #4C5354; /* neutral-700 */
+  --border-primary: #097F7E; /* primary-600 */
+  
+  /* Focus ring */
+  --focus-inner: #0F1112; /* neutral-950 */
+  --focus-outer: #2FC3C2; /* primary-400 */
+  
+  /* Gradients */
+  --gradient-bg: linear-gradient(135deg, #0BA4A3, #66D9D5); /* primary-500 to primary-300 */
+  --gradient-primary: linear-gradient(90deg, #097F7E, #075B5A); /* primary-600 to primary-700 */
+
+  /* --- Alias professional tokens (color-*) to semantic theme roles --- */
+  /* Surfaces */
+  --color-bg-page: var(--bg-page);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-hover: var(--bg-surface-hover);
+  --color-bg-overlay: var(--bg-overlay);
+  /* Brand and accents */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-primary-hover: var(--bg-primary-hover);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-secondary-hover: var(--bg-secondary-hover);
+  --color-bg-ghost: var(--bg-ghost);
+  --color-bg-ghost-hover: var(--bg-ghost-hover);
+  /* Semantics */
+  --color-bg-success: var(--bg-success);
+  --color-bg-warning: var(--bg-warning);
+  --color-bg-error: var(--bg-error);
+  --color-bg-info: var(--bg-info);
+  /* Text */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-on-primary: var(--text-on-primary);
+  --color-text-on-secondary: var(--text-on-secondary);
+  --color-text-on-ghost: var(--text-on-ghost);
+  --color-text-on-success: var(--text-on-success);
+  --color-text-on-warning: var(--text-on-warning);
+  --color-text-on-error: var(--text-on-error);
+  --color-text-on-info: var(--text-on-info);
+  /* Borders */
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-border-primary: var(--border-primary);
+  /* Focus */
+  --color-focus-inner: var(--focus-inner);
+  --color-focus-outer: var(--focus-outer);
+}
+
+/* Apply theme to body */
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+}
+
+/* Theme-specific bg-gradient override */
+.bg-gradient {
+  background: var(--gradient-bg);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-secondary-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.theme-toggle:focus {
+  outline: 2px solid var(--focus-outer);
+  outline-offset: 2px;
+}

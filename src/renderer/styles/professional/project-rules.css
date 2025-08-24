@@ -10,12 +10,12 @@
   align-items: center;
   margin-bottom: var(--spacing-2xl);
   padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--light-200);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .rules-header h2 {
   margin-bottom: 0;
-  color: var(--dark-900);
+  color: var(--color-text-primary);
 }
 
 .rules-header-actions {
@@ -24,8 +24,8 @@
 }
 
 .rules-form {
-  background: var(--white);
-  border: 1px solid var(--light-200);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--border-radius-xl);
   padding: var(--spacing-2xl);
   box-shadow: var(--shadow-sm);
@@ -38,12 +38,12 @@
 
 .rules-form-header h3 {
   margin-bottom: var(--spacing-sm);
-  color: var(--dark-900);
+  color: var(--color-text-primary);
   font-size: var(--font-size-xl);
 }
 
 .rules-form-header p {
-  color: var(--dark-500);
+  color: var(--color-text-secondary);
   max-width: 600px;
   margin: 0 auto;
 }
@@ -69,13 +69,13 @@
 
 .rules-form-group-title {
   margin-bottom: 0;
-  color: var(--dark-900);
+  color: var(--neutral-900);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
 }
 
 .rules-form-group-desc {
-  color: var(--dark-500);
+  color: var(--neutral-600);
   font-size: var(--font-size-sm);
   margin-top: var(--spacing-2xs);
 }
@@ -94,36 +94,38 @@
 
 .rules-form-label {
   font-weight: var(--font-weight-medium);
-  color: var(--dark-700);
+  color: var(--neutral-700);
   font-size: var(--font-size-sm);
 }
 
 .rules-form-input {
   width: 100%;
   padding: var(--spacing-md);
-  border: 1px solid var(--light-300);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--border-radius-md);
   font-family: var(--font-family);
   font-size: var(--font-size-base);
   transition: var(--transition-all);
-  background: var(--white);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
 }
 
 .rules-form-input:focus {
   outline: none;
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 3px rgba(144, 99, 202, 0.2);
+  border-color: var(--color-border-primary);
+  box-shadow: 0 0 0 3px rgba(9, 127, 126, 0.2);
 }
 
 .rules-form-select {
   width: 100%;
   padding: var(--spacing-md);
-  border: 1px solid var(--light-300);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--border-radius-md);
   font-family: var(--font-family);
   font-size: var(--font-size-base);
   transition: var(--transition-all);
-  background: var(--white);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
@@ -133,8 +135,8 @@
 
 .rules-form-select:focus {
   outline: none;
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 3px rgba(144, 99, 202, 0.2);
+  border-color: var(--color-border-primary);
+  box-shadow: 0 0 0 3px rgba(9, 127, 126, 0.2);
 }
 
 .rules-form-checkbox-group {
@@ -153,6 +155,11 @@
   resize: vertical;
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
   font-size: var(--font-size-sm);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  color: var(--color-text-primary);
 }
 
 .rules-form-actions {
@@ -161,17 +168,18 @@
   gap: var(--spacing-md);
   margin-top: var(--spacing-2xl);
   padding-top: var(--spacing-xl);
-  border-top: 1px solid var(--light-200);
+  border-top: 1px solid var(--color-border-default);
   flex-wrap: wrap;
 }
 
 .rules-preview {
-  background: var(--dark-900);
+  background: var(--color-bg-surface);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-md);
   margin-top: var(--spacing-lg);
   max-height: 300px;
   overflow-y: auto;
+  border: 1px solid var(--color-border-default);
 }
 
 .rules-preview-header {
@@ -180,18 +188,18 @@
   align-items: center;
   margin-bottom: var(--spacing-md);
   padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .rules-preview-title {
   margin-bottom: 0;
-  color: var(--light-100);
+  color: var(--color-text-primary);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
 }
 
 .rules-preview-content {
-  color: var(--light-300);
+  color: var(--color-text-secondary);
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
   font-size: var(--font-size-xs);
   line-height: 1.5;

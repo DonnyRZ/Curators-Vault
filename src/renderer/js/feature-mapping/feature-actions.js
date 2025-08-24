@@ -5,7 +5,6 @@
 
 import { collectFeaturesFromForm } from './feature-form.js';
 import { showError, showSuccess } from '../ui/toast.js';
-import { navigateToPage } from '../router.js'; // Import navigateToPage for automatic navigation
 
 let saveFeaturesBtn, bulkImportBtn, bulkExportBtn;
 let selectedPageId = null;
@@ -24,12 +23,11 @@ async function checkAndEnableContinueButton() {
       // Check if all pages have features
       const allHaveFeatures = result.pages.every(page => page.hasFeatures);
       
-      // If all pages have features, automatically navigate to the next step (Rules)
+      // If all pages have features, scroll to the Rules section
       if (allHaveFeatures) {
-         // Use a small delay to allow any success messages to be seen
         setTimeout(() => {
-          navigateToPage('project-rules-page');
-        }, 1500);
+          document.getElementById('rules-form')?.scrollIntoView({ behavior: 'smooth' });
+        }, 600);
       }
     }
   } catch (error) {

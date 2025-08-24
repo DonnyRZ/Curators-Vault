@@ -2,16 +2,16 @@
 
 :root {
   /* ====================  COLORS  ==================== */
-  --primary-color: #6a11cb;
-  --primary-gradient: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
-  --secondary-color: #2575fc;
+  --primary-color: #097F7E;
+  --primary-gradient: linear-gradient(90deg, #097F7E 0%, #0BA4A3 100%);
+  --secondary-color: #0BA4A3;
   --accent-color: #ff6b6b;
-  --success-color: #4caf50;
-  --warning-color: #ff9800;
-  --error-color: #f44336;
-  --dark-color: #2c3e50;
-  --light-color: #ecf0f1;
-  --gray-color: #95a5a6;
+  --success-color: #16A34A;
+  --warning-color: #D97706;
+  --error-color: #E11D48;
+  --dark-color: #0F1112;
+  --light-color: #FAFBFB;
+  --gray-color: #667071;
   --white-color: #ffffff;
   --black-color: #000000;
   
@@ -283,10 +283,10 @@ a:hover {
   transition: opacity 0.25s ease;
 }
 
-.toast-success { background: #2e7d32; }
-.toast-error { background: #c62828; }
-.toast-warning { background: #ed6c02; }
-.toast-info { background: #1565c0; }
+.toast-success { background: #16A34A; }
+.toast-error { background: #E11D48; }
+.toast-warning { background: #D97706; }
+.toast-info { background: #2563EB; }
 .toast.fade-out { opacity: 0; }
 
 /* ====================  COMPONENTS: INPUTS & CARDS  ==================== */
@@ -415,7 +415,7 @@ input[type="text"]:focus, textarea:focus, select:focus {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+  box-shadow: 0 0 0 3px rgba(9, 127, 126, 0.1);
 }
 
 .form-group textarea {
@@ -447,17 +447,17 @@ input[type="text"]:focus, textarea:focus, select:focus {
 }
 
 .status.success {
-  background-color: rgba(76, 175, 80, 0.1);
+  background-color: rgba(22, 163, 74, 0.1);
   color: var(--success-color);
 }
 
 .status.error {
-  background-color: rgba(244, 67, 54, 0.1);
+  background-color: rgba(225, 29, 72, 0.1);
   color: var(--error-color);
 }
 
 .status.pending {
-  background-color: rgba(149, 165, 166, 0.1);
+  background-color: rgba(102, 112, 113, 0.1);
   color: var(--gray-color);
 }
 

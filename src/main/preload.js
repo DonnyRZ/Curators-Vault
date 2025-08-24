@@ -11,7 +11,11 @@ contextBridge.exposeInMainWorld('api', {
   createWorkspace: (path) => ipcRenderer.invoke('workspace:create', path),
   checkPreconditions: (path) => ipcRenderer.invoke('workspace:check-preconditions', path),
   getWorkspacePath: () => ipcRenderer.invoke('workspace:get-path'),
+  getRecentWorkspaces: () => ipcRenderer.invoke('workspace:get-recents'),
+  openWorkspace: (path) => ipcRenderer.invoke('workspace:open', path),
   getWorkspaceStats: () => ipcRenderer.invoke('workspace:stats'),
+  autoOpenLastWorkspace: () => ipcRenderer.invoke('workspace:auto-open-last'),
+  applyPreviewFix: () => ipcRenderer.invoke('workspace:apply-preview-fix'),
   
   // --- Pages Manager ---
   createPage: (pageId, pageName) => ipcRenderer.invoke('pages:create', pageId, pageName),

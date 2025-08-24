@@ -1,0 +1,42 @@
+The core issues in spacing, layout, and alignment are fundamentally the same across both themes, but their visual impact can differ slightly. The primary problem is the lack of a consistent grid system and a defined spacing scale, which results in an interface that feels cluttered, unbalanced, and visually unpredictable.
+
+---
+
+### 1. Global Layout & Column Gutters (The Macro View)
+
+This refers to the highest-level structure of the application—the arrangement of the main columns and headers.
+
+- **Critique:** The gutters (the empty space between the main vertical panels) are extremely narrow. The left, center, and right panels are pushed so close together that they feel like they are colliding. This creates significant visual tension and makes the overall layout feel cramped and suffocating before the user even begins to parse the content within each panel.
+
+  - **Dark Mode:** The narrow gutters are noticeable but are slightly mitigated by the dark backgrounds, which can sometimes merge visually.
+  - **Light Mode:** The issue is exacerbated. The subtle borders and drop shadows on each panel create distinct visual edges that highlight just how little space exists between them, making the layout feel even more fragmented and crowded.
+
+- **Critique:** The top header area lacks balanced spacing. The "Test-MVP" title on the left is isolated, while the action buttons on the right (`Open Project`, `Dark/Light Mode`, `Back to Welcome`) are tightly clustered with inconsistent and insufficient padding between them. This creates a lopsided and amateurish appearance.
+
+### 2. Panel & Card Spacing (The Meso View)
+
+This focuses on the vertical and horizontal spacing _between_ elements within each of the main columns. This is often referred to as vertical rhythm and internal layout composition.
+
+- **Critique:** There is no consistent vertical rhythm. The amount of space between headers, cards, buttons, and other elements is arbitrary and inconsistent throughout the UI.
+
+  - **Left Panel Example:** The margin above the "PAGES" header is different from the margin above the "FEATURE MAPPING" and "PROJECT RULES" headers. The space between the "+ Add New Page" button and the "No Pages Yet" card is a different value than the space between the "Export" button and the "Page:" label. This lack of a predictable spacing system makes the layout feel disjointed.
+  - **Right Panel Example:** The vertical spacing between the top action buttons (`Plan`, `Build`) and the `Plan + Build` button is very tight. Furthermore, the margin between the `Planning` card, the `Building` card, and the `Generation Output` card appears to be three different, unique values. A consistent margin should be used between sibling card elements to establish a clear rhythm.
+
+- **Critique:** The layout relies excessively on nested containers with borders and shadows instead of using negative space to create separation and hierarchy.
+  - **Dark Mode:** This results in "box-in-a-box" syndrome, where multiple outlines create visual noise.
+  - **Light Mode:** The overuse of drop shadows on nearly every element (buttons, cards, panels) makes the interface look dated and adds to the visual clutter, working against a clean, modern aesthetic. The shadows fight for attention rather than subtly indicating elevation.
+
+### 3. Internal Component Alignment & Padding (The Micro View)
+
+This is the most granular level of critique, focusing on the alignment and spacing _inside_ individual components like buttons and cards.
+
+- **Critique:** Internal alignment of text and icons is frequently incorrect, creating visual imbalance and a lack of polish.
+
+  - **Right Panel Cards (`Planning`, `Building`):** This is the most glaring example. The icon in each card header is top-aligned with the text, not vertically centered. The "Planning" text and its clipboard icon look like two separate elements placed next to each other rather than a cohesive unit. The same is true for the wrench icon in the "Building" card.
+  - **Buttons with Icons:** The issue persists in many buttons. In `Save Features`, `Export Project`, and `Plan + Build`, the icon is not optically centered with the text. It appears to be positioned slightly too high, creating a subtle but noticeable awkwardness.
+  - **`Generation Output` Card:** The title text and the trash can icon are poorly aligned. The icon is positioned much higher than the vertical center of the text.
+
+- **Critique:** Internal padding within components is inconsistent.
+  - **`No Pages Yet` Card (Left Panel):** The vertical padding (top and bottom) appears significantly larger than the horizontal padding (left and right), making the content feel vertically stretched within its container.
+  - **Buttons:** The padding on the left and right of the text/icon in buttons seems inconsistent across the different button styles. The light gray buttons in the top header have different padding values than the green primary action buttons.
+  - **Top Bar (Center Panel):** The elements in the preview header (`Responsive` dropdown, `Rotate`, `Fit to Width` buttons) are crammed together with minimal padding, making them difficult to target and contributing to the overall dense feel of the application.

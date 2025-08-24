@@ -4,7 +4,7 @@
  */
 
 import { showError, showSuccess } from './ui/toast.js';
-import { navigateToPage } from './router.js'; // Import navigateToPage for automatic navigation
+import { navigateToRoute } from './router.js'; // Navigate to workspace route
 
 let selectWorkspaceBtn, workspaceInfo, workspacePath;
 
@@ -73,11 +73,8 @@ async function handleWorkspaceSelected(path) {
           showError(`Error initializing workspace: ${initResult.error}`);
         } else {
           showSuccess('Workspace initialized successfully!');
-          // Automatically navigate to the next step (Pages)
-          // We use a small delay to allow the success message to be seen
-          setTimeout(() => {
-            navigateToPage('pages-manager-page');
-          }, 1500);
+          // Enter workspace
+          setTimeout(() => { navigateToRoute('workspace'); }, 800);
         }
       } catch (initError) {
         console.error('Error initializing workspace:', initError);

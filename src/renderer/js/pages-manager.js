@@ -4,7 +4,7 @@
  */
 
 import { showError, showSuccess } from './ui/toast.js';
-import { navigateToPage } from './router.js'; // Import navigateToPage for automatic navigation
+import { navigateToRoute } from './router.js';
 
 let addPageBtn, addFirstPageBtn, pagesList, emptyPagesPlaceholder;
 let lastCreatedPageId = null; // To track the last created page
@@ -77,10 +77,20 @@ function createPageCard(page) {
   }
   
   // Create new event listener
-  const editListener = () => {
-    // Navigate to feature mapping page with this page selected
+  const editListener = async () => {
+    // Ensure we're in the workspace route and select this page in the feature mapping panel
+    await navigateToRoute('workspace');
     window.selectedPageId = page.id;
-    navigateToPage('feature-mapping-page');
+    const selector = document.getElementById('page-select');
+    if (selector) {
+      selector.value = page.id;
+      const evt = new Event('change', { bubbles: true });
+      selector.dispatchEvent(evt);
+    }
+    const container = document.getElementById('feature-form-container');
+    if (container && container.scrollIntoView) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
   
   // Store reference to listener for cleanup
@@ -146,12 +156,18 @@ export async function refreshPagesList() {
       // Check if we should automatically navigate to features after creating a page
       if (lastCreatedPageId) {
         const createdPage = result.pages.find(p => p.id === lastCreatedPageId);
-        if (createdPage && !createdPage.hasFeatures) {
-          // Automatically open features for the newly created page
+        if (createdPage) {
+          // Automatically select the page in feature mapping and scroll into view
           window.selectedPageId = lastCreatedPageId;
-          setTimeout(() => {
-            navigateToPage('feature-mapping-page');
-          }, 500); // Small delay to let the UI update
+          setTimeout(async () => {
+            await navigateToRoute('workspace');
+            const selector = document.getElementById('page-select');
+            if (selector) {
+              selector.value = lastCreatedPageId;
+              selector.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            document.getElementById('feature-form-container')?.scrollIntoView({ behavior: 'smooth' });
+          }, 400);
         }
         lastCreatedPageId = null; // Reset
       }

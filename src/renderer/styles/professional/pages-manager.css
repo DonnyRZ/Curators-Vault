@@ -10,12 +10,12 @@
   align-items: center;
   margin-bottom: var(--spacing-2xl);
   padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--light-200);
+  border-bottom: 1px solid var(--neutral-100);
 }
 
 .pages-header h2 {
   margin-bottom: 0;
-  color: var(--dark-900);
+  color: var(--color-text-primary);
 }
 
 .pages-header-actions {
@@ -31,8 +31,8 @@
 }
 
 .page-card {
-  background: var(--white);
-  border: 1px solid var(--light-200);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--border-radius-xl);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
@@ -44,7 +44,7 @@
 .page-card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
-  border-color: var(--primary-200);
+  border-color: var(--color-border-strong);
 }
 
 .page-card::before {
@@ -54,7 +54,7 @@
   left: 0;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, var(--primary-400), var(--secondary-400));
+  background: var(--gradient-primary);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease;
@@ -70,12 +70,12 @@
   align-items: center;
   margin-bottom: var(--spacing-md);
   padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--light-200);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .page-card-title {
   margin-bottom: 0;
-  color: var(--dark-900);
+  color: var(--color-text-primary);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
 }
@@ -102,16 +102,16 @@
   align-items: center;
   gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
-  color: var(--dark-500);
+  color: var(--color-text-secondary);
 }
 
 .page-info-icon {
-  color: var(--primary-500);
+  color: var(--color-bg-primary);
 }
 
 .page-features-count {
-  background: var(--primary-100);
-  color: var(--primary-700);
+  background: var(--color-bg-primary);
+  color: var(--color-text-on-primary);
   padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: var(--border-radius-full);
   font-size: var(--font-size-xs);
@@ -123,31 +123,31 @@
   justify-content: flex-end;
   margin-top: var(--spacing-lg);
   padding-top: var(--spacing-md);
-  border-top: 1px solid var(--light-200);
+  border-top: 1px solid var(--color-border-default);
 }
 
 .empty-pages {
   text-align: center;
   padding: var(--spacing-3xl) var(--spacing-xl);
-  background: var(--light-50);
+  background: var(--color-bg-surface-hover);
   border-radius: var(--border-radius-xl);
-  border: 1px dashed var(--light-300);
+  border: 1px dashed var(--color-border-strong);
 }
 
 .empty-pages-icon {
   font-size: var(--font-size-4xl);
-  color: var(--light-400);
+  color: var(--color-text-disabled);
   margin-bottom: var(--spacing-lg);
 }
 
 .empty-pages-title {
   font-size: var(--font-size-xl);
-  color: var(--dark-700);
+  color: var(--color-text-secondary);
   margin-bottom: var(--spacing-sm);
 }
 
 .empty-pages-desc {
-  color: var(--dark-500);
+  color: var(--color-text-secondary);
   max-width: 500px;
   margin: 0 auto var(--spacing-lg);
 }
@@ -168,17 +168,19 @@
 .add-page-input {
   width: 100%;
   padding: var(--spacing-md);
-  border: 1px solid var(--light-300);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--border-radius-md);
   font-family: var(--font-family);
   font-size: var(--font-size-base);
   transition: var(--transition-all);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
 }
 
 .add-page-input:focus {
   outline: none;
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 3px rgba(144, 99, 202, 0.2);
+  border-color: var(--color-border-primary);
+  box-shadow: 0 0 0 3px rgba(9, 127, 126, 0.2);
 }
 
 /* Edit Page Modal */

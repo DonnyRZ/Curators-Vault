@@ -1,1 +1,5 @@
-Error importing features: ENOENT: no such file or directory, open 'D:\Problem Solving Speedrun\Curators Vault\Test-MVP\001\features.json'
+main.js:42 Uncaught TypeError: children.forEach is not a function
+    at createElement (main.js:42:14)
+    at renderTransactionFormCategories (main.js:187:32)
+    at render (main.js:673:5)
+    at HTMLDocument.<anonymous> (main.js:694:5)

@@ -146,9 +146,16 @@ export function initializeGenerateMonitor() {
     });
     
     window.api.onGenerationOutput(async (data) => {
-      if (typeof data === 'string' && data.includes('[Building] Completed') && sidePreviewFrame && !sidePreviewContainer.classList.contains('hidden')) {
-        const { refreshPreview } = await import('./live-preview.js');
-        refreshPreview(sidePreviewFrame);
+      if (typeof data === 'string' && data.includes('[Building] Completed')) {
+        const { loadPreview, refreshPreview } = await import('./live-preview.js');
+        // Reload center preview to update placeholder visibility
+        await loadPreview();
+        // Refresh center preview content
+        refreshPreview();
+        // Refresh side preview if visible
+        if (sidePreviewFrame && !sidePreviewContainer.classList.contains('hidden')) {
+          refreshPreview(sidePreviewFrame);
+        }
       }
     });
   }
