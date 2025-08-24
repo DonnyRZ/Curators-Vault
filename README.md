@@ -15,7 +15,7 @@ The Curator's Vault MVP Generator is a tool that streamlines the process of turn
 ## Project Structure
 
 ```
-MVP-01/
+Curators-Vault/
 ├── src/
 │   ├── main/
 │   │   ├── main.js          # Electron main process entry point
@@ -76,7 +76,7 @@ MVP-01/
 1.  Clone the repository:
     ```bash
     git clone <repository-url>
-    cd MVP-01
+    cd Curators-Vault
     ```
 2.  Install dependencies:
     ```bash
