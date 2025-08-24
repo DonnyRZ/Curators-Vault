@@ -1,6 +1,12 @@
 # Curator's Vault MVP Generator
 
+[![GitHub](https://img.shields.io/github/license/DonnyRZ/Curators-Vault)](https://github.com/DonnyRZ/Curators-Vault/blob/main/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/DonnyRZ/Curators-Vault)](https://github.com/DonnyRZ/Curators-Vault/issues)
+[![GitHub stars](https://img.shields.io/github/stars/DonnyRZ/Curators-Vault)](https://github.com/DonnyRZ/Curators-Vault/stargazers)
+
 A desktop application built with Electron and the Gemini CLI to generate MVPs (Minimum Viable Products) from pages, features, and rules.
+
+Repository: https://github.com/DonnyRZ/Curators-Vault
 
 ## Overview
 
@@ -11,44 +17,6 @@ The Curator's Vault MVP Generator is a tool that streamlines the process of turn
 3. Map features to each page
 4. Set project-wide rules and constraints
 5. Automatically generate a complete Single Page Application (SPA)
-
-## Project Structure
-
-```
-Curators-Vault/
-├── src/
-│   ├── main/
-│   │   ├── main.js          # Electron main process entry point
-│   │   ├── preload.js       # Secure IPC bridge
-│   │   ├── ipc-handlers/    # Handles Electron IPC messages
-│   │   │   ├── index.js     # Main IPC handler registration
-│   │   │   ├── workspace.js # Workspace-related handlers
-│   │   │   ├── pages.js     # Pages-related handlers
-│   │   │   ├── features.js  # Features-related handlers
-│   │   │   ├── rules.js     # Rules-related handlers
-│   │   │   ├── generation.js# Generation-related handlers
-│   │   │   └── window.js    # Window-related handlers
-│   │   └── state.js         # Application state management
-│   ├── renderer/
-│   │   ├── index.html       # Main UI HTML
-│   │   ├── js/              # Modular frontend application logic
-│   │   │   ├── main.js      # Main renderer entry point
-│   │   │   ├── router.js    # Hash-based routing
-│   │   │   ├── dashboard.js # Dashboard functionality
-│   │   │   ├── workspace-setup.js # Workspace setup functionality
-│   │   │   ├── pages-manager.js   # Pages management functionality
-│   │   │   ├── feature-mapping/   # Feature mapping modules
-│   │   │   ├── project-rules.js   # Project rules functionality
-│   │   │   ├── generate-monitor.js# Generation monitoring functionality
-│   │   │   ├── live-preview.js    # Live preview functionality
-│   │   │   └── ui/                # UI components
-│   │   └── styles/
-│   │       └── professional/      # Professional styling
-│   └── prompts/
-│       ├── planning-prompt.yaml  # Prompt for the planning stage
-│       ├── build-prompt.yaml     # Prompt for the build stage
-│       └── default-rules.json    # Default project rules
-```
 
 ## Key Features
 
@@ -61,6 +29,8 @@ Curators-Vault/
     *   **Building**: AI implements the plan to generate the actual SPA code.
 6.  **Progress Monitoring**: Real-time output display during the generation process.
 7.  **Live Preview**: Instantly preview the generated MVP with hot-reload capabilities.
+8.  **Responsive UI**: Modern, professional interface with dark/light theme support.
+9.  **Export Functionality**: Package and export your generated projects.
 
 ## Technology Stack
 
@@ -75,7 +45,7 @@ Curators-Vault/
 
 1.  Clone the repository:
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/DonnyRZ/Curators-Vault.git
     cd Curators-Vault
     ```
 2.  Install dependencies:
@@ -101,7 +71,46 @@ Curators-Vault/
     *   **Generate & Monitor**: Start the AI-powered generation process and monitor progress.
     *   **Live Preview**: View and interact with the generated MVP.
 
-## Development Workflow
+## Development
+
+### Project Structure
+
+```
+Curators-Vault/
+├── src/
+│   ├── main/
+│   │   ├── main.js          # Electron main process entry point
+│   │   ├── preload.js       # Secure IPC bridge
+│   │   ├── ipc-handlers/    # Handles Electron IPC messages
+│   │   │   ├── index.js     # Main IPC handler registration
+│   │   │   ├── workspace.js # Workspace-related handlers
+│   │   │   ├── pages.js     # Pages-related handlers
+│   │   │   ├── features.js  # Features-related handlers
+│   │   │   ├── rules.js     # Rules-related handlers
+│   │   │   ├── generation.js# Generation-related handlers
+│   │   │   └── window.js    # Window-related handlers
+│   │   └── state.js         # Application state management
+│   ├── renderer/
+│   │   ├── index.html       # Main UI HTML
+│   │   ├── js/              # Modular frontend application logic
+│   │   │   ├── main.js      # Main renderer entry point
+│   │   │   ├── router.js    # Hash-based routing
+│   │   │   ├── workspace-setup.js # Workspace setup functionality
+│   │   │   ├── pages-manager.js   # Pages management functionality
+│   │   │   ├── feature-mapping/   # Feature mapping modules
+│   │   │   ├── project-rules.js   # Project rules functionality
+│   │   │   ├── generate-monitor.js# Generation monitoring functionality
+│   │   │   ├── live-preview.js    # Live preview functionality
+│   │   │   └── ui/                # UI components
+│   │   └── styles/
+│   │       └── professional/      # Professional styling
+│   └── prompts/
+│       ├── planning-prompt.yaml  # Prompt for the planning stage
+│       ├── build-prompt.yaml     # Prompt for the build stage
+│       └── default-rules.json    # Default project rules
+```
+
+### Development Workflow
 
 1.  The application uses Electron Forge for packaging. To package the app for your current platform:
     ```bash
@@ -139,6 +148,17 @@ These prompts are designed to produce high-quality, maintainable code that adher
 
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
 
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/your-feature`)
+3. Make your changes
+4. Commit your changes (`git commit -m 'Add some feature'`)
+5. Push to the branch (`git push origin feature/your-feature`)
+6. Open a pull request
+
 ## License
 
 [MIT](LICENSE)
+
+## Support
+
+If you encounter any issues or have questions, please [open an issue](https://github.com/DonnyRZ/Curators-Vault/issues) on GitHub.
