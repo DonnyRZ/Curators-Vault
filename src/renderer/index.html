@@ -273,12 +273,12 @@ no frameworks by default</textarea>
           <!-- Center: Live Preview -->
           <section class="workspace-center preview-panel">
             <div class="preview-toolbar">
-              <div class="preview-title">MVP Preview</div>
               <div class="preview-toolbar-left">
                 <button id="preview-back-btn" class="btn btn-icon" disabled>←</button>
                 <button id="preview-forward-btn" class="btn btn-icon" disabled>→</button>
                 <button id="preview-reload-btn" class="btn btn-icon">↻</button>
               </div>
+              <div class="preview-title">MVP Preview</div>
               <div class="preview-controls-inline">
                 <select id="preview-device" class="preview-device">
                   <option value="responsive">Responsive</option>
@@ -289,9 +289,9 @@ no frameworks by default</textarea>
                 <button id="preview-rotate-btn" class="btn btn-secondary">⟳ Rotate</button>
                 <button id="preview-fit-btn" class="btn btn-secondary">↔ Fit to Width</button>
                 <button id="preview-fix-btn" class="btn btn-ghost">🩺 Fix Preview</button>
-                <input type="text" id="preview-url" class="preview-url" placeholder="file:///.../index.html" readonly />
               </div>
               <div class="preview-toolbar-right">
+                <input type="text" id="preview-url" class="preview-url" placeholder="file:///.../index.html" readonly />
                 <button id="preview-devtools-btn" class="btn btn-icon">⚙️</button>
               </div>
             </div>
@@ -310,8 +310,6 @@ no frameworks by default</textarea>
               <div class="preview-main-actions">
                 <button id="refresh-preview-btn" class="btn btn-secondary">↻ Refresh</button>
                 <button id="open-external-btn" class="btn btn-secondary">🌐 Open in Browser</button>
-              </div>
-              <div class="preview-secondary-actions">
                 <button id="rebuild-btn" class="btn btn-secondary">🔁 Rebuild</button>
               </div>
               <div class="preview-completion-actions">
