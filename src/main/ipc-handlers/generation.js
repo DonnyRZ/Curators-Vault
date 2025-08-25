@@ -11,7 +11,7 @@ const state = require('../state');
 let currentChild = null;
 
 /**
- * Runs a generation phase (Planning or Building) using the Gemini CLI.
+ * Runs a generation phase (Planning or Building) using the Qwen Code CLI.
  * @param {Electron.BrowserWindow} win - The main browser window to send output to.
  * @param {string} phase - The name of the phase ('Planning' or 'Building').
  * @param {string} promptPath - The absolute path to the prompt file.
@@ -44,12 +44,13 @@ function runGenerationPhase(win, phase, promptPath, promptData, outputFilePath) 
         
         // Use a more robust approach for the prompt path
         const quotedPromptPath = `"${tempPromptFilename}"`;
-        const args = ['-p', `@${quotedPromptPath}`, '--model', 'gemini-2.5-flash', '--yolo'];
-        sendOutput(`[${phase}] Running command: gemini ${args.join(' ')}`);
+        const args = ['-p', `@${quotedPromptPath}`, '--model', 'qwen3-coder-plus', '--yolo'];
+        sendOutput(`[${phase}] Running command: qwen ${args.join(' ')}`);
         sendOutput(`[${phase}] Working directory: ${normalizedWorkspacePath}`);
         
         // Use the normalized workspace path as the cwd
-        const child = spawn('gemini', args, { 
+        const bin = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+        const child = spawn(bin, ['@qwen-code/qwen-code@latest', ...args], {
           cwd: normalizedWorkspacePath, 
           shell: true,
           windowsVerbatimArguments: true  // This might help with Windows path issues

@@ -4,13 +4,13 @@
 [![GitHub issues](https://img.shields.io/github/issues/DonnyRZ/Curators-Vault)](https://github.com/DonnyRZ/Curators-Vault/issues)
 [![GitHub stars](https://img.shields.io/github/stars/DonnyRZ/Curators-Vault)](https://github.com/DonnyRZ/Curators-Vault/stargazers)
 
-A desktop application built with Electron and the Gemini CLI to generate MVPs (Minimum Viable Products) from pages, features, and rules.
+A desktop application built with Electron and the Qwen Code to generate MVPs (Minimum Viable Products) from pages, features, and rules.
 
 Repository: https://github.com/DonnyRZ/Curators-Vault
 
 ## Overview
 
-The Curator's Vault MVP Generator is a tool that streamlines the process of turning design pages into functional web applications. By leveraging the power of the Gemini CLI for AI-driven code generation, this application allows users to:
+The Curator's Vault MVP Generator is a tool that streamlines the process of turning design pages into functional web applications. By leveraging the power of the Qwen Code for AI-driven code generation, this application allows users to:
 
 1. Define a project workspace
 2. Create and manage application pages
@@ -36,7 +36,7 @@ The Curator's Vault MVP Generator is a tool that streamlines the process of turn
 
 *   **Electron**: For building the cross-platform desktop application.
 *   **Node.js**: For the backend logic that orchestrates the generation process.
-*   **Gemini CLI**: For AI-powered code generation.
+*   **Qwen Code**: For AI-powered code generation.
 *   **HTML/CSS/JavaScript**: For the frontend user interface.
 *   **AJV**: For JSON schema validation of project rules and features.
 *   **Chokidar**: For file watching to enable live preview.
@@ -52,9 +52,9 @@ The Curator's Vault MVP Generator is a tool that streamlines the process of turn
     ```bash
     npm install
     ```
-3.  Ensure you have the Gemini CLI installed. If not, install it globally:
+3.  Ensure you have the Qwen Code installed. If not, install it globally:
     ```bash
-    npm install -g @google/gemini-cli
+    npm install -g @qwen-code/qwen-code
     ```
 
 ## Usage
@@ -131,13 +131,13 @@ The application follows a modular architecture within the Electron framework:
     *   Workspace management
     *   Page processing and organization
     *   Feature and rule handling
-    *   Interaction with the Gemini CLI for code generation
+    *   Interaction with the Qwen Code for code generation
     *   File system operations
-3.  **Gemini CLI**: An external AI tool that performs the actual code generation based on prompts provided by the main process.
+3.  **Qwen Code**: An external AI tool that performs the actual code generation based on prompts provided by the main process.
 
 ## Prompts
 
-The application uses two main prompts for the Gemini CLI:
+The application uses two main prompts for the Qwen Code:
 
 1.  **Planning Prompt** (`src/prompts/planning-prompt.yaml`): Guides the AI in creating a development plan based on the project inputs.
 2.  **Build Prompt** (`src/prompts/build-prompt.yaml`): Guides the AI in implementing the development plan to generate the actual code.

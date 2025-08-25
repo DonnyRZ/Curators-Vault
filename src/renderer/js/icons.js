@@ -76,5 +76,7 @@ export function initializeIcons() {
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
     applyThemeIcon(theme);
     window.addEventListener('theme-changed', (e) => applyThemeIcon(e.detail?.theme || 'light'));
-  } catch {}
+  } catch (error) {
+    console.warn('Failed to initialize theme icons:', error);
+  }
 }
