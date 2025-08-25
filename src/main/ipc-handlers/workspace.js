@@ -12,28 +12,30 @@ const state = require('../state');
 
 // --- Utility Functions (originally from server/utils.js) ---
 
-async function checkGeminiCLI() {
+async function checkQwenCLI() {
   return new Promise((resolve) => {
-    const geminiVersion = spawn('gemini', ['--version'], { shell: true });
+    const cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    const qwenVersion = spawn(cmd, ['@qwen-code/qwen-code@latest', '--version'], { shell: true });
     let versionOutput = '';
-    geminiVersion.on('close', (code) => {
+    qwenVersion.on('close', (code) => {
       if (code === 0) {
-        const helpProcess = spawn('gemini', ['--help'], { shell: true });
+        const helpProcess = spawn(cmd, ['@qwen-code/qwen-code@latest', '--help'], { shell: true });
         let helpOutput = '';
         helpProcess.stdout.on('data', (data) => { helpOutput += data.toString(); });
-        helpProcess.on('close', (helpCode) => {
+        helpProcess.on('close', () => {
           resolve({
             installed: true,
             version: versionOutput.trim(),
-            yoloSupported: helpCode === 0 && helpOutput.includes('--yolo'),
+            promptMode: /-p, --prompt/.test(helpOutput) && /-m, --model/.test(helpOutput),
+            yoloMode: /-y, --yolo/.test(helpOutput)
           });
         });
       } else {
-        resolve({ installed: false, version: null, yoloSupported: false });
+        resolve({ installed: false, version: null, promptMode: false });
       }
     });
-    geminiVersion.stdout.on('data', (data) => { versionOutput += data.toString(); });
-    geminiVersion.on('error', () => resolve({ installed: false, version: null, yoloSupported: false }));
+    qwenVersion.stdout.on('data', (data) => { versionOutput += data.toString(); });
+    qwenVersion.on('error', () => resolve({ installed: false, version: null, promptMode: false }));
   });
 }
 
@@ -143,11 +145,12 @@ function registerWorkspaceHandlers(win) {
       return { error: 'Workspace path is required' };
     }
     try {
-      const geminiCheck = await checkGeminiCLI();
+      const qwenCheck = await checkQwenCLI();
       const writePermission = await checkWritePermissions(workspacePath);
       return {
-        geminiInstalled: geminiCheck.installed,
-        yoloSupported: geminiCheck.yoloSupported,
+        qwenInstalled: qwenCheck.installed,
+        promptMode: qwenCheck.promptMode,
+        yoloMode: qwenCheck.yoloMode,
         writePermissions: writePermission
       };
     } catch (error) {

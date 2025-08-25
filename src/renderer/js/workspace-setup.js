@@ -39,8 +39,8 @@ async function handleWorkspaceSelected(path) {
   if (workspaceInfo) workspaceInfo.classList.remove('hidden');
   
   // Reset precondition statuses to checking
-  updatePreconditionStatus('gemini-check', 'checking');
-  updatePreconditionStatus('yolo-check', 'checking');
+  updatePreconditionStatus('qwen-check', 'checking'); // Keeping the ID for backward compatibility
+  updatePreconditionStatus('yolo-check', 'checking'); // Keeping the ID for backward compatibility
   updatePreconditionStatus('permissions-check', 'checking');
   
   // Perform precondition checks
@@ -48,14 +48,14 @@ async function handleWorkspaceSelected(path) {
     const checks = await window.api.checkPreconditions(path);
     
     // Update UI with check results
-    updatePreconditionStatus('gemini-check', 
-      checks.geminiInstalled ? 'success' : 'error',
-      checks.geminiInstalled ? 'Installed' : 'Missing'
+    updatePreconditionStatus('qwen-check', 
+      checks.qwenInstalled ? 'success' : 'error',
+      checks.qwenInstalled ? 'Installed' : 'Missing'
     );
     
     updatePreconditionStatus('yolo-check',
-      checks.yoloSupported ? 'success' : 'error',
-      checks.yoloSupported ? 'Supported' : 'Not Supported'
+      checks.yoloMode ? 'success' : 'error',
+      checks.yoloMode ? 'Supported' : 'Not Supported'
     );
     
     updatePreconditionStatus('permissions-check',
@@ -64,7 +64,7 @@ async function handleWorkspaceSelected(path) {
     );
     
     // If checks pass, initialize the workspace on the server
-    const allChecksPassed = checks.geminiInstalled && checks.yoloSupported && checks.writePermissions;
+    const allChecksPassed = checks.qwenInstalled && checks.yoloMode && checks.writePermissions;
     if (allChecksPassed) {
       try {
         const initResult = await window.api.createWorkspace(path);
@@ -90,7 +90,7 @@ async function handleWorkspaceSelected(path) {
     showError(`Error checking preconditions: ${error.message}`);
     
     // Update statuses to error if the check failed
-    updatePreconditionStatus('gemini-check', 'error', 'Check failed');
+    updatePreconditionStatus('qwen-check', 'error', 'Check failed');
     updatePreconditionStatus('yolo-check', 'error', 'Check failed');
     updatePreconditionStatus('permissions-check', 'error', 'Check failed');
   }

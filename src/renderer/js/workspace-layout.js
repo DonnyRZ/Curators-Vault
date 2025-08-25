@@ -12,7 +12,7 @@ export function initializeWorkspaceLayout() {
   const changeBtn = document.getElementById('change-workspace-btn');
   const openBtn = document.getElementById('open-folder-btn');
   const statusName = document.getElementById('status-workspace-name');
-  const statusGemini = document.getElementById('status-gemini-state');
+  const statusQwen = document.getElementById('status-qwen-state');
   const statusBuild = document.getElementById('status-build-time');
   const leftResizer = document.getElementById('left-resizer');
   const rightResizer = document.getElementById('right-resizer');
@@ -31,9 +31,9 @@ export function initializeWorkspaceLayout() {
   async function updateStatusBar() {
     try {
       const ws = await window.api.getWorkspacePath();
-      if (ws && statusGemini) {
+      if (ws && statusQwen) {
         const checks = await window.api.checkPreconditions(ws);
-        statusGemini.textContent = checks.geminiInstalled ? (checks.yoloSupported ? 'OK (yolo)' : 'OK') : 'Missing';
+        statusQwen.textContent = checks.qwenInstalled ? (checks.promptMode ? 'OK (prompt)' : 'OK') : 'Missing';
       }
       const stats = await window.api.getWorkspaceStats();
       if (statusBuild) {
@@ -78,8 +78,8 @@ export function initializeWorkspaceLayout() {
         if (!path) return;
         // Run prechecks and initialize
         const checks = await window.api.checkPreconditions(path);
-        if (!checks.geminiInstalled || !checks.yoloSupported || !checks.writePermissions) {
-          showError('Preconditions not met. Please ensure Gemini CLI, --yolo support, and write permissions.');
+        if (!checks.qwenInstalled || !checks.promptMode || !checks.writePermissions) {
+          showError('Preconditions not met. Please ensure Qwen Code, prompt mode support, and write permissions.');
           return;
         }
         const initResult = await window.api.createWorkspace(path);
