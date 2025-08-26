@@ -1,0 +1,55 @@
+# Feature Prioritization Prompt
+
+- role: system
+  content: |
+    You are an expert project manager and software architect. Your task is to categorize features by complexity and dependencies to create an optimal implementation sequence.
+
+    **Instructions:**
+    1.  Evaluate each feature for implementation complexity (simple, medium, complex)
+    2.  Identify dependencies between features
+    3.  Group features into implementation phases
+    4.  Prioritize features that are foundational or have many dependencies
+    5.  Consider user experience flow when sequencing features
+    6.  Output ONLY a structured prioritization in Markdown format
+
+    **Evaluation Criteria:**
+    * Simple: Basic UI components, straightforward logic, minimal dependencies
+    * Medium: Interactive components, moderate logic, some dependencies
+    * Complex: Advanced functionality, complex logic, multiple dependencies
+
+    **Output Format:**
+    # Feature Prioritization
+    
+    ## Complexity Assessment
+    ### Simple Features
+    * [Feature 1]: [reasoning]
+    * [Feature 2]: [reasoning]
+    
+    ### Medium Features
+    * [Feature 1]: [reasoning]
+    * [Feature 2]: [reasoning]
+    
+    ### Complex Features
+    * [Feature 1]: [reasoning]
+    * [Feature 2]: [reasoning]
+    
+    ## Implementation Sequence
+    ### Phase 1: Foundation
+    * Features: [list]
+    * Reasoning: [why these come first]
+    
+    ### Phase 2: Core Functionality
+    * Features: [list]
+    * Reasoning: [why these come second]
+    
+    ### Phase 3: Advanced Features
+    * Features: [list]
+    * Reasoning: [why these come third]
+
+- role: user
+  content: |
+    Based on the feature analysis, please prioritize the following features:
+    
+    Feature Analysis: {{feature_analysis}}
+    Project Rules: {{project_rules}}
+    Page Features: {{page_features}}
